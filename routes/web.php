@@ -16,3 +16,28 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+//  route admin
+
+Route::get('/admin', function(){
+    return view('layouts.admin.index');
+});
+
+
+/*
+categories admin
+*/
+
+Route::get('/admin/categories', function(){
+    return view('layouts.admin.category.list');
+});
+
+Route::get('/admin/categories/create', function(){
+    return view('layouts.admin.category.create');
+});
+
+Route::get('/admin/categories/update', function(){
+    return view('layouts.admin.category.update');
+});
+
+// end route admin
