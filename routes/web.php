@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Admin\CategoryController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -19,25 +19,14 @@ Route::get('/', function () {
 
 //  route admin
 
-Route::get('/admin', function(){
-    return view('layouts.admin.index');
-});
+// Trang dashboard admin
+Route::view('/admin', 'layouts.admin.index')->name('admin.dashboard');
 
-
-/*
-categories admin
-*/
-
-Route::get('/admin/categories', function(){
-    return view('layouts.admin.category.list');
-});
-
-Route::get('/admin/categories/create', function(){
-    return view('layouts.admin.category.create');
-});
-
-Route::get('/admin/categories/update', function(){
-    return view('layouts.admin.category.update');
+// Nhóm routes cho quản lý categories
+Route::prefix('admin/categories')->name('admin.categories.')->group(function () {
+    Route::view('/', 'layouts.admin.category.list')->name('index');
+    Route::view('/create', 'layouts.admin.category.create')->name('create');
+    Route::view('/update', 'layouts.admin.category.update')->name('update');
 });
 
 // end route admin
