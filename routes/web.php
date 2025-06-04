@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ColorController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -27,6 +28,11 @@ Route::prefix('admin/categories')->name('admin.categories.')->group(function () 
     Route::view('/', 'layouts.admin.category.list')->name('index');
     Route::view('/create', 'layouts.admin.category.create')->name('create');
     Route::view('/update', 'layouts.admin.category.update')->name('update');
+});
+
+// Nhóm routes cho quản lý màu sắc
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('colors', ColorController::class);
 });
 
 // end route admin
