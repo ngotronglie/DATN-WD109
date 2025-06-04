@@ -1,5 +1,13 @@
 @extends('layouts.admin.index')
 
+@section('css')
+<style>
+    .form-label {
+        font-weight: 500;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <!-- start page title -->
@@ -22,39 +30,53 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title mb-0">Thông tin màu sắc</h4>
-                </div>
+                <div class="card-header align-items-center d-flex">
+                    <h4 class="card-title mb-0 flex-grow-1">Thông tin màu sắc</h4>
+                </div><!-- end card header -->
+
                 <div class="card-body">
-                    <form class="row g-3 needs-validation" action="{{ route('admin.colors.store') }}" method="POST" novalidate>
-                        @csrf
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="name" class="form-label">Tên màu <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                       id="name" name="name" value="{{ old('name') }}" 
-                                       required placeholder="Nhập tên màu">
-                                <div class="invalid-feedback">
-                                    @error('name')
-                                        {{ $message }}
-                                    @else
-                                        Vui lòng nhập tên màu.
-                                    @enderror
+                    <div class="live-preview">
+                        <form class="row g-3 needs-validation" action="{{ route('admin.colors.store') }}" method="POST" novalidate>
+                            @csrf
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="name" class="form-label">Tên màu <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                           id="name" name="name" value="{{ old('name') }}" 
+                                           required placeholder="Nhập tên màu">
+                                    <div class="invalid-feedback">
+                                        @error('name')
+                                            {{ $message }}
+                                        @else
+                                            Vui lòng nhập tên màu.
+                                        @enderror
+                                    </div>
+                                    <div class="valid-feedback">
+                                        Looks good!
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="col-12">
-                            <div class="hstack gap-2 justify-content-start">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="ri-save-line align-bottom me-1"></i> Lưu
-                                </button>
-                                <a href="{{ route('admin.colors.index') }}" class="btn btn-light">
-                                    <i class="ri-arrow-go-back-line align-bottom me-1"></i> Quay lại
-                                </a>
+                            
+                            <div class="col-12">
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ri-save-line align-bottom me-1"></i> Lưu
+                                    </button>
+                                    <a href="{{ route('admin.colors.index') }}" class="btn btn-light">
+                                        <i class="ri-arrow-go-back-line align-bottom me-1"></i> Quay lại
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
+
+                    <div class="d-none code-view">
+                        <pre class="language-markup" style="height: 375px;">
+                            <code>&lt;form class="row g-3"&gt;
+                                ...
+                            &lt;/form&gt;</code>
+                        </pre>
+                    </div>
                 </div>
             </div>
         </div>
