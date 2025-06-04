@@ -37,7 +37,7 @@ class ColorController extends Controller
         Color::create($request->all());
 
         return redirect()->route('admin.colors.index')
-            ->with('success', 'Màu sắc đã được thêm thành công.');
+            ->with('success', 'Màu sắc đã được thêm thành công!');
     }
 
     /**
@@ -61,14 +61,22 @@ class ColorController extends Controller
      */
     public function update(Request $request, Color $color)
     {
+        // Validate dữ liệu
         $request->validate([
             'name' => 'required|string|max:255|unique:colors,name,' . $color->id,
         ]);
 
+        // Kiểm tra xem dữ liệu có thay đổi không
+        if ($color->name === $request->name) {
+            return redirect()->route('admin.colors.index')
+                ->with('info', 'Không có dữ liệu nào được thay đổi!');
+        }
+
+        // Nếu có thay đổi thì mới cập nhật
         $color->update($request->all());
 
         return redirect()->route('admin.colors.index')
-            ->with('success', 'Màu sắc đã được cập nhật thành công.');
+            ->with('success', 'Màu sắc đã được cập nhật thành công!');
     }
 
     /**
@@ -79,6 +87,6 @@ class ColorController extends Controller
         $color->delete();
 
         return redirect()->route('admin.colors.index')
-            ->with('success', 'Màu sắc đã được xóa thành công.');
+            ->with('success', 'Màu sắc đã được xóa thành công!');
     }
 }

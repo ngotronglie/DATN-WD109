@@ -33,7 +33,14 @@
                 <div class="card-body">
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <strong>Thành công!</strong> {{ session('success') }}
+                            {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    @if(session('info'))
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            {{ session('info') }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
@@ -98,21 +105,56 @@
 
 @section('script')
 <script>
+    // Hiển thị thông báo thành công
+    @if(session('success'))
+        Swal.fire({
+            html: '<div class="mt-3"><lord-icon src="https://cdn.lordicon.com/lupuorrc.json" trigger="loop" colors="primary:#0ab39c,secondary:#405189" style="width:120px;height:120px"></lord-icon><div class="mt-4 pt-2 fs-15"><h4>Thành công !</h4><p class="text-muted mx-4 mb-0">{{ session('success') }}</p></div></div>',
+            showCancelButton: false,
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            buttonsStyling: false,
+            showCloseButton: true,
+            customClass: {
+                closeButton: 'btn btn-light position-absolute',
+            }
+        });
+    @endif
+
+    // Hiển thị thông báo thông tin
+    @if(session('info'))
+        Swal.fire({
+            html: '<div class="mt-3"><lord-icon src="https://cdn.lordicon.com/dnmvmpfk.json" trigger="loop" colors="primary:#0ab39c,secondary:#405189" style="width:120px;height:120px"></lord-icon><div class="mt-4 pt-2 fs-15"><h4>Thông tin!</h4><p class="text-muted mx-4 mb-0">{{ session('info') }}</p></div></div>',
+            showCancelButton: false,
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            buttonsStyling: false,
+            showCloseButton: true,
+            customClass: {
+                closeButton: 'btn btn-light position-absolute',
+            }
+        });
+    @endif
+
     // Xác nhận xóa
     document.querySelectorAll('.delete-form').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             Swal.fire({
-                title: 'Bạn có chắc chắn?',
-                text: "Dữ liệu đã xóa không thể khôi phục!",
+                title: 'Bạn có chắc chắn muốn xóa?',
+                text: 'Dữ liệu đã xóa không thể khôi phục!',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonClass: 'btn btn-primary w-xs me-2 mt-2',
-                cancelButtonClass: 'btn btn-danger w-xs mt-2',
                 confirmButtonText: 'Có, xóa nó!',
                 cancelButtonText: 'Hủy',
                 buttonsStyling: false,
-                showCloseButton: true
+                customClass: {
+                    confirmButton: 'btn btn-primary w-xs me-2',
+                    cancelButton: 'btn btn-danger w-xs',
+                    closeButton: 'btn btn-light position-absolute',
+                },
+                showCloseButton: true,
             }).then((result) => {
                 if (result.isConfirmed) {
                     this.submit();
@@ -127,5 +169,13 @@
             checkbox.checked = this.checked;
         });
     });
+
+    // Auto close alerts
+    window.setTimeout(function() {
+        document.querySelectorAll(".alert").forEach(function(alert) {
+            alert.classList.add('fade');
+            alert.style.display = 'none';
+        });
+    }, 4000);
 </script>
 @endsection 
