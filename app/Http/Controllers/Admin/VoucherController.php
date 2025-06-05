@@ -89,9 +89,17 @@ class VoucherController extends Controller
     /**
      * Xóa một voucher.
      */
-    public function destroy(Voucher $voucher)
-    {
-        $voucher->delete();
-        return redirect()->route('admin.vouchers.index')->with('success', 'Voucher đã được xóa!');
+public function destroy(string $id)
+{
+    $voucher = Voucher::find($id);
+
+    if (!$voucher) {
+        return redirect()->route('admin.vouchers.index')->with('error', 'Voucher không tồn tại.');
     }
+
+    $voucher->delete();
+
+    return redirect()->route('admin.vouchers.index')->with('success', 'Voucher đã được xóa thành công!');
+}
+
 }
