@@ -1,5 +1,28 @@
 @extends('layouts.admin.index')
 
+@section('css')
+<style>
+    .card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e9ebec;
+        background-color: #fff;
+        margin-bottom: 1.5rem;
+    }
+    .card-title {
+        margin-bottom: 0;
+        font-size: 16px;
+    }
+    .card-body {
+        padding: 1.5rem;
+    }
+    .header-actions {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <!-- start page title -->
@@ -21,16 +44,14 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title mb-0 flex-grow-1">Danh sách màu sắc</h4>
-                    <div class="d-flex gap-1 flex-wrap">
-                        <a href="{{ route('admin.colors.create') }}" class="btn btn-success create-btn">
-                            <i class="ri-add-line align-bottom me-1"></i> Thêm màu mới
-                        </a>
-                    </div>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Danh sách màu sắc</h5>
+                    <a href="{{ route('admin.colors.create') }}" class="btn btn-success create-btn">
+                        <i class="ri-add-line align-bottom me-1"></i> Thêm màu mới
+                    </a>
                 </div>
 
-                <div class="card-body">
+                <div class="card-body pt-0">
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
@@ -73,7 +94,7 @@
                                     <td>{{ $color->created_at->format('d/m/Y H:i:s') }}</td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <a href="{{ route('admin.colors.edit', $color) }}" class="btn btn-sm btn-success edit-item-btn">
+                                            <a href="{{ route('admin.colors.edit', $color) }}" class="btn btn-sm btn-info edit-item-btn">
                                                 <i class="ri-pencil-fill align-bottom"></i> Sửa
                                             </a>
                                             
