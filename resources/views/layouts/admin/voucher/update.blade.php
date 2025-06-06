@@ -134,19 +134,56 @@
 
 @section('script')
 <script>
-    // Bootstrap validation
+    // Bootstrap validation + custom validation
     (function() {
         'use strict';
         var forms = document.querySelectorAll('.needs-validation');
         Array.prototype.slice.call(forms).forEach(function(form) {
             form.addEventListener('submit', function(event) {
+                // Bootstrap built-in validation
                 if (!form.checkValidity()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
+
+                // Custom validation
+                const discount = parseFloat(form.querySelector('#discount').value);
+                const quantity = parseInt(form.querySelector('#quantity').value);
+                const minMoney = parseFloat(form.querySelector('#min_money').value);
+                const maxMoney = parseFloat(form.querySelector('#max_money').value);
+
+                let errorMessages = [];
+
+                if (isNaN(discount) || discount <= 0) {
+                    errorMessages.push("Giảm giá phải lớn hơn 0.");
+                }
+
+                if (isNaN(quantity) || quantity <= 0) {
+                    errorMessages.push("Số lượng phải lớn hơn 0.");
+                }
+
+                if (isNaN(minMoney) || minMoney <= 0) {
+                    errorMessages.push("Số tiền tối thiểu phải lớn hơn 0.");
+                }
+
+                if (isNaN(maxMoney) || maxMoney <= 0) {
+                    errorMessages.push("Số tiền tối đa phải lớn hơn 0.");
+                }
+
+                if (!isNaN(minMoney) && !isNaN(maxMoney) && maxMoney < minMoney) {
+                    errorMessages.push("Số tiền tối đa phải lớn hơn hoặc bằng số tiền tối thiểu.");
+                }
+
+                if (errorMessages.length > 0) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    alert(errorMessages.join("\n"));
+                }
+
                 form.classList.add('was-validated');
             }, false);
         });
     })();
 </script>
+
 @endsection

@@ -112,4 +112,49 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const discount = parseFloat(document.getElementById('discount').value);
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const minMoney = parseFloat(document.getElementById('min_money').value);
+        const maxMoney = parseFloat(document.getElementById('max_money').value);
+
+        let hasError = false;
+        let errorMessages = [];
+
+        if (isNaN(discount) || discount <= 0) {
+            errorMessages.push("Giảm giá phải lớn hơn 0.");
+            hasError = true;
+        }
+
+        if (isNaN(quantity) || quantity <= 0) {
+            errorMessages.push("Số lượng phải lớn hơn 0.");
+            hasError = true;
+        }
+
+        if (isNaN(minMoney) || minMoney <= 0) {
+            errorMessages.push("Số tiền tối thiểu phải lớn hơn 0.");
+            hasError = true;
+        }
+
+        if (isNaN(maxMoney) || maxMoney <= 0) {
+            errorMessages.push("Số tiền tối đa phải lớn hơn 0.");
+            hasError = true;
+        }
+
+        if (!isNaN(minMoney) && !isNaN(maxMoney) && maxMoney < minMoney) {
+            errorMessages.push("Số tiền tối đa phải lớn hơn hoặc bằng số tiền tối thiểu.");
+            hasError = true;
+        }
+
+        if (hasError) {
+            e.preventDefault();
+            alert(errorMessages.join("\n"));
+        }
+    });
+</script>
+@endpush
+
+
 @endsection
