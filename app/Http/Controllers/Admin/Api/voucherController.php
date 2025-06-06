@@ -13,7 +13,7 @@ class VoucherController extends Controller
      */
     public function index()
     {
-        $vouchers = Voucher::paginate(10);
+        $vouchers = Voucher::paginate(5);
         return response()->json($vouchers);
     }
 
