@@ -24,11 +24,15 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Danh sách Categories</h3>
-                    <div class="card-tools">
-                        <a href="{{ route('categories.create') }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus"></i> Thêm mới
-                        </a>
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <h3 class="card-title mb-0">Danh sách Categories</h3>
+                        </div>
+                        <div class="col-6 text-end">
+                            <a href="{{ route('categories.create') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Thêm mới
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -44,9 +48,12 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                $index = ($categories->currentPage() - 1) * $categories->perPage() + 1;
+                            @endphp
                             @foreach($categories as $category)
                             <tr>
-                                <td>{{ $category->ID }}</td>
+                                <td>{{ $index++ }}</td>
                                 <td>{{ $category->Name }}</td>
                                 <td>
                                     @if($category->parent)
@@ -87,12 +94,46 @@
                     </table>
                 </div>
                 <div class="card-footer">
-                    {{ $categories->links() }}
+                    <div class="d-flex justify-content-center">
+                        <nav aria-label="Page navigation">
+                            {{ $categories->links('pagination::bootstrap-4') }}
+                        </nav>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+    .pagination {
+        margin-bottom: 0;
+    }
+    .pagination .page-item .page-link {
+        color: #6c757d;
+        border-color: #dee2e6;
+        padding: 0.5rem 0.75rem;
+        margin: 0 2px;
+        border-radius: 4px;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+    }
+    .pagination .page-item .page-link:hover {
+        background-color: #e9ecef;
+        color: #0d6efd;
+    }
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+        pointer-events: none;
+        background-color: #fff;
+        border-color: #dee2e6;
+    }
+</style>
+@endpush
 
 @push('scripts')
 <script>

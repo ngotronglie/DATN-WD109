@@ -35,7 +35,7 @@ class Categories extends Model
 
     public function loadAll()
     {
-        return $this->with('parent')->orderBy('ID', 'desc')->paginate(10);
+        return $this->with('parent')->orderBy('ID', 'desc')->paginate(4);
     }
 
     public function loadOneID($id)
