@@ -95,8 +95,6 @@
                          </li>
 
                          <li class="nav-item">
-<<<<<<< HEAD
-                              <a class="nav-link" href="apps-todo.html">
                                    <span class="nav-icon">
                                         <iconify-icon icon="solar:list-heart-minimalistic-broken"></iconify-icon>
                                    </span>
@@ -105,8 +103,6 @@
                          </li>
 
                          <li class="nav-item">
-=======
->>>>>>> tranhuy
                               <a class="nav-link menu-arrow" href="#sidebarCalendar" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCalendar">
                                    <span class="nav-icon">
                                         <iconify-icon icon="solar:calendar-broken"></iconify-icon>
@@ -126,50 +122,26 @@
                          </li>
 
                          <li class="nav-item">
-<<<<<<< HEAD
                               <a class="nav-link" href="{{ route('categories.index') }}">
                                    <span class="nav-icon">
                                         <iconify-icon icon="solar:category-broken"></iconify-icon>
-                                   </span>
                                    <span class="nav-text"> Categories </span>
                               </a>
                          </li>
-
                          <li class="nav-item">
                               <a class="nav-link" href="{{ route('categories.create') }}">
                                    <span class="nav-icon">
                                         <iconify-icon icon="solar:add-circle-broken"></iconify-icon>
                                    </span>
                                    <span class="nav-text"> Thêm danh mục </span>
-=======
-                              <a class="nav-link" href="apps-todo.html">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:list-heart-minimalistic-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Todo </span>
->>>>>>> tranhuy
                               </a>
                          </li>
 
                          <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarInvoice" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarInvoice">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:bill-list-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Invoices </span>
-                              </a>
-                              <div class="collapse" id="sidebarInvoice">
                                    <ul class="nav sub-navbar-nav">
                                         <li class="sub-nav-item">
                                              <a class="sub-nav-link" href="apps-invoices.html">Invoices</a>
                                         </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="apps-invoice-details.html">Invoice Details</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li>
-
                          <li class="menu-title">Custom</li>
 
                          <li class="nav-item">
