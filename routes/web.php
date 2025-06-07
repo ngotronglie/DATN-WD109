@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VoucherController;
 
+use App\Http\Controllers\Admin\ColorController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -36,5 +37,8 @@ Route::prefix('admin/categories')->name('admin.categories.')->group(function () 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('vouchers', VoucherController::class);
 });
-
+// Nhóm routes cho quản lý màu sắc
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('colors', ColorController::class);
+});
 // end route admin
