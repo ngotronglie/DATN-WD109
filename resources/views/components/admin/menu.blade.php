@@ -95,6 +95,15 @@
                          </li>
 
                          <li class="nav-item">
+                              <a class="nav-link" href="apps-todo.html">
+                                   <span class="nav-icon">
+                                        <iconify-icon icon="solar:list-heart-minimalistic-broken"></iconify-icon>
+                                   </span>
+                                   <span class="nav-text"> Todo </span>
+                              </a>
+                         </li>
+
+                         <li class="nav-item">
                               <a class="nav-link menu-arrow" href="#sidebarCalendar" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCalendar">
                                    <span class="nav-icon">
                                         <iconify-icon icon="solar:calendar-broken"></iconify-icon>
@@ -114,11 +123,20 @@
                          </li>
 
                          <li class="nav-item">
-                              <a class="nav-link" href="apps-todo.html">
+                              <a class="nav-link" href="{{ route('categories.index') }}">
                                    <span class="nav-icon">
-                                        <iconify-icon icon="solar:list-heart-minimalistic-broken"></iconify-icon>
+                                        <iconify-icon icon="solar:category-broken"></iconify-icon>
                                    </span>
-                                   <span class="nav-text"> Todo </span>
+                                   <span class="nav-text"> Categories </span>
+                              </a>
+                         </li>
+
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('categories.create') }}">
+                                   <span class="nav-icon">
+                                        <iconify-icon icon="solar:add-circle-broken"></iconify-icon>
+                                   </span>
+                                   <span class="nav-text"> Thêm danh mục </span>
                               </a>
                          </li>
 

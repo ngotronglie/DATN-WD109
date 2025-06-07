@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ColorController;
 |
 */
 
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -26,10 +27,13 @@ Route::get('/', function () {
 Route::view('/admin', 'layouts.admin.index')->name('admin.dashboard');
 
 // Nhóm routes cho quản lý categories
-Route::prefix('admin/categories')->name('admin.categories.')->group(function () {
-    Route::view('/', 'layouts.admin.category.list')->name('index');
-    Route::view('/create', 'layouts.admin.category.create')->name('create');
-    Route::view('/update', 'layouts.admin.category.update')->name('update');
+Route::prefix('admin/categories')->name('categories.')->group(function () {
+    Route::get('/', [CategoryController::class, 'index'])->name('index');
+    Route::get('/create', [CategoryController::class, 'create'])->name('create');
+    Route::post('/store', [CategoryController::class, 'store'])->name('store');
+    Route::get('/edit/{id}', [CategoryController::class, 'edit'])->name('edit');
+    Route::put('/update/{id}', [CategoryController::class, 'update'])->name('update');
+    Route::delete('/delete/{id}', [CategoryController::class, 'destroy'])->name('destroy');
 });
 
 // Routes cho quản lý Voucher
@@ -42,3 +46,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('colors', ColorController::class);
 });
 // end route admin
+
+
+
+
