@@ -12,7 +12,7 @@ class CategoryController extends Controller
     private $view;
     private $categories;
 
-    public function __construct(Categories $categories) 
+    public function __construct(Categories $categories)
     {
         $this->categories = $categories;
         $this->view = [];
@@ -26,7 +26,7 @@ class CategoryController extends Controller
 
     public function create()
     {
-       
+
         $this->view['categories'] = $this->categories->where('Parent_id', null)->get();
         return view('layouts.admin.category.create', $this->view);
     }
@@ -35,7 +35,7 @@ class CategoryController extends Controller
     {
         try {
             $data = $request->validated();
-          
+
             if ($request->hasFile('Image')) {
                 $image = $request->file('Image');
                 $imageName = time() . '.' . $image->getClientOriginalExtension();
@@ -43,9 +43,9 @@ class CategoryController extends Controller
                 $data['Image'] = 'storage/categories/' . $imageName;
             }
 
-           
+
             $result = $this->categories->insertData($data);
-            
+
             if ($result) {
                 return redirect()->route('categories.index')->with('success', 'Thêm danh mục thành công');
             } else {
@@ -67,7 +67,7 @@ class CategoryController extends Controller
     {
         try {
             $data = $request->validated();
-            
+
             if ($request->hasFile('Image')) {
                 $oldCategory = $this->categories->find($id);
                 if ($oldCategory && $oldCategory->Image) {
@@ -81,7 +81,7 @@ class CategoryController extends Controller
             }
 
             $result = $this->categories->updateData($data, $id);
-            
+
             if ($result) {
                 return redirect()->route('categories.index')->with('success', 'Cập nhật danh mục thành công');
             } else {
@@ -101,7 +101,7 @@ class CategoryController extends Controller
             }
 
             $result = $this->categories->deleteData($id);
-            
+
             if ($result) {
                 return redirect()->route('categories.index')->with('success', 'Xóa danh mục thành công');
             } else {

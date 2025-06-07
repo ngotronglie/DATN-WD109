@@ -3,8 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VoucherController;
-
 use App\Http\Controllers\Admin\ColorController;
+use App\Http\Controllers\Admin\CapacityController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -48,5 +48,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 // end route admin
 
 
+// Nhóm routes cho quản lý màu sắc
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('colors', ColorController::class);
+    Route::resource('capacities', CapacityController::class);
+});
 
-
+// end route admin
