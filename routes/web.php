@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\CapacityController;
+use App\Http\Controllers\Admin\ProductController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -55,3 +56,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 // end route admin
+
+// Nhóm routes cho quản lý sản phẩm
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('products', ProductController::class);
+});
