@@ -52,7 +52,7 @@
                             <tbody>
                             @foreach($products as $product)
                                 <tr>
-                                    <td>{{ $product->id }}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $product->product_name }}</td>
                                     <td>{{ $product->category_name }}</td>
                                     <td>{{ $product->color_name }}</td>

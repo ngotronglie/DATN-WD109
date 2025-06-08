@@ -321,8 +321,6 @@ function addMoreImages(variantIndex) {
     input.style.display = 'none';
     input.onchange = function() {
         handleImageUpload(this, variantIndex);
-        // Sau khi xử lý xong, tạo input mới để có thể thêm ảnh tiếp
-        addMoreImages(variantIndex);
     };
     document.body.appendChild(input);
     input.click();
