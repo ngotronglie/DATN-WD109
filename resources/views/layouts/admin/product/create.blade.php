@@ -9,7 +9,7 @@
                     <h3 class="card-title">Thêm sản phẩm mới</h3>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.products.store') }}" method="POST" id="productForm">
+                    <form action="{{ route('admin.products.store') }}" method="POST" id="productForm" enctype="multipart/form-data">
                         @csrf
                         <div class="row">
                             <div class="form-group">

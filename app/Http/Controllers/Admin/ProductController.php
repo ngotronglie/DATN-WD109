@@ -9,6 +9,7 @@ use App\Models\Color;
 use App\Models\Capacity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -33,8 +34,26 @@ class ProductController extends Controller
 
     public function index()
     {
-        $this->view['products'] = $this->product->loadAll();
-        return view('layouts.admin.product.list', $this->view);
+        $products = DB::table('product_variants')
+            ->join('products', 'product_variants.product_id', '=', 'products.id')
+            ->join('colors', 'product_variants.color_id', '=', 'colors.id')
+            ->join('categories', 'products.categories_id', '=', 'categories.id')
+            ->join('capacities', 'product_variants.capacity_id', '=', 'capacities.id')
+            ->select([
+                'product_variants.id',
+                'product_variants.price',
+                'product_variants.price_sale',
+                'product_variants.quantity',
+                'products.name as product_name',
+                'products.is_active',
+                'products.view_count',
+                'colors.name as color_name',
+                'capacities.name as capacity_name',
+                'categories.Name as category_name',
+            ])
+            ->paginate(5); // <-- 10 dòng mỗi trang
+
+        return view('layouts.admin.product.list', compact('products'));
     }
 
     public function create()
@@ -63,7 +82,7 @@ class ProductController extends Controller
 
             $data = $request->all();
             $data['slug'] = Str::slug($request->name);
-            
+
             $product = $this->product->insertData($data);
 
             // Create variants
@@ -108,7 +127,7 @@ class ProductController extends Controller
 
             $data = $request->all();
             $data['slug'] = Str::slug($request->name);
-            
+
             $product = $this->product->find($id);
             $product->updateData($data, $id);
 
@@ -141,4 +160,4 @@ class ProductController extends Controller
                 ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
-} 
+}
