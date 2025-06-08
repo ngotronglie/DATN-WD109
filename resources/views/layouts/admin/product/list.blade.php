@@ -84,19 +84,9 @@
                             @endforeach
                             </tbody>
                         </table>
-                        <style>
-                            .leading-5{
-                                margin-top:9px ;
-                            }
-                            .w-5{
-                               width: 10px;
-                            }
-                            .inline-flex{
-                                /*display: none;*/
-                            }
-                        </style>
+
                         <div class="mt-3">
-                            {{ $products->links() }}
+                            {{ $products->links('pagination::bootstrap-5') }}
                         </div>
                     </div>
                 </div>
