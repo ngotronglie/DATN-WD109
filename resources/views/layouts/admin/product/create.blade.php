@@ -103,7 +103,6 @@
                                                     <th>Giá <span class="text-danger">*</span></th>
                                                     <th>Giá khuyến mãi</th>
                                                     <th>Số lượng <span class="text-danger">*</span></th>
-                                                    <th>Ảnh</th>
                                                     <th>Thao tác</th>
                                                 </tr>
                                             </thead>
@@ -176,14 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     </td>
                     <td>
                         <input type="number" class="form-control" name="variants[${variantIndex}][quantity]" required min="0">
-                    </td>
-                    <td>
-                        <div class="variant-images">
-                            <div class="image-preview-container" id="preview-${variantIndex}"></div>
-                            <button type="button" class="btn btn-info btn-sm" onclick="addMoreImages(${variantIndex})">
-                                <svg width="18px" height="18px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 10C3 8.34315 4.34315 7 6 7H14C15.6569 7 17 8.34315 17 10V18C17 19.6569 15.6569 21 14 21H6C4.34315 21 3 19.6569 3 18V10Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M10 14V11M10 14V17M10 14H13M10 14H7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M7 3L18 3C19.6569 3 21 4.34315 21 6L21 17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
-                            </button>
-                        </div>
                     </td>
                     <td>
                         <button type="button" class="btn btn-danger btn-sm delete-variant">
