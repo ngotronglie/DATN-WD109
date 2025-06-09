@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Controllers\Admin\BannerController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 /*
@@ -29,4 +29,21 @@ Route::prefix('admin/categories')->name('admin.categories.')->group(function () 
     Route::view('/update', 'layouts.admin.category.update')->name('update');
 });
 
-// end route admin
+// Nhóm routes cho quản lý banners
+// Route::prefix('admin/banners')->name('admin.banners.')->group(function () {
+//     Route::view('/', 'layouts.admin.banner.list')->name('index');
+//     Route::view('/create', 'layouts.admin.banner.create')->name('create');
+//     Route::view('/update', 'layouts.admin.banner.update')->name('update');
+// });
+
+
+ Route::prefix('admin/banners')->name('admin.banners.')->group(function () {
+    Route::get('/', [BannerController::class, 'index'])->name('index');
+    Route::get('/create', [BannerController::class, 'create'])->name('create');
+    Route::get('/update', [BannerController::class, 'update'])->name('update');
+});
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class);
+    Route::post('banners/{banner}/status', [\App\Http\Controllers\Admin\BannerController::class, 'updateStatus'])->name('banners.status');
+});

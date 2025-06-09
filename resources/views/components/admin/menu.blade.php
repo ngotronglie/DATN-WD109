@@ -114,11 +114,11 @@
                          </li>
 
                          <li class="nav-item">
-                              <a class="nav-link" href="apps-todo.html">
+                              <a class="nav-link" href="{{ route('admin.banners.index') }}">
                                    <span class="nav-icon">
                                         <iconify-icon icon="solar:list-heart-minimalistic-broken"></iconify-icon>
                                    </span>
-                                   <span class="nav-text"> Todo </span>
+                                   <span class="nav-text"> Banners </span>
                               </a>
                          </li>
 
