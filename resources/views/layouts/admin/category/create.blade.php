@@ -9,8 +9,6 @@
                         <h3 class="card-title">Thêm danh mục mới</h3>
                     </div>
                     <div class="card-body">
-
-
                         <form action="{{ route('categories.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="form-group">
