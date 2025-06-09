@@ -32,13 +32,11 @@ class CapacityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:capacities',
-            'value' => 'required|string|max:255',
         ]);
 
         // Create new capacity with sanitized data
         $capacity = new Capacity();
         $capacity->name = $request->name;
-        $capacity->value = $request->value;
         $capacity->save();
 
         return redirect()->route('admin.capacities.index')
@@ -68,18 +66,16 @@ class CapacityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:capacities,name,' . $capacity->id,
-            'value' => 'required|string|max:255',
         ]);
 
         // Kiểm tra xem dữ liệu có thay đổi không
-        if ($capacity->name === $request->name && $capacity->value === $request->value) {
+        if ($capacity->name === $request->name) {
             return redirect()->route('admin.capacities.index')
                 ->with('info', 'Không có dữ liệu nào được thay đổi!');
         }
 
         // Nếu có thay đổi thì mới cập nhật
         $capacity->name = $request->name;
-        $capacity->value = $request->value;
         $capacity->save();
 
         return redirect()->route('admin.capacities.index')
