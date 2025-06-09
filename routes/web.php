@@ -1,11 +1,12 @@
 <?php
-use App\Http\Controllers\Admin\BannerController;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\CapacityController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\BannerController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -41,6 +42,8 @@ Route::prefix('admin/categories')->name('categories.')->group(function () {
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('vouchers', VoucherController::class);
+    Route::resource('banners', BannerController::class);
+    Route::post('banners/{banner}/status', [BannerController::class, 'updateStatus'])->name('banners.updateStatus');
 });
 // Nhóm routes cho quản lý màu sắc
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -58,23 +61,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
 // end route admin
 
 // Nhóm routes cho quản lý sản phẩm
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::resource('products', ProductController::class);
-// Nhóm routes cho quản lý banners
-// Route::prefix('admin/banners')->name('admin.banners.')->group(function () {
-//     Route::view('/', 'layouts.admin.banner.list')->name('index');
-//     Route::view('/create', 'layouts.admin.banner.create')->name('create');
-//     Route::view('/update', 'layouts.admin.banner.update')->name('update');
-// });
-});
-
- Route::prefix('admin/banners')->name('admin.banners.')->group(function () {
-    Route::get('/', [BannerController::class, 'index'])->name('index');
-    Route::get('/create', [BannerController::class, 'create'])->name('create');
-    Route::get('/update', [BannerController::class, 'update'])->name('update');
-});
-
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class);
-    Route::post('banners/{banner}/status', [\App\Http\Controllers\Admin\BannerController::class, 'updateStatus'])->name('banners.status');
+Route::prefix('admin/products')->name('admin.products.')->group(function () {
+    Route::get('/', [ProductController::class, 'index'])->name('index');
+    Route::get('/create', [ProductController::class, 'create'])->name('create');
+    Route::post('/store', [ProductController::class, 'store'])->name('store');
+    Route::get('/edit/{id}', [ProductController::class, 'edit'])->name('edit');
+    Route::put('/update/{id}', [ProductController::class, 'update'])->name('update');
+    Route::delete('/delete/{id}', [ProductController::class, 'destroy'])->name('destroy');
+    
+    // Routes cho quản lý ảnh biến thể
+    Route::get('/{id}/images', [ProductController::class, 'addfiledetail'])->name('addfiledetail');
+    Route::put('/{id}/images', [ProductController::class, 'updateImages'])->name('updateImages');
+    Route::delete('/variants/{variantId}/images/{imageId}', [ProductController::class, 'deleteImage'])->name('deleteImage');
 });

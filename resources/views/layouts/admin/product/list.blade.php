@@ -46,6 +46,7 @@
                                     <th class="text-center">Số lượng</th>
                                     <th class="text-center">Trạng thái</th>
                                     <th class="text-center">Lượt xem</th>
+                                    <th class="text-center">Ảnh</th>
                                     <th class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
@@ -68,6 +69,11 @@
                                         @endif
                                     </td>
                                     <td>{{ $product->view_count }}</td>
+                                    <td>
+                                        <a href="{{ route('admin.products.addfiledetail', $product->id) }}" class="btn btn-info btn-sm">
+                                            Ảnh
+                                        </a>
+                                    </td>
                                     <td>
                                         <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-warning btn-sm">
                                              Sửa

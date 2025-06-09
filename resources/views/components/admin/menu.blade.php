@@ -123,10 +123,18 @@
 
                          <li class="nav-item">
                               <a class="nav-link" href="{{ route('categories.index') }}">
-                              <a class="nav-link" href="{{ route('admin.banners.index') }}">
                                    <span class="nav-icon">
                                         <iconify-icon icon="solar:category-broken"></iconify-icon>
+                                   </span>
                                    <span class="nav-text"> Categories </span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.banners.index') }}">
+                                   <span class="nav-icon">
+                                        <iconify-icon icon="solar:gallery-broken"></iconify-icon>
+                                   </span>
+                                   <span class="nav-text">Banners</span>
                               </a>
                          </li>
                          <li class="nav-item">
@@ -134,8 +142,7 @@
                                    <span class="nav-icon">
                                         <iconify-icon icon="solar:add-circle-broken"></iconify-icon>
                                    </span>
-                                   <span class="nav-text"> Thêm danh mục </span>
-                                   <span class="nav-text"> Banners </span>
+                                   <span class="nav-text">Thêm danh mục</span>
                               </a>
                          </li>
 

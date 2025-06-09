@@ -10,6 +10,8 @@ use App\Models\Capacity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Models\ImageVariant;
 
 class ProductController extends Controller
 {
@@ -90,7 +92,7 @@ class ProductController extends Controller
                 $product->variants()->create($variant);
             }
 
-            return redirect()->route('admin.products.index')
+            return redirect()->route('admin.product.index')
                 ->with('success', 'Sản phẩm đã được thêm thành công!');
         } catch (\Exception $e) {
             return redirect()->back()
@@ -101,7 +103,12 @@ class ProductController extends Controller
 
     public function edit($id)
     {
-        $this->view['product'] = $this->product->loadOneID($id);
+        $product = $this->product->loadOneID($id);
+        if (!$product) {
+            return redirect()->route('admin.product.index')
+                ->with('error', 'Không tìm thấy sản phẩm để chỉnh sửa!');
+        }
+        $this->view['product'] = $product;
         $this->view['categories'] = $this->categories->where('Is_active', 1)->get();
         $this->view['colors'] = $this->colors->all();
         $this->view['capacities'] = $this->capacities->all();
@@ -137,7 +144,7 @@ class ProductController extends Controller
                 $product->variants()->create($variant);
             }
 
-            return redirect()->route('admin.products.index')
+            return redirect()->route('admin.product.index')
                 ->with('success', 'Sản phẩm đã được cập nhật thành công!');
         } catch (\Exception $e) {
             return redirect()->back()
@@ -150,14 +157,102 @@ class ProductController extends Controller
     {
         try {
             $product = $this->product->find($id);
-            $product->variants()->delete(); // Delete all variants
-            $product->deleteData($id);
-
-            return redirect()->route('admin.products.index')
+            if ($product) {
+                // Xóa tất cả các biến thể và ảnh liên quan trước khi xóa sản phẩm
+                foreach ($product->variants as $variant) {
+                    foreach ($variant->images as $image) {
+                        Storage::disk('public')->delete($image->image); // Xóa file ảnh vật lý
+                        $image->delete(); // Xóa bản ghi ảnh
+                    }
+                    $variant->delete(); // Xóa bản ghi biến thể
+                }
+                $product->deleteData($id); // Xóa sản phẩm
+            }
+            return redirect()->route('admin.product.index')
                 ->with('success', 'Sản phẩm đã được xóa thành công!');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
+    }
+
+    // Phương thức để hiển thị trang quản lý ảnh cho một sản phẩm (chứa các biến thể)
+    public function addfiledetail($id)
+    {
+        $product = $this->product->loadOneID($id);
+        if (!$product) {
+            return redirect()->route('admin.product.index')
+                ->with('error', 'Không tìm thấy sản phẩm!');
+        }
+        return view('layouts.admin.product.addfiledetail', compact('product'));
+    }
+
+    // Phương thức để xử lý việc cập nhật/thêm ảnh cho các biến thể
+    public function updateImages(Request $request, $id)
+    {
+        try {
+            $product = $this->product->loadOneID($id);
+            if (!$product) {
+                return redirect()->back()->with('error', 'Không tìm thấy sản phẩm!');
+            }
+
+            $allVariantFiles = $request->file('variants');
+
+            // Đảm bảo $allVariantFiles là một mảng hoặc đối tượng có thể lặp, nếu không thì là mảng rỗng.
+            $allVariantFiles = is_array($allVariantFiles) || is_object($allVariantFiles) ? $allVariantFiles : [];
+
+            foreach ($allVariantFiles as $variantId => $variantData) {
+                // Đảm bảo $variantData là một mảng và chứa key 'images'
+                if (!is_array($variantData) || !isset($variantData['images'])) {
+                    continue; // Bỏ qua nếu dữ liệu biến thể không hợp lệ hoặc không có key 'images'
+                }
+
+                $rawImages = $variantData['images']; // Lấy giá trị thô của 'images'
+
+                $imagesToProcess = [];
+
+                if ($rawImages instanceof \Illuminate\Http\UploadedFile) {
+                    // Nếu là một đối tượng UploadedFile duy nhất
+                    $imagesToProcess[] = $rawImages;
+                } elseif (is_array($rawImages)) {
+                    // Nếu là một mảng, lọc để chỉ giữ lại các đối tượng UploadedFile hợp lệ
+                    $imagesToProcess = array_filter($rawImages, function ($item) {
+                        return $item instanceof \Illuminate\Http\UploadedFile && $item->isValid();
+                    });
+                }
+                // Nếu $rawImages là null, chuỗi rỗng, hoặc bất kỳ loại không phải file nào khác, $imagesToProcess sẽ vẫn là một mảng rỗng.
+
+                // Chỉ xử lý nếu có ảnh hợp lệ để duyệt
+                if (empty($imagesToProcess)) {
+                    continue;
+                }
+
+                foreach ($imagesToProcess as $image) {
+                    $path = $image->store('products/variants', 'public');
+                    $product->variants()->find($variantId)->images()->create([
+                        'image' => $path,
+                        'variant_id' => $variantId,
+                    ]);
+                }
+            }
+
+            return redirect()->back()->with('success', 'Cập nhật ảnh thành công!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
+    }
+
+    // Phương thức để xử lý việc xóa ảnh của biến thể
+    public function deleteImage($variantId, $imageId)
+    {
+        try {
+            $image = ImageVariant::findOrFail($imageId);
+            Storage::disk('public')->delete($image->image); // Đảm bảo dùng $image->image
+            $image->delete();
+            
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 }
