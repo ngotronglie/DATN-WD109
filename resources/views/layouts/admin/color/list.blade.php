@@ -163,19 +163,27 @@
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             Swal.fire({
-                title: 'Bạn có chắc chắn muốn xóa?',
-                text: 'Dữ liệu đã xóa không thể khôi phục!',
-                icon: 'warning',
+                html: '<div class="mt-3">' +
+                    '<lord-icon src="https://cdn.lordicon.com/gsqxdxog.json" trigger="loop" colors="primary:#f7b84b,secondary:#f06548" style="width:100px;height:100px"></lord-icon>' +
+                    '<div class="mt-4 pt-2 fs-15">' +
+                    '<h4>Xác nhận xóa!</h4>' +
+                    '<p class="text-muted mx-4 mb-0">Bạn có chắc chắn muốn xóa mục này?<br>Dữ liệu đã xóa không thể khôi phục!</p>' +
+                    '</div>' +
+                    '</div>',
                 showCancelButton: true,
-                confirmButtonText: 'Có, xóa nó!',
-                cancelButtonText: 'Hủy',
+                confirmButtonText: '<i class="ri-delete-bin-fill align-bottom me-1"></i> Xóa',
+                cancelButtonText: '<i class="ri-close-line align-bottom"></i> Hủy',
+                confirmButtonClass: 'btn btn-danger btn-sm',
+                cancelButtonClass: 'btn btn-light btn-sm',
                 buttonsStyling: false,
-                customClass: {
-                    confirmButton: 'btn btn-primary w-xs me-2',
-                    cancelButton: 'btn btn-danger w-xs',
-                    closeButton: 'btn btn-light position-absolute',
-                },
                 showCloseButton: true,
+                customClass: {
+                    confirmButton: 'btn btn-danger w-xs me-2',
+                    cancelButton: 'btn btn-light w-xs',
+                    closeButton: 'btn btn-light position-absolute',
+                    htmlContainer: 'text-center',
+                    popup: 'swal2-warning'
+                },
             }).then((result) => {
                 if (result.isConfirmed) {
                     this.submit();
