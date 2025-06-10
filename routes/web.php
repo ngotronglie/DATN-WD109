@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\CapacityController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\UserController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -35,6 +36,7 @@ Route::prefix('admin/categories')->name('categories.')->group(function () {
     Route::get('/edit/{id}', [CategoryController::class, 'edit'])->name('edit');
     Route::put('/update/{id}', [CategoryController::class, 'update'])->name('update');
     Route::delete('/delete/{id}', [CategoryController::class, 'destroy'])->name('destroy');
+    Route::post('/categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('toggle-status');
 });
 
 // Routes cho quản lý Voucher
@@ -77,4 +79,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class);
     Route::post('banners/{banner}/status', [\App\Http\Controllers\Admin\BannerController::class, 'updateStatus'])->name('banners.status');
+});
+
+// User Management Routes
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 });
