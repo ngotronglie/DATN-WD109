@@ -36,61 +36,71 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Tên</th>
-                                    <th>Email</th>
-                                    <th>Vai trò</th>
-                                    <th>Trạng thái</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($users as $index => $user)
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead>
                                     <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>{{ $user->name }}</td>
-                                        <td>{{ $user->email }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ $user->role == 'admin' ? 'danger' : 'info' }}">
-                                                {{ $user->role == 'admin' ? 'Admin' : 'User' }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            @if ($user->is_active)
-                                                <span class="badge bg-success">Hoạt động</span>
-                                            @else
-                                                <span class="badge bg-danger">Không hoạt động</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-info btn-sm">
-                                                <i class="fas fa-edit"></i> Sửa
-                                            </a>
-                                            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">
-                                                    <i class="fas fa-trash"></i> Xóa
-                                                </button>
-                                            </form>
-                                        </td>
+                                        <th>ID</th>
+                                        <th>Ảnh đại diện</th>
+                                        <th>Tên</th>
+                                        <th>Email</th>
+                                        <th>Số điện thoại</th>
+                                        <th>Địa chỉ</th>
+                                        <th>Ngày sinh</th>
+                                        <th>Vai trò</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    @if($users instanceof \Illuminate\Pagination\LengthAwarePaginator)
-                    <div class="card-footer">
-                        <div class="d-flex justify-content-center">
-                            <nav aria-label="Page navigation">
-                                {{ $users->links('pagination::bootstrap-4') }}
-                            </nav>
+                                </thead>
+                                <tbody>
+                                    @foreach ($users as $user)
+                                        <tr>
+                                            <td>{{ $user->id }}</td>
+                                            <td>
+                                                @if($user->avatar)
+                                                    <img src="{{ asset($user->avatar) }}" alt="Avatar" class="rounded-circle" width="40" height="40">
+                                                @else
+                                                    <img src="{{ asset('images/default-avatar.png') }}" alt="Default Avatar" class="rounded-circle" width="40" height="40">
+                                                @endif
+                                            </td>
+                                            <td>{{ $user->name }}</td>
+                                            <td>{{ $user->email }}</td>
+                                            <td>{{ $user->phone_number ?? 'N/A' }}</td>
+                                            <td>{{ $user->address ?? 'N/A' }}</td>
+                                            <td>{{ $user->date_of_birth ? date('d/m/Y', strtotime($user->date_of_birth)) : 'N/A' }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ $user->role == 'admin' ? 'danger' : 'info' }}">
+                                                    {{ $user->role == 'admin' ? 'Admin' : 'User' }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ $user->is_active ? 'success' : 'secondary' }}">
+                                                    {{ $user->is_active ? 'Hoạt động' : 'Không hoạt động' }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-2 justify-content-center">
+                                                    <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-info" title="Sửa">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này?')" title="Xóa">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-3">
+                            {{ $users->links() }}
                         </div>
                     </div>
-                    @endif
                 </div>
             </div>
         </div>
@@ -98,38 +108,55 @@
 
     @push('styles')
         <style>
-            .pagination {
-                margin-bottom: 0;
+            .table th, .table td {
+                vertical-align: middle;
             }
-
-            .pagination .page-item .page-link {
-                color: #6c757d;
-                border-color: #dee2e6;
-                padding: 0.5rem 0.75rem;
-                margin: 0 2px;
-                border-radius: 4px;
+            .badge {
+                font-size: 0.85em;
             }
-
-            .pagination .page-item.active .page-link {
-                background-color: #0d6efd;
-                border-color: #0d6efd;
+            .btn-sm {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+                line-height: 1.5;
+                border-radius: 0.2rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+            }
+            .btn-sm i {
+                font-size: 0.875rem;
+                margin: 0;
+            }
+            .gap-2 {
+                gap: 0.5rem;
+            }
+            .d-flex {
+                display: flex;
+            }
+            .justify-content-center {
+                justify-content: center;
+            }
+            .btn-info {
+                background-color: #0dcaf0;
+                border-color: #0dcaf0;
                 color: #fff;
             }
-
-            .pagination .page-item .page-link:hover {
-                background-color: #e9ecef;
-                color: #0d6efd;
+            .btn-info:hover {
+                background-color: #31d2f2;
+                border-color: #25cff2;
+                color: #fff;
             }
-
-            .pagination .page-item.disabled .page-link {
-                color: #6c757d;
-                pointer-events: none;
-                background-color: #fff;
-                border-color: #dee2e6;
+            .btn-danger {
+                background-color: #dc3545;
+                border-color: #dc3545;
+                color: #fff;
             }
-
-            .badge {
-                padding: 0.5em 0.75em;
+            .btn-danger:hover {
+                background-color: #bb2d3b;
+                border-color: #b02a37;
+                color: #fff;
             }
         </style>
     @endpush
