@@ -1,4 +1,4 @@
-     <!-- Vendor Javascript (Require in all Page) -->
+<!-- Vendor Javascript (Require in all Page) -->
      <script src="{{ asset('dashboard/assets/js/vendor.js') }}"></script>
 
      <!-- App Javascript (Require in all Page) -->
@@ -11,3 +11,5 @@
 
      <!-- Dashboard Js -->
      <script src="{{ asset('dashboard/assets/js/pages/dashboard.js') }}"></script>
+
+     @yield('scripts')
