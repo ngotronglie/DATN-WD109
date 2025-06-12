@@ -1,7 +1,7 @@
 @extends('index.admindashboard')
 
 @section('content')
-<div class="page-content">
+<div class="page-content ms-0 px-0">
     <div class="container-fluid">
         <div class="row">
             <div class="col-xl-12">
