@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Client\ClientController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -20,10 +21,32 @@ use App\Http\Controllers\Admin\RoleController;
 |
 */
 
+// Client Routes
+Route::get('/', [ClientController::class, 'index'])->name('home');
+Route::get('/products', [ClientController::class, 'products'])->name('products');
+Route::get('/about', [ClientController::class, 'about'])->name('about');
+Route::get('/contact', [ClientController::class, 'contact'])->name('contact');
+Route::get('/blog', [ClientController::class, 'blog'])->name('blog');
+Route::get('/search', [ClientController::class, 'search'])->name('search');
+Route::get('/category/{slug}', [ClientController::class, 'category'])->name('category');
+Route::get('/product/{slug}', [ClientController::class, 'product'])->name('product');
+Route::get('/blog/{slug}', [ClientController::class, 'post'])->name('post');
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/cart', function () {
+    return view('index.clientdashboard');
+})->name('cart');
+
+Route::get('/wishlist', function () {
+    return view('index.clientdashboard');
+})->name('wishlist');
+
+Route::get('/account', function () {
+    return view('index.clientdashboard');
+})->name('account');
+
+Route::get('/login', function () {
+    return view('index.clientdashboard');
+})->name('login');
 
 //  route admin
 
