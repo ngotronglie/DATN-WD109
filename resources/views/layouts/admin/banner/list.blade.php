@@ -3,14 +3,14 @@
 @section('content')
 <div class="page-content ms-0 px-0">
     <!-- Start Container Fluid -->
-    <div class="container-fluid  " >
+    <div class="container-fluid">
         <div class="row">
             <div class="col-xl-12">
-                <div class="card ">
+                <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="card-title mb-0">Banner Management</h5>
-                            <a href="{{ route('admin.banners.create') }}" class="btn btn-primary">Add New Banner</a>
+                            <h5 class="card-title mb-0">Quản Lý Banner</h5>
+                            <a href="{{ route('admin.banners.create') }}" class="btn btn-primary">Thêm Banner Mới</a>
                         </div>
 
                         @if (session('success'))
@@ -24,13 +24,13 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th scope="col">ID</th>
-                                        <th scope="col">Image</th>
-                                        <th scope="col">Title</th>
-                                        <th scope="col">Description</th>
-                                        <th scope="col">Status</th>
-                                        <th scope="col">Created At</th>
-                                        <th scope="col">Updated At</th>
-                                        <th scope="col">Actions</th>
+                                        <th scope="col">Hình Ảnh</th>
+                                        <th scope="col">Tiêu Đề</th>
+                                        <th scope="col">Mô Tả</th>
+                                        <th scope="col">Trạng Thái</th>
+                                        <th scope="col">Ngày Tạo</th>
+                                        <th scope="col">Ngày Cập Nhật</th>
+                                        <th scope="col">Thao Tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -45,25 +45,25 @@
                                         <td>{{ $banner->title }}</td>
                                         <td>{{ Str::limit($banner->description, 50) }}</td>
                                         <td>
-                                             @if($banner->is_active)
-                                                  <span class="badge bg-success">Active</span>
-                                             @else
-                                                  <span class="badge bg-secondary">Inactive</span>
-                                             @endif
-                                             </td>
+                                            @if($banner->is_active)
+                                                <span class="badge bg-success">Đang hoạt động</span>
+                                            @else
+                                                <span class="badge bg-secondary">Không hoạt động</span>
+                                            @endif
+                                        </td>
                                         <td>{{ $banner->created_at ? $banner->created_at->format('d/m/Y H:i') : '' }}</td>
                                         <td>{{ $banner->updated_at ? $banner->updated_at->format('d/m/Y H:i') : '' }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
                                                 <a href="{{ route('admin.banners.edit', $banner) }}" 
-                                                   class="btn btn-primary btn-sm">Edit</a>
+                                                   class="btn btn-primary btn-sm">Sửa</a>
                                                 <form action="{{ route('admin.banners.destroy', $banner) }}" 
                                                       method="POST" 
                                                       class="d-inline"
-                                                      onsubmit="return confirm('Are you sure you want to delete this banner?');">
+                                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa banner này?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                    <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
                                                 </form>
                                             </div>
                                         </td>
@@ -99,18 +99,21 @@ function updateStatus(id, status) {
     .then(data => {
         if (data.success) {
             // Hiển thị thông báo thành công
-            toastr.success('Status updated successfully');
+            toastr.success('Cập nhật trạng thái thành công');
+            // Cập nhật label
+            const label = checkbox.nextElementSibling;
+            label.textContent = status ? 'Đang hoạt động' : 'Không hoạt động';
         } else {
             // Nếu có lỗi, revert checkbox về trạng thái cũ
             checkbox.checked = !originalState;
-            toastr.error(data.message || 'Failed to update status');
+            toastr.error(data.message || 'Cập nhật trạng thái thất bại');
         }
     })
     .catch(error => {
         // Nếu có lỗi, revert checkbox về trạng thái cũ
         checkbox.checked = !originalState;
         console.error('Error:', error);
-        toastr.error('An error occurred while updating status');
+        toastr.error('Đã xảy ra lỗi khi cập nhật trạng thái');
     })
     .finally(() => {
         // Enable lại checkbox
