@@ -12,7 +12,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::paginate(10);
+        $users = User::with('role')->paginate(10); // load role nếu có quan hệ
         return view('admin.users.index', compact('users'));
     }
 
@@ -34,11 +34,17 @@ class UserController extends Controller
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
+        // ánh xạ vai trò
+        $roleMap = [
+            'user' => 1,
+            'admin' => 2,
+        ];
+
         $data = [
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'role_id' => $roleMap[$request->role],
             'is_active' => true,
             'address' => $request->address,
             'phone_number' => $request->phone_number,
@@ -76,10 +82,15 @@ class UserController extends Controller
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
+        $roleMap = [
+            'user' => 1,
+            'admin' => 2,
+        ];
+
         $data = [
             'name' => $request->name,
             'email' => $request->email,
-            'role' => $request->role,
+            'role_id' => $roleMap[$request->role],
             'address' => $request->address,
             'phone_number' => $request->phone_number,
             'date_of_birth' => $request->date_of_birth,
@@ -90,11 +101,10 @@ class UserController extends Controller
         }
 
         if ($request->hasFile('avatar')) {
-            // Xóa ảnh cũ nếu tồn tại
             if ($user->avatar && file_exists(public_path($user->avatar))) {
                 unlink(public_path($user->avatar));
             }
-            
+
             $avatar = $request->file('avatar');
             $avatarName = time() . '.' . $avatar->getClientOriginalExtension();
             $avatar->move(public_path('uploads/avatars'), $avatarName);
@@ -125,4 +135,4 @@ class UserController extends Controller
             'message' => 'Trạng thái người dùng đã được cập nhật.'
         ]);
     }
-} 
+}

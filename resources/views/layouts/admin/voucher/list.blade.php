@@ -1,4 +1,4 @@
-@extends('layouts.admin.index')
+@extends('index.admindashboard')
 
 @section('content')
 <div class="container-fluid">
@@ -9,7 +9,6 @@
                 <h4 class="mb-sm-0">Quản lý mã giảm giá</h4>
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                         <li class="breadcrumb-item active">Mã giảm giá</li>
                     </ol>
                 </div>

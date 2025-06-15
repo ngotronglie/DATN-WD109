@@ -1,4 +1,5 @@
-@extends('layouts.admin.index')
+@extends('layouts.admin.admindashboard')
+
 
 @section('css')
 <style>
@@ -32,7 +33,7 @@
                 <h4 class="mb-sm-0">Quản lý màu sắc</h4>
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin') }}">Dashboard</a></li>
                         <li class="breadcrumb-item active">Màu sắc</li>
                     </ol>
                 </div>

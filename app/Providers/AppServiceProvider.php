@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Validator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Tắt validation messages
+        Validator::extend('custom_validation', function ($attribute, $value, $parameters, $validator) {
+            return true;
+        });
+
+        // Tắt các thông báo lỗi cụ thể
+        Validator::replacer('custom_validation', function ($message, $attribute, $rule, $parameters) {
+            return '';
+        });
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VoucherController;
@@ -7,9 +8,21 @@ use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\CapacityController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Client\ClientController;
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -51,8 +64,8 @@ Route::get('/login', function () {
 //  route admin
 
 // Trang dashboard admin
-Route::view('/admin', 'layouts.admin.index')->name('admin.dashboard');
 
+Route::get('/admin', [DashboardController::class, 'index'])->name('admin.dashboard');
 // Nhóm routes cho quản lý categories
 Route::prefix('admin/categories')->name('categories.')->group(function () {
     Route::get('/', [CategoryController::class, 'index'])->name('index');
@@ -120,3 +133,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 });
+
+
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
