@@ -11,7 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use App\Models\ImageVariant;
+use App\Models\ProductVariant;
 
 class ProductController extends Controller
 {
@@ -69,6 +71,9 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         try {
+            DB::beginTransaction();
+
+            // Validate dữ liệu cơ bản của sản phẩm
             $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
@@ -82,19 +87,65 @@ class ProductController extends Controller
                 'variants.*.quantity' => 'required|integer|min:0',
             ]);
 
-            $data = $request->all();
-            $data['slug'] = Str::slug($request->name);
+            // Tạo sản phẩm mới
+            $product = new Product();
+            $product->name = $request->name;
+            $product->description = $request->description;
+            $product->slug = Str::slug($request->name);
+            $product->is_active = $request->is_active;
+            $product->categories_id = $request->categories_id;
+            $product->view_count = 0;
+            $product->save();
 
-            $product = $this->product->insertData($data);
+            // Tạo các biến thể sản phẩm
+            foreach ($request->variants as $index => $variantData) {
+                // Tạo biến thể
+                $variant = new ProductVariant();
+                $variant->product_id = $product->id;
+                $variant->color_id = $variantData['color_id'];
+                $variant->capacity_id = $variantData['capacity_id'];
+                $variant->price = $variantData['price'];
+                $variant->price_sale = $variantData['price_sale'] ?? null;
+                $variant->quantity = $variantData['quantity'];
+                $variant->save();
 
-            // Create variants
-            foreach ($request->variants as $variant) {
-                $product->variants()->create($variant);
+                // Xử lý upload ảnh cho biến thể
+                if ($request->hasFile("variants.{$index}.images")) {
+                    $images = $request->file("variants.{$index}.images");
+
+                    // Nếu chỉ có một ảnh, chuyển thành mảng
+                    if (!is_array($images)) {
+                        $images = [$images];
+                    }
+
+                    foreach ($images as $image) {
+                        if ($image && $image->isValid()) {
+                            // Tạo tên file duy nhất
+                            $extension = $image->getClientOriginalExtension();
+                            $fileName = 'variant_' . $variant->id . '_' . time() . '_' . uniqid() . '.' . $extension;
+
+                            // Lưu ảnh vào storage
+                            $path = $image->storeAs('products/variants', $fileName, 'public');
+
+                            if ($path) {
+                                // Tạo bản ghi ảnh trong database
+                                $imageVariant = new ImageVariant();
+                                $imageVariant->variant_id = $variant->id;
+                                $imageVariant->image = $path;
+                                $imageVariant->save();
+                            }
+                        }
+                    }
+                }
             }
+
+            DB::commit();
 
             return redirect()->route('admin.product.index')
                 ->with('success', 'Sản phẩm đã được thêm thành công!');
         } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Lỗi khi tạo sản phẩm: ' . $e->getMessage());
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
@@ -191,48 +242,40 @@ class ProductController extends Controller
     public function updateImages(Request $request, $id)
     {
         try {
+            $request->validate([
+                'variants.*.images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
+
             $product = $this->product->loadOneID($id);
             if (!$product) {
                 return redirect()->back()->with('error', 'Không tìm thấy sản phẩm!');
             }
 
-            $allVariantFiles = $request->file('variants');
+            if ($request->hasFile('variants')) {
+                foreach ($request->file('variants') as $variantId => $variantData) {
+                    if (!isset($variantData['images'])) {
+                        continue;
+                    }
 
-            // Đảm bảo $allVariantFiles là một mảng hoặc đối tượng có thể lặp, nếu không thì là mảng rỗng.
-            $allVariantFiles = is_array($allVariantFiles) || is_object($allVariantFiles) ? $allVariantFiles : [];
+                    $variant = $product->variants()->find($variantId);
+                    if (!$variant) {
+                        continue;
+                    }
 
-            foreach ($allVariantFiles as $variantId => $variantData) {
-                // Đảm bảo $variantData là một mảng và chứa key 'images'
-                if (!is_array($variantData) || !isset($variantData['images'])) {
-                    continue; // Bỏ qua nếu dữ liệu biến thể không hợp lệ hoặc không có key 'images'
-                }
+                    // Xử lý nhiều ảnh cho mỗi biến thể
+                    if (is_array($variantData['images'])) {
+                        foreach ($variantData['images'] as $image) {
+                            if ($image->isValid()) {
+                                $path = $image->store('products/variants', 'public');
 
-                $rawImages = $variantData['images']; // Lấy giá trị thô của 'images'
-
-                $imagesToProcess = [];
-
-                if ($rawImages instanceof \Illuminate\Http\UploadedFile) {
-                    // Nếu là một đối tượng UploadedFile duy nhất
-                    $imagesToProcess[] = $rawImages;
-                } elseif (is_array($rawImages)) {
-                    // Nếu là một mảng, lọc để chỉ giữ lại các đối tượng UploadedFile hợp lệ
-                    $imagesToProcess = array_filter($rawImages, function ($item) {
-                        return $item instanceof \Illuminate\Http\UploadedFile && $item->isValid();
-                    });
-                }
-                // Nếu $rawImages là null, chuỗi rỗng, hoặc bất kỳ loại không phải file nào khác, $imagesToProcess sẽ vẫn là một mảng rỗng.
-
-                // Chỉ xử lý nếu có ảnh hợp lệ để duyệt
-                if (empty($imagesToProcess)) {
-                    continue;
-                }
-
-                foreach ($imagesToProcess as $image) {
-                    $path = $image->store('products/variants', 'public');
-                    $product->variants()->find($variantId)->images()->create([
-                        'image' => $path,
-                        'variant_id' => $variantId,
-                    ]);
+                                // Tạo bản ghi mới trong bảng image_variants
+                                $variant->images()->create([
+                                    'image' => $path,
+                                    'variant_id' => $variantId
+                                ]);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -249,7 +292,7 @@ class ProductController extends Controller
             $image = ImageVariant::findOrFail($imageId);
             Storage::disk('public')->delete($image->image); // Đảm bảo dùng $image->image
             $image->delete();
-            
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

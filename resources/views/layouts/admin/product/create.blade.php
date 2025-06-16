@@ -103,6 +103,7 @@
                                                     <th>Giá <span class="text-danger">*</span></th>
                                                     <th>Giá khuyến mãi</th>
                                                     <th>Số lượng <span class="text-danger">*</span></th>
+                                                    <th>Ảnh sản phẩm</th>
                                                     <th>Thao tác</th>
                                                 </tr>
                                             </thead>
@@ -136,6 +137,70 @@ document.addEventListener('DOMContentLoaded', function() {
     const capacitySelect = document.getElementById('capacity-select');
     const variantsTable = document.getElementById('variants-table').getElementsByTagName('tbody')[0];
     const form = document.getElementById('productForm');
+
+    // Thêm event listener cho nút thêm ảnh
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('add-image-btn')) {
+            const variantIndex = e.target.getAttribute('data-variant-index');
+            const fileInput = document.querySelector(`input[name="variants[${variantIndex}][images][]"]`);
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+    });
+
+    // Hàm xử lý upload ảnh
+    window.handleImageUpload = function(input, variantIndex) {
+        const previewContainer = document.getElementById(`preview-${variantIndex}`);
+        if (!previewContainer) return;
+
+        if (input.files && input.files.length > 0) {
+            Array.from(input.files).forEach((file, index) => {
+                if (!file.type.startsWith('image/')) {
+                    alert('Vui lòng chỉ chọn file ảnh!');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'image-preview';
+                    previewDiv.innerHTML = `
+                        <img src="${e.target.result}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                        <button type="button" class="btn btn-danger btn-sm mt-1 remove-image"
+                                onclick="removeImage(this, ${variantIndex}, ${previewContainer.children.length})">
+                            <svg width="18px" height="18px" viewBox="0 0 24.00 24.00" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M10 12V17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M14 12V17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M4 7H20" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6 10V18C6 19.6569 7.34315 21 9 21H15C16.6569 21 18 19.6569 18 18V10" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7H9V5Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                        </button>
+                    `;
+                    previewContainer.appendChild(previewDiv);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    };
+
+    // Hàm xóa ảnh
+    window.removeImage = function(button, variantIndex, imageIndex) {
+        const previewDiv = button.closest('.image-preview');
+        if (previewDiv) {
+            previewDiv.remove();
+        }
+
+        // Update the FileList in the input
+        const input = document.querySelector(`input[name="variants[${variantIndex}][images][]"]`);
+        if (input && input.files) {
+            const dt = new DataTransfer();
+            const files = input.files;
+
+            for (let i = 0; i < files.length; i++) {
+                if (i !== imageIndex) {
+                    dt.items.add(files[i]);
+                }
+            }
+
+            input.files = dt.files;
+        }
+    };
 
     // Hàm tạo các biến thể
     function generateVariants() {
@@ -175,6 +240,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     </td>
                     <td>
                         <input type="number" class="form-control" name="variants[${variantIndex}][quantity]" required min="0">
+                    </td>
+                    <td>
+                        <div class="variant-images">
+                            <div id="preview-${variantIndex}" class="image-preview-container"></div>
+                            <input type="file" name="variants[${variantIndex}][images][]"
+                                   class="form-control variant-image-input" multiple
+                                   accept="image/*" style="display: none;"
+                                   onchange="handleImageUpload(this, ${variantIndex})">
+                            <button type="button" class="btn btn-primary btn-sm mt-2 add-image-btn"
+                                    data-variant-index="${variantIndex}">
+                                Thêm ảnh
+                            </button>
+                        </div>
                     </td>
                     <td>
                         <button type="button" class="btn btn-danger btn-sm delete-variant">
@@ -259,82 +337,31 @@ document.addEventListener('DOMContentLoaded', function() {
         form.submit();
     });
 });
-
-// Hàm xử lý upload ảnh
-function handleImageUpload(input, variantIndex) {
-    const previewContainer = document.getElementById(`preview-${variantIndex}`);
-
-    if (input.files) {
-        Array.from(input.files).forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const previewDiv = document.createElement('div');
-                previewDiv.className = 'image-preview';
-                previewDiv.innerHTML = `
-                    <img src="${e.target.result}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
-                    <button type="button" class="btn btn-danger btn-sm mt-1" onclick="removeImage(this, ${variantIndex}, ${previewContainer.children.length})">
-                        <svg width="18px" height="18px" viewBox="0 0 24.00 24.00" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M10 12V17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M14 12V17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M4 7H20" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6 10V18C6 19.6569 7.34315 21 9 21H15C16.6569 21 18 19.6569 18 18V10" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7H9V5Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
-                    </button>
-                `;
-                previewContainer.appendChild(previewDiv);
-            }
-            reader.readAsDataURL(file);
-        });
-    }
-}
-
-function removeImage(button, variantIndex, imageIndex) {
-    const previewDiv = button.closest('.image-preview');
-    previewDiv.remove();
-
-    // Update the FileList in the input
-    const input = document.querySelector(`input[name="variants[${variantIndex}][images][]"]`);
-    const dt = new DataTransfer();
-    const files = input.files;
-
-    for (let i = 0; i < files.length; i++) {
-        if (i !== imageIndex) {
-            dt.items.add(files[i]);
-        }
-    }
-
-    input.files = dt.files;
-}
-
-// Thêm hàm để thêm ảnh mới
-function addMoreImages(variantIndex) {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.name = `variants[${variantIndex}][images][]`;
-    input.className = 'form-control variant-image-input';
-    input.multiple = true;
-    input.accept = 'image/*';
-    input.style.display = 'none';
-    input.onchange = function() {
-        handleImageUpload(this, variantIndex);
-    };
-    document.body.appendChild(input);
-    input.click();
-}
 </script>
 
 <style>
 .variant-images {
     position: relative;
+    min-height: 100px;
 }
 .image-preview-container {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 10px;
+    min-height: 50px;
 }
 .image-preview {
     position: relative;
     display: inline-block;
+    margin: 5px;
 }
 .image-preview img {
     border: 1px solid #ddd;
     border-radius: 4px;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
 }
 .image-preview button {
     position: absolute;
@@ -342,6 +369,10 @@ function addMoreImages(variantIndex) {
     right: -10px;
     padding: 2px 6px;
     font-size: 12px;
+    z-index: 1;
+}
+.add-image-btn {
+    margin-top: 10px;
 }
 </style>
 @endsection
