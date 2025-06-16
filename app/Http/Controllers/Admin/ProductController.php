@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\ImageVariant;
 use App\Models\ProductVariant;
+use App\Models\Category;
 
 class ProductController extends Controller
 {
@@ -159,53 +160,133 @@ class ProductController extends Controller
 
     public function edit($id)
     {
-        $product = $this->product->loadOneID($id);
+        $product = DB::table('product_variants')
+            ->join('products', 'product_variants.product_id', '=', 'products.id')
+            ->join('colors', 'product_variants.color_id', '=', 'colors.id')
+            ->join('categories', 'products.categories_id', '=', 'categories.id')
+            ->join('capacities', 'product_variants.capacity_id', '=', 'capacities.id')
+            ->leftJoin('image_variants', 'product_variants.id', '=', 'image_variants.variant_id')
+            ->where('product_variants.id', $id)
+            ->select([
+                'product_variants.id',
+                'product_variants.product_id',
+                'product_variants.color_id',
+                'product_variants.capacity_id',
+                'product_variants.price',
+                'product_variants.price_sale',
+                'product_variants.quantity',
+                'products.name as product_name',
+                'products.description',
+                'products.is_active',
+                'products.view_count',
+                'products.categories_id',
+                'colors.name as color_name',
+                'capacities.name as capacity_name',
+                'categories.id as category_id',
+                'categories.Name as category_name',
+                DB::raw('GROUP_CONCAT(DISTINCT image_variants.id, ":", image_variants.image) as images')
+            ])
+            ->groupBy('product_variants.id', 'product_variants.product_id', 'product_variants.color_id',
+                     'product_variants.capacity_id', 'product_variants.price', 'product_variants.price_sale',
+                     'product_variants.quantity', 'products.name', 'products.description', 'products.is_active',
+                     'products.view_count', 'products.categories_id', 'colors.name', 'capacities.name',
+                     'categories.id', 'categories.Name')
+            ->first();
+
         if (!$product) {
-            return redirect()->route('admin.product.index')
-                ->with('error', 'Không tìm thấy sản phẩm để chỉnh sửa!');
+            return redirect()->route('admin.products.index')->with('error', 'Không tìm thấy sản phẩm');
         }
-        $this->view['product'] = $product;
-        $this->view['categories'] = $this->categories->where('Is_active', 1)->get();
-        $this->view['colors'] = $this->colors->all();
-        $this->view['capacities'] = $this->capacities->all();
-        return view('layouts.admin.product.update', $this->view);
+
+        // Lấy danh mục đang active
+        $categories = Category::where('Is_active', 1)->get();
+        $colors = Color::all();
+        $capacities = Capacity::all();
+
+        // Xử lý chuỗi ảnh để tạo mảng id và path
+        $images = [];
+        if ($product->images) {
+            foreach (explode(',', $product->images) as $image) {
+                list($imageId, $imagePath) = explode(':', $image);
+                $images[] = [
+                    'id' => $imageId,
+                    'path' => $imagePath
+                ];
+            }
+        }
+        $product->images = $images;
+
+        return view('layouts.admin.product.edit', compact('product', 'categories', 'colors', 'capacities'));
     }
 
     public function update(Request $request, $id)
     {
         try {
+            DB::beginTransaction();
+
+            $variant = ProductVariant::findOrFail($id);
+            $product = Product::findOrFail($variant->product_id);
+
+            // Validate request
             $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'categories_id' => 'required|exists:categories,ID',
-                'is_active' => 'required|boolean',
-                'variants' => 'required|array|min:1',
-                'variants.*.id' => 'nullable|exists:product_variants,id',
-                'variants.*.color_id' => 'required|exists:colors,id',
-                'variants.*.capacity_id' => 'required|exists:capacities,id',
-                'variants.*.price' => 'required|numeric|min:0',
-                'variants.*.price_sale' => 'nullable|numeric|min:0',
-                'variants.*.quantity' => 'required|integer|min:0',
+                'category_id' => 'required|exists:categories,id',
+                'color_id' => 'required|exists:colors,id',
+                'capacity_id' => 'required|exists:capacities,id',
+                'price' => 'required|numeric|min:0',
+                'price_sale' => 'nullable|numeric|min:0|lt:price',
+                'quantity' => 'required|integer|min:0',
+                'is_active' => 'boolean',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'delete_images.*' => 'nullable|exists:image_variants,id'
             ]);
 
-            $data = $request->all();
-            $data['slug'] = Str::slug($request->name);
+            // Update product
+            $product->update([
+                'name' => $request->name,
+                'description' => $request->description,
+                'categories_id' => $request->category_id,
+                'is_active' => $request->is_active ?? false,
+            ]);
 
-            $product = $this->product->find($id);
-            $product->updateData($data, $id);
+            // Update variant
+            $variant->update([
+                'color_id' => $request->color_id,
+                'capacity_id' => $request->capacity_id,
+                'price' => $request->price,
+                'price_sale' => $request->price_sale,
+                'quantity' => $request->quantity,
+            ]);
 
-            // Update variants
-            $product->variants()->delete(); // Delete old variants
-            foreach ($request->variants as $variant) {
-                $product->variants()->create($variant);
+            // Handle image deletion
+            if ($request->has('delete_images')) {
+                foreach ($request->delete_images as $imageId) {
+                    $image = ImageVariant::find($imageId);
+                    if ($image) {
+                        Storage::delete('public/' . $image->image);
+                        $image->delete();
+                    }
+                }
             }
 
-            return redirect()->route('admin.product.index')
-                ->with('success', 'Sản phẩm đã được cập nhật thành công!');
+            // Handle new image uploads
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('products', 'public');
+                    ImageVariant::create([
+                        'variant_id' => $variant->id,
+                        'image' => $path
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return redirect()->route('admin.products.index')->with('success', 'Cập nhật sản phẩm thành công');
+
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Error updating product: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật sản phẩm');
         }
     }
 
