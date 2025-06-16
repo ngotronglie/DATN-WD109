@@ -43,6 +43,7 @@ class ProductController extends Controller
             ->join('colors', 'product_variants.color_id', '=', 'colors.id')
             ->join('categories', 'products.categories_id', '=', 'categories.id')
             ->join('capacities', 'product_variants.capacity_id', '=', 'capacities.id')
+            ->leftJoin('image_variants', 'product_variants.id', '=', 'image_variants.variant_id')
             ->select([
                 'product_variants.id',
                 'product_variants.price',
@@ -54,8 +55,12 @@ class ProductController extends Controller
                 'colors.name as color_name',
                 'capacities.name as capacity_name',
                 'categories.Name as category_name',
+                DB::raw('GROUP_CONCAT(image_variants.image) as images')
             ])
-            ->paginate(5); // <-- 10 dòng mỗi trang
+            ->groupBy('product_variants.id', 'product_variants.price', 'product_variants.price_sale',
+                     'product_variants.quantity', 'products.name', 'products.is_active',
+                     'products.view_count', 'colors.name', 'capacities.name', 'categories.Name')
+            ->paginate(10);
 
         return view('layouts.admin.product.list', compact('products'));
     }

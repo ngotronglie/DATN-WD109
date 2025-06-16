@@ -33,58 +33,84 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover table-striped table-bordered text-center">
+                        <table class="table table-hover table-striped table-bordered">
                             <thead>
                                 <tr>
                                     <th class="text-center">ID</th>
+                                    <th class="text-center">Ảnh</th>
                                     <th class="text-center">Tên sản phẩm</th>
                                     <th class="text-center">Danh mục</th>
                                     <th class="text-center">Màu sắc</th>
                                     <th class="text-center">Dung lượng</th>
                                     <th class="text-center">Giá</th>
-                                    <th class="text-center">Giá KM</th>
+                                    <th class="text-center">Giá khuyến mãi</th>
                                     <th class="text-center">Số lượng</th>
                                     <th class="text-center">Trạng thái</th>
                                     <th class="text-center">Lượt xem</th>
-                                    <th class="text-center">Ảnh</th>
                                     <th class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
-                            @foreach($products as $product)
+                            @foreach($products as $variant)
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $product->product_name }}</td>
-                                    <td>{{ $product->category_name }}</td>
-                                    <td>{{ $product->color_name }}</td>
-                                    <td>{{ $product->capacity_name }}</td>
-                                    <td>{{ number_format($product->price, 0, ',', '.') }} VNĐ</td>
-                                    <td>{{ number_format($product->price_sale, 0, ',', '.') }} VNĐ</td>
-                                    <td>{{ $product->quantity }}</td>
-                                    <td>
-                                        @if($product->is_active)
+                                    <td class="text-center">{{ $variant->id }}</td>
+                                    <td class="text-center">
+                                        <div class="variant-images">
+                                            @if($variant->images)
+                                                @foreach(explode(',', $variant->images) as $image)
+                                                    <img src="{{ asset('storage/' . $image) }}"
+                                                         alt="Product Image"
+                                                         class="product-image"
+                                                         data-toggle="tooltip"
+                                                         title="Click để xem ảnh lớn">
+                                                @endforeach
+                                            @else
+                                                <span class="text-muted">Không có ảnh</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>{{ $variant->product_name }}</td>
+                                    <td>{{ $variant->category_name }}</td>
+                                    <td>{{ $variant->color_name }}</td>
+                                    <td>{{ $variant->capacity_name }}</td>
+                                    <td class="text-center">{{ number_format($variant->price, 0, ',', '.') }} VNĐ</td>
+                                    <td class="text-center">
+                                        @if($variant->price_sale)
+                                            <span class="text-danger">{{ number_format($variant->price_sale, 0, ',', '.') }} VNĐ</span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td class="text-center">{{ $variant->quantity }}</td>
+                                    <td class="text-center">
+                                        @if($variant->is_active)
                                             <span class="badge bg-success">Active</span>
                                         @else
                                             <span class="badge bg-danger">Inactive</span>
                                         @endif
                                     </td>
-                                    <td>{{ $product->view_count }}</td>
-                                    <td>
-                                        <a href="{{ route('admin.products.addfiledetail', $product->id) }}" class="btn btn-info btn-sm">
-                                            Ảnh
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-warning btn-sm">
-                                             Sửa
-                                        </a>
-                                        <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                 Xóa
-                                            </button>
-                                        </form>
+                                    <td class="text-center">{{ $variant->view_count }}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <a href="{{ route('admin.products.edit', $variant->id) }}"
+                                               class="btn btn-warning btn-sm">
+                                                <i class="fas fa-edit"></i> Sửa
+                                            </a>
+                                            <a href="{{ route('admin.products.addfiledetail', $variant->id) }}"
+                                               class="btn btn-info btn-sm">
+                                                <i class="fas fa-images"></i> Ảnh
+                                            </a>
+                                            <form action="{{ route('admin.products.destroy', $variant->id) }}"
+                                                  method="POST"
+                                                  style="display:inline;"
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa biến thể sản phẩm này?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-trash"></i> Xóa
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -100,4 +126,63 @@
         </div>
     </div>
 </div>
+
+<!-- Modal for image preview -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" role="dialog" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewModalLabel">Xem ảnh sản phẩm</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" id="previewImage" class="img-fluid" alt="Preview">
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn-group {
+    display: flex;
+    gap: 5px;
+}
+.variant-images {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.product-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    border: 1px solid #ddd;
+}
+.product-image:hover {
+    transform: scale(1.1);
+    border-color: #007bff;
+}
+</style>
+
+@push('scripts')
+<script>
+$(document).ready(function(){
+    // Initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // Handle image click for preview
+    $('.product-image').click(function(){
+        var imageSrc = $(this).attr('src');
+        $('#previewImage').attr('src', imageSrc);
+        $('#imagePreviewModal').modal('show');
+    });
+});
+</script>
+@endpush
 @endsection
