@@ -120,3 +120,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 });
+
+// test error page
+Route::get('/test-404', function () {
+    abort(404);
+});
+
+Route::get('/admin/test-404', function () {
+    abort(404);
+});
+
+Route::get('/test-403', function () {
+    abort(403);
+});
+
+Route::get('/admin/test-403', function () {
+    abort(403);
+});

@@ -11,6 +11,5 @@ class Capacity extends Model
 
     protected $fillable = [
         'name',
-        'value',
     ];
 }

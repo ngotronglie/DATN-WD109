@@ -77,7 +77,6 @@
                                     </th>
                                     <th>ID</th>
                                     <th>Tên dung lượng</th>
-                                    <th>Giá trị</th>
                                     <th>Ngày tạo</th>
                                     <th>Thao tác</th>
                                 </tr>
@@ -92,7 +91,6 @@
                                     </th>
                                     <td>{{ $capacity->id }}</td>
                                     <td>{{ $capacity->name }}</td>
-                                    <td>{{ $capacity->value }}</td>
                                     <td>{{ $capacity->created_at ? $capacity->created_at->format('d/m/Y H:i:s') : '' }}</td>
                                     <td>
                                         <div class="d-flex gap-2">
