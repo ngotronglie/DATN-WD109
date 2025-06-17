@@ -96,10 +96,7 @@
                                                class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i> Sửa
                                             </a>
-                                            <a href="{{ route('admin.products.addfiledetail', $variant->id) }}"
-                                               class="btn btn-info btn-sm">
-                                                <i class="fas fa-images"></i> Ảnh
-                                            </a>
+
                                             <form action="{{ route('admin.products.destroy', $variant->id) }}"
                                                   method="POST"
                                                   style="display:inline;"

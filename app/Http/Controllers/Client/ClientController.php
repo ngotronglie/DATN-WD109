@@ -13,19 +13,7 @@ class ClientController extends Controller
 {
     public function index()
     {
-        $banners = Banner::where('is_active', 1)->get();
-        $categories = Categories::with('children')->whereNull('parent_id')->get();
-        $featuredProducts = Product::where('is_active', 1)->take(8)->get();
-        $newProducts = Product::where('is_active', 1)->latest()->take(8)->get();
-        $bestSellers = Product::where('is_active', 1)->latest()->take(8)->get();
-
-        return view('index.clientdashboard', compact(
-            'banners',
-            'categories',
-            'featuredProducts',
-            'newProducts',
-            'bestSellers'
-        ));
+        return view('layouts.user.main');
     }
 
     public function products()

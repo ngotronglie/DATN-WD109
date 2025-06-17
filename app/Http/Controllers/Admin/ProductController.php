@@ -263,7 +263,10 @@ class ProductController extends Controller
                 foreach ($request->delete_images as $imageId) {
                     $image = ImageVariant::find($imageId);
                     if ($image) {
-                        Storage::delete('public/' . $image->image);
+                        // Xóa file vật lý nếu tồn tại
+                        if (\Storage::disk('public')->exists($image->image)) {
+                            \Storage::disk('public')->delete($image->image);
+                        }
                         $image->delete();
                     }
                 }

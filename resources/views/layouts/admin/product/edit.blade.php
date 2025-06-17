@@ -129,7 +129,7 @@
                                     <label class="custom-control-label" for="is_active">Kích hoạt</label>
                                 </div>
                             </div>
-
+                            
                             <div class="form-group">
                                 <label>Ảnh sản phẩm</label>
                                 <div class="current-images" id="imageDropZone">
