@@ -45,9 +45,12 @@ Route::get('/account', function () {
 })->name('account');
 
 Route::get('/login', function () {
-    return view('index.clientdashboard');
+    return view('layouts.user.login');
 })->name('login');
 
+Route::get('/register', function () {
+    return view('layouts.user.register');
+})->name('register');
 //  route admin
 
 // Trang dashboard admin

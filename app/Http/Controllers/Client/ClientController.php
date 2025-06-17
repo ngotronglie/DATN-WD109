@@ -21,7 +21,7 @@ class ClientController extends Controller
         $categories = Categories::with('children')->whereNull('parent_id')->get();
         $products = Product::where('is_active', 1)->paginate(12);
 
-        return view('client.products', compact('categories', 'products'));
+        return view('client.products');
     }
 
     public function category($slug)
@@ -32,65 +32,36 @@ class ClientController extends Controller
             ->where('category_id', $category->id)
             ->paginate(12);
 
-        return view('client.category', compact('category', 'categories', 'products'));
+        return view('client.category');
     }
 
     public function product($slug)
     {
-        $product = Product::where('slug', $slug)->firstOrFail();
-        $categories = Categories::with('children')->whereNull('parent_id')->get();
-        $relatedProducts = Product::where('is_active', 1)
-            ->where('category_id', $product->category_id)
-            ->where('id', '!=', $product->id)
-            ->take(4)
-            ->get();
-
-        return view('client.product', compact('product', 'categories', 'relatedProducts'));
+        return view('client.product');
     }
 
     public function about()
     {
-        $categories = Categories::with('children')->whereNull('parent_id')->get();
-        return view('client.about', compact('categories'));
+        return view('client.about');
     }
 
     public function contact()
     {
-        $categories = Categories::with('children')->whereNull('parent_id')->get();
-        return view('client.contact', compact('categories'));
+        return view('client.contact');
     }
 
     public function blog()
     {
-        $categories = Categories::with('children')->whereNull('parent_id')->get();
-        $posts = Blog::where('is_active', 1)->paginate(6);
-        return view('client.blog', compact('categories', 'posts'));
+        return view('client.blog');
     }
 
     public function post($slug)
     {
-        $categories = Categories::with('children')->whereNull('parent_id')->get();
-        $post = Blog::where('slug', $slug)->firstOrFail();
-        $recentPosts = Blog::where('is_active', 1)
-            ->where('id', '!=', $post->id)
-            ->latest()
-            ->take(3)
-            ->get();
 
-        return view('client.post', compact('categories', 'post', 'recentPosts'));
+        return view('client.post');
     }
-
     public function search(Request $request)
     {
-        $categories = Categories::with('children')->whereNull('parent_id')->get();
-        $query = $request->input('q');
-        $products = Product::where('is_active', 1)
-            ->where(function($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%")
-                  ->orWhere('description', 'like', "%{$query}%");
-            })
-            ->paginate(12);
-
-        return view('client.search', compact('categories', 'products', 'query'));
+        return view('client.search');
     }
 }
