@@ -5,7 +5,7 @@
                         <div class="row">
                             <div class="col-lg-2 col-md-4">
                                 <div class="logo">
-                                    <a href="index.html">
+                                    <a href="{{ route('home') }}">
                                         <img src="img/logo/logo.png" alt="main logo">
                                     </a>
                                 </div>
@@ -16,7 +16,7 @@
                                         <li><a href="index.html">Home</a>
                                             <ul class="dropdwn">
                                                 <li>
-                                                    <a href="index.html">Home Version 1</a>
+                                                    <a href="/">Home Version 1</a>
                                                 </li>
                                             </ul>
                                         </li>
