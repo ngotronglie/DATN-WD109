@@ -39,8 +39,17 @@ class ProductController extends Controller
 
     public function index()
     {
-        $products = DB::table('product_variants')
-
+        $products = DB::table('products')
+            ->join('categories', 'products.categories_id', '=', 'categories.id')
+            ->select([
+                'products.id',
+                'products.name',
+                'categories.Name as category_name',
+                'products.is_active',
+                'products.view_count',
+                'products.created_at',
+                'products.updated_at'
+            ])
             ->paginate(10);
 
         return view('layouts.admin.product.list', compact('products'));
