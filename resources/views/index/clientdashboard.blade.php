@@ -15,9 +15,9 @@
         @include('components.client.footer')
         <!-- END FOOTER AREA -->
     </div>
-    <!-- Body main wrapper end -->
+        <!-- Body main wrapper end -->
 
-    <!-- Placed JS at the end of the document so the pages load faster -->
-    @include('components.client.script')
+        <!-- Placed JS at the end of the document so the pages load faster -->
+        @include('components.client.script')
 </body>
 </html>

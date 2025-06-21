@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('add-image-btn')) {
             const variantIndex = e.target.getAttribute('data-variant-index');
-            const fileInput = document.querySelector(`input[name="variants[${variantIndex}][images][]"]`);
+            const fileInput = document.querySelector(`input[name="variants[${variantIndex}][image]"]`);
             if (fileInput) {
                 fileInput.click();
             }
@@ -154,52 +154,42 @@ document.addEventListener('DOMContentLoaded', function() {
         const previewContainer = document.getElementById(`preview-${variantIndex}`);
         if (!previewContainer) return;
 
-        if (input.files && input.files.length > 0) {
-            Array.from(input.files).forEach((file, index) => {
-                if (!file.type.startsWith('image/')) {
-                    alert('Vui lòng chỉ chọn file ảnh!');
-                    return;
-                }
+        previewContainer.innerHTML = ''; // Chỉ 1 ảnh, xóa cũ
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const previewDiv = document.createElement('div');
-                    previewDiv.className = 'image-preview';
-                    previewDiv.innerHTML = `
-                        <img src="${e.target.result}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
-                        <button type="button" class="btn btn-danger btn-sm mt-1 remove-image"
-                                onclick="removeImage(this, ${variantIndex}, ${previewContainer.children.length})">
-                            <svg width="18px" height="18px" viewBox="0 0 24.00 24.00" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M10 12V17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M14 12V17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M4 7H20" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6 10V18C6 19.6569 7.34315 21 9 21H15C16.6569 21 18 19.6569 18 18V10" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7H9V5Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
-                        </button>
-                    `;
-                    previewContainer.appendChild(previewDiv);
-                };
-                reader.readAsDataURL(file);
-            });
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            if (!file.type.startsWith('image/')) {
+                alert('Vui lòng chỉ chọn file ảnh!');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'image-preview';
+                previewDiv.innerHTML = `
+                    <img src="${e.target.result}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                    <button type="button" class="btn btn-danger btn-sm mt-1 remove-image"
+                            onclick="removeImage(this, ${variantIndex})">
+                        Xóa
+                    </button>
+                `;
+                previewContainer.appendChild(previewDiv);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
     // Hàm xóa ảnh
-    window.removeImage = function(button, variantIndex, imageIndex) {
+    window.removeImage = function(button, variantIndex) {
         const previewDiv = button.closest('.image-preview');
         if (previewDiv) {
             previewDiv.remove();
         }
-
-        // Update the FileList in the input
-        const input = document.querySelector(`input[name="variants[${variantIndex}][images][]"]`);
-        if (input && input.files) {
-            const dt = new DataTransfer();
-            const files = input.files;
-
-            for (let i = 0; i < files.length; i++) {
-                if (i !== imageIndex) {
-                    dt.items.add(files[i]);
-                }
-            }
-
-            input.files = dt.files;
-        }
+        // Xóa file khỏi input
+        const input = document.querySelector(`input[name="variants[${variantIndex}][image]"]`);
+        if (input) input.value = '';
     };
 
     // Hàm tạo các biến thể
@@ -244,9 +234,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>
                         <div class="variant-images">
                             <div id="preview-${variantIndex}" class="image-preview-container"></div>
-                            <input type="file" name="variants[${variantIndex}][images][]"
-                                   class="form-control variant-image-input" multiple
-                                   accept="image/*" style="display: none;"
+                            <input type="file" name="variants[${variantIndex}][image]"
+                                   class="form-control variant-image-input"
+                                   accept="image/*"
+                                   style="display: none;"
                                    onchange="handleImageUpload(this, ${variantIndex})">
                             <button type="button" class="btn btn-primary btn-sm mt-2 add-image-btn"
                                     data-variant-index="${variantIndex}">

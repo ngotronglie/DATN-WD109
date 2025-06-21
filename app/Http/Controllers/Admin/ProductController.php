@@ -40,27 +40,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = DB::table('product_variants')
-            ->join('products', 'product_variants.product_id', '=', 'products.id')
-            ->join('colors', 'product_variants.color_id', '=', 'colors.id')
-            ->join('categories', 'products.categories_id', '=', 'categories.id')
-            ->join('capacities', 'product_variants.capacity_id', '=', 'capacities.id')
-            ->leftJoin('image_variants', 'product_variants.id', '=', 'image_variants.variant_id')
-            ->select([
-                'product_variants.id',
-                'product_variants.price',
-                'product_variants.price_sale',
-                'product_variants.quantity',
-                'products.name as product_name',
-                'products.is_active',
-                'products.view_count',
-                'colors.name as color_name',
-                'capacities.name as capacity_name',
-                'categories.Name as category_name',
-                DB::raw('GROUP_CONCAT(image_variants.image) as images')
-            ])
-            ->groupBy('product_variants.id', 'product_variants.price', 'product_variants.price_sale',
-                     'product_variants.quantity', 'products.name', 'products.is_active',
-                     'products.view_count', 'colors.name', 'capacities.name', 'categories.Name')
+
             ->paginate(10);
 
         return view('layouts.admin.product.list', compact('products'));
@@ -76,14 +56,12 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-
-            // Validate dữ liệu cơ bản của sản phẩm
             $request->validate([
-                'name' => 'required|string|max:255',
+                'name' => 'required|string|max:255|unique:products,name',
                 'description' => 'nullable|string',
-                'categories_id' => 'required|exists:categories,ID',
+                'categories_id' => 'required|exists:categories,id',
                 'is_active' => 'required|boolean',
                 'variants' => 'required|array|min:1',
                 'variants.*.color_id' => 'required|exists:colors,id',
@@ -93,70 +71,47 @@ class ProductController extends Controller
                 'variants.*.quantity' => 'required|integer|min:0',
             ]);
 
-            // Tạo sản phẩm mới
-            $product = new Product();
-            $product->name = $request->name;
-            $product->description = $request->description;
-            $product->slug = Str::slug($request->name);
-            $product->is_active = $request->is_active;
-            $product->categories_id = $request->categories_id;
-            $product->view_count = 0;
-            $product->save();
+            $product = Product::create([
+                'name' => $request->name,
+                'description' => $request->description,
+                'slug' => \Str::slug($request->name),
+                'is_active' => $request->is_active,
+                'categories_id' => $request->categories_id,
+                'view_count' => 0,
+            ]);
 
-            // Tạo các biến thể sản phẩm
             foreach ($request->variants as $index => $variantData) {
-                // Tạo biến thể
-                $variant = new ProductVariant();
-                $variant->product_id = $product->id;
-                $variant->color_id = $variantData['color_id'];
-                $variant->capacity_id = $variantData['capacity_id'];
-                $variant->price = $variantData['price'];
-                $variant->price_sale = $variantData['price_sale'] ?? null;
-                $variant->quantity = $variantData['quantity'];
-                $variant->save();
+                $imagePath = null; // Khởi tạo để tránh lỗi nếu không có file
 
-                // Xử lý upload ảnh cho biến thể
-                if ($request->hasFile("variants.{$index}.images")) {
-                    $images = $request->file("variants.{$index}.images");
-
-                    // Nếu chỉ có một ảnh, chuyển thành mảng
-                    if (!is_array($images)) {
-                        $images = [$images];
-                    }
-
-                    foreach ($images as $image) {
-                        if ($image && $image->isValid()) {
-                            // Tạo tên file duy nhất
-                            $extension = $image->getClientOriginalExtension();
-                            $fileName = 'variant_' . $variant->id . '_' . time() . '_' . uniqid() . '.' . $extension;
-
-                            // Lưu ảnh vào storage
-                            $path = $image->storeAs('products/variants', $fileName, 'public');
-
-                            if ($path) {
-                                // Tạo bản ghi ảnh trong database
-                                $imageVariant = new ImageVariant();
-                                $imageVariant->variant_id = $variant->id;
-                                $imageVariant->image = $path;
-                                $imageVariant->save();
-                            }
-                        }
-                    }
+                if ($request->hasFile("variants.$index.image")) {
+                    $imageFile = $request->file("variants.$index.image");
+                    $imagePath = $imageFile->store("products/variants", 'public');
+                    // Các giá trị cần thiết
+                    $originalName = $imageFile->getClientOriginalName(); // Tên gốc
+                    $tempPath = $imageFile->getPathname();               // Đường dẫn tạm
+                    $publicPath = asset("storage/" . $imagePath);        // Đường dẫn công khai
                 }
+
+                ProductVariant::create([
+                    'product_id' => $product->id,
+                    'color_id' => $variantData['color_id'],
+                    'capacity_id' => $variantData['capacity_id'],
+                    'image' => $publicPath,
+                    'price' => $variantData['price'],
+                    'price_sale' => $variantData['price_sale'] ?? null,
+                    'quantity' => $variantData['quantity'],
+                ]);
             }
 
-            DB::commit();
 
-            return redirect()->route('admin.product.index')
-                ->with('success', 'Sản phẩm đã được thêm thành công!');
+            DB::commit();
+            return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được thêm thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Lỗi khi tạo sản phẩm: ' . $e->getMessage());
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
+
 
     public function edit($id)
     {
@@ -186,11 +141,24 @@ class ProductController extends Controller
                 'categories.Name as category_name',
                 DB::raw('GROUP_CONCAT(DISTINCT image_variants.id, ":", image_variants.image) as images')
             ])
-            ->groupBy('product_variants.id', 'product_variants.product_id', 'product_variants.color_id',
-                     'product_variants.capacity_id', 'product_variants.price', 'product_variants.price_sale',
-                     'product_variants.quantity', 'products.name', 'products.description', 'products.is_active',
-                     'products.view_count', 'products.categories_id', 'colors.name', 'capacities.name',
-                     'categories.id', 'categories.Name')
+            ->groupBy(
+                'product_variants.id',
+                'product_variants.product_id',
+                'product_variants.color_id',
+                'product_variants.capacity_id',
+                'product_variants.price',
+                'product_variants.price_sale',
+                'product_variants.quantity',
+                'products.name',
+                'products.description',
+                'products.is_active',
+                'products.view_count',
+                'products.categories_id',
+                'colors.name',
+                'capacities.name',
+                'categories.id',
+                'categories.Name'
+            )
             ->first();
 
         if (!$product) {
@@ -264,8 +232,8 @@ class ProductController extends Controller
                     $image = ImageVariant::find($imageId);
                     if ($image) {
                         // Xóa file vật lý nếu tồn tại
-                        if (\Storage::disk('public')->exists($image->image)) {
-                            \Storage::disk('public')->delete($image->image);
+                        if (Storage::disk('public')->exists($image->image)) {
+                            Storage::disk('public')->delete($image->image);
                         }
                         $image->delete();
                     }
@@ -308,7 +276,7 @@ class ProductController extends Controller
                 }
                 $product->deleteData($id); // Xóa sản phẩm
             }
-            return redirect()->route('admin.product.index')
+            return redirect()->route('admin.products.index')
                 ->with('success', 'Sản phẩm đã được xóa thành công!');
         } catch (\Exception $e) {
             return redirect()->back()
@@ -321,7 +289,7 @@ class ProductController extends Controller
     {
         $product = $this->product->loadOneID($id);
         if (!$product) {
-            return redirect()->route('admin.product.index')
+            return redirect()->route('admin.products.index')
                 ->with('error', 'Không tìm thấy sản phẩm!');
         }
         return view('layouts.admin.product.addfiledetail', compact('product'));
