@@ -9,7 +9,7 @@
                         <h3 class="card-title">Thêm danh mục mới</h3>
                     </div>
                     <div class="card-body">
-                        <form action="{{ route('categories.store') }}" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('admin.categories.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="form-group">
                                 <label for="Name">Tên danh mục <span class="text-danger">*</span></label>
@@ -64,7 +64,7 @@
 
                             <div class="form-group mt-4">
                                 <button type="submit" class="btn btn-primary">Thêm mới</button>
-                                <a href="{{ route('categories.index') }}" class="btn btn-secondary">Quay lại</a>
+                                <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">Quay lại</a>
                             </div>
                         </form>
                     </div>

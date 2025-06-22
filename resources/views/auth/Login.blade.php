@@ -69,3 +69,49 @@
         </div>
     </div>
 </header>
+
+
+    <!-- Main Content -->
+<main class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 bg-white p-5 shadow rounded">
+                <h3 class="mb-4 text-center">Đăng nhập</h3>
+
+                @if(session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
+
+                <form action="{{ route('login.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                        @error('email')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Mật khẩu</label>
+                        <input type="password" class="form-control" name="password" required>
+                        @error('password')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary">Đăng nhập</button>
+                    </div>
+
+                    <div class="text-center">
+                        <p>Bạn chưa có tài khoản? <a href="{{ route('auth.register') }}">Đăng ký</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

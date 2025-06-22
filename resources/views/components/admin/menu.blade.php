@@ -122,7 +122,7 @@
                          </li>
 
                          <li class="nav-item">
-                              <a class="nav-link" href="{{ route('categories.index') }}">
+                              <a class="nav-link" href="{{ route('admin.categories.index') }}">
                                    <span class="nav-icon">
                                         <iconify-icon icon="solar:category-broken"></iconify-icon>
                                    </span>
@@ -157,7 +157,7 @@
                               </a>
                          </li>
                          <li class="nav-item">
-                              <a class="nav-link" href="{{ route('categories.create') }}">
+                              <a class="nav-link" href="{{ route('admin.categories.create') }}">
                                    <span class="nav-icon">
                                         <iconify-icon icon="solar:add-circle-broken"></iconify-icon>
                                    </span>
