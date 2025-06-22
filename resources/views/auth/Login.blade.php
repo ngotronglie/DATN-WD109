@@ -41,10 +41,11 @@
         <!-- Menu -->
         <nav class="d-none d-lg-block">
             <ul class="nav justify-content-center">
-                <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Trang chủ</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Sản phẩm</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Giới thiệu</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Liên hệ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Products</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Blog</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"> Pages</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
                 @auth
                     @if (Auth::user()->role_id == 2)
                         <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản trị</a></li>
@@ -55,15 +56,8 @@
 
         <!-- Auth Links -->
         <div class="d-flex align-items-center gap-3">
-            @auth
-                <span>👤 {{ Auth::user()->name }}</span>
-                <a href="{{ route('account') }}">⚙️ Tài khoản</a>
-                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🔒 Đăng xuất</a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-            @else
                 <a href="{{ route('auth.login') }}">🔐 Đăng nhập</a>
                 <a href="{{ route('auth.register') }}">➕ Đăng ký</a>
-            @endauth
             <a href="{{ route('wishlist') }}">❤️ Wishlist</a>
             <a href="#"><i class="zmdi zmdi-shopping-cart-plus"></i></a>
         </div>
@@ -112,6 +106,64 @@
         </div>
     </div>
 </main>
-
+        <footer id="footer" class="footer-area footer-2 section">
+            <div class="footer-top footer-top-2 text-center ptb-60">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="footer-logo">
+                                <img src="img/logo/logo.png" alt="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom footer-bottom-2 text-center gray-bg">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-5">
+                            <div class="copyright-text copyright-text-2">
+                                <p class="copy-text"> WD_109 <strong>Web điện thoại</strong> </p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4">
+                            <ul class="footer-social footer-social-2">
+                                <li>
+                                    <a class="facebook" href="#" title="Facebook"><i
+                                            class="zmdi zmdi-facebook"></i></a>
+                                </li>
+                                <li>
+                                    <a class="google-plus" href="#" title="Google Plus"><i
+                                            class="zmdi zmdi-google-plus"></i></a>
+                                </li>
+                                <li>
+                                    <a class="twitter" href="#" title="Twitter"><i
+                                            class="zmdi zmdi-twitter"></i></a>
+                                </li>
+                                <li>
+                                    <a class="rss" href="#" title="RSS"><i class="zmdi zmdi-rss"></i></a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-4 col-md-3">
+                            <ul class="footer-payment">
+                                <li>
+                                    <a href="#"><img src="img/payment/1.jpg" alt=""></a>
+                                </li>
+                                <li>
+                                    <a href="#"><img src="img/payment/2.jpg" alt=""></a>
+                                </li>
+                                <li>
+                                    <a href="#"><img src="img/payment/3.jpg" alt=""></a>
+                                </li>
+                                <li>
+                                    <a href="#"><img src="img/payment/4.jpg" alt=""></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
 </body>
 </html>

@@ -23,12 +23,7 @@
                     <div class="row">
                         <div class="col-lg-4 col-md-5">
                             <div class="copyright-text copyright-text-2">
-                                <p class="copy-text"> © 2022 <strong>Subas</strong> Made With <i
-                                        class="zmdi zmdi-favorite" style="color: red;" aria-hidden="true"></i> By
-                                    <a class="company-name" href="https://themeforest.net/user/codecarnival/portfolio">
-                                        <strong> CodeCarnival</strong></a>.
-                                </p>
-
+                                <p class="copy-text"> WD_109 <strong>Web điện thoại</strong> </p>
                             </div>
                         </div>
                         <div class="col-lg-4 col-md-4">
