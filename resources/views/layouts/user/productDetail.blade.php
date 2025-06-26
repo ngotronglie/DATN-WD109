@@ -32,105 +32,108 @@
                         <div class="col-lg-9 order-lg-2 order-1">
                             <!-- single-product-area start -->
                             <div class="single-product-area mb-80">
-                                <div class="row">
-                                    <!-- imgs-zoom-area start -->
-                                    <div class="col-lg-5">
-                                        <div class="imgs-zoom-area">
-                                            <img id="product-image" src="{{ isset($variants[0]) ? asset($variants[0]->image) : '' }}" data-zoom-image="{{ isset($variants[0]) ? asset($variants[0]->image) : '' }}" alt="">
-                                        </div>
-                                    </div>
-                                    <!-- imgs-zoom-area end -->
-                                    <!-- single-product-info start -->
-                                    <div class="col-lg-7">
-                                        <div class="single-product-info">
-                                            <div class="row">
-                                                <div class="col-md-9">
-                                                    <h3 class="text-black-1" id="product-name">{{ $product->name }}</h3>
-                                            <h6 class="brand-name-2" id="category-name">{{ $product->category->Name ?? '' }}</h6>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <i class="zmdi zmdi-eye"></i> {{ $product->view_count }} lượt xem
-                                                </div>
-                                            </div>
-                                            <!--  hr -->
-                                            <hr>
-                                            <!-- single-pro-color-rating -->
-                                            <div class="single-pro-color-rating clearfix mb-2">
-                                                <div class="sin-pro-color f-left">
-                                                    <span class="color-title f-left">Màu sắc:</span>
-                                                    <div class="color-radio-group" style="display:inline-block; margin-left:10px;">
-                                                        @foreach($colors as $color)
-                                                            <label class="color-radio-label">
-                                                                <input type="radio" name="color" value="{{ $color->id }}" @if($loop->first) checked @endif>
-                                                                <span class="color-radio-custom"></span>
-                                                                {{ $color->name }}
-                                                            </label>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <hr>
-                                            <div class="single-pro-color-rating clearfix mb-2">
-                                                <div class="sin-pro-color f-left">
-                                                    <span class="color-title f-left">Dung lượng:</span>
-                                                    <div class="capacity-radio-group" style="display:inline-block; margin-left:10px;">
-                                                        @foreach($capacities as $capacity)
-                                                            <label class="capacity-radio-label">
-                                                                <input type="radio" name="capacity" value="{{ $capacity->id }}" @if($loop->first) checked @endif>
-                                                                <span class="capacity-radio-custom"></span>
-                                                                {{ $capacity->name }}
-                                                            </label>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- hr -->
-                                            <hr>
-                                            <div class="single-pro-color-rating clearfix mb-2">
-                                                <div class="sin-pro-color f-left">
-                                                    <span class="color-title f-left">Số lượng: </span>
-                                                    <span id="variant-quantity">{{ isset($variants[0]) ? $variants[0]->quantity : '' }}</span>
-                                                </div>
-                                            </div>
-                                            <hr>
-                                            <!-- plus-minus-pro-action -->
-                                            <div class="plus-minus-pro-action clearfix">
-                                                <div class="sin-plus-minus f-left clearfix">
-                                                    <p class="color-title f-left">Qty</p>
-                                                    <div class=" f-left">
-                                                        <button type="button" class="qty-btn qty-btn-minus">-</button>
-                                                        <input type="text" value="1" name="qtybutton" class="cart-plus-minus-box" id="qty-input" style="width:40px;text-align:center;">
-                                                        <button type="button" class="qty-btn qty-btn-plus">+</button>
-                                                    </div>
-                                                </div>
 
-                                            </div>
-                                            <!-- plus-minus-pro-action end -->
-                                            <!-- hr -->
-                                            <hr>
-                                            <!-- single-product-price -->
-                                            <h3 id="product-price" class="pro-price">Price: ${{ isset($variants[0]) ? number_format($variants[0]->price, 2) : '' }}</h3>
-                                            @if(isset($variants[0]) && $variants[0]->price_sale)
-                                                <h3 id="product-price-sale" class="pro-price-sale text-danger text-decoration-line-through">
-                                                    ${{ number_format($variants[0]->price_sale, 2) }}
-                                                </h3>
-                                            @else
-                                                <h3 id="product-price-sale" class="pro-price-sale text-danger text-decoration-line-through" style="display:none"></h3>
-                                            @endif
-                                            <!--  hr -->
-                                            <hr>
-                                            <div class="product-action-btns text-center mt-3">
-                                                <button type="button" class="button extra-small button-black me-2" tabindex="-1">
-                                                    <span class="text-uppercase">Buy now</span>
-                                                </button>
-                                                <button type="button" class="button extra-small button-outline" tabindex="-1">
-                                                    <span class="text-uppercase">Add to cart</span>
-                                                </button>
+                                <form class="form-submit" action="">
+                                    <div class="row">
+                                        <!-- imgs-zoom-area start -->
+                                        <div class="col-lg-5">
+                                            <div class="imgs-zoom-area">
+                                                <img id="product-image" src="{{ isset($variants[0]) ? asset($variants[0]->image) : '' }}" data-zoom-image="{{ isset($variants[0]) ? asset($variants[0]->image) : '' }}" alt="">
                                             </div>
                                         </div>
+                                        <!-- imgs-zoom-area end -->
+                                        <!-- single-product-info start -->
+                                        <div class="col-lg-7">
+                                            <div class="single-product-info">
+                                                <div class="row">
+                                                    <div class="col-md-9">
+                                                        <h3 class="text-black-1" id="product-name">{{ $product->name }}</h3>
+                                                <h6 class="brand-name-2" id="category-name">{{ $product->category->Name ?? '' }}</h6>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <i class="zmdi zmdi-eye"></i> {{ $product->view_count }} lượt xem
+                                                    </div>
+                                                </div>
+                                                <!--  hr -->
+                                                <hr>
+                                                <!-- single-pro-color-rating -->
+                                                <div class="single-pro-color-rating clearfix mb-2">
+                                                    <div class="sin-pro-color f-left">
+                                                        <span class="color-title f-left">Màu sắc:</span>
+                                                        <div class="color-radio-group" style="display:inline-block; margin-left:10px;">
+                                                            @foreach($colors as $color)
+                                                                <label class="color-radio-label">
+                                                                    <input type="radio" name="color" value="{{ $color->id }}" @if($loop->first) checked @endif>
+                                                                    <span class="color-radio-custom"></span>
+                                                                    {{ $color->name }}
+                                                                </label>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                                <div class="single-pro-color-rating clearfix mb-2">
+                                                    <div class="sin-pro-color f-left">
+                                                        <span class="color-title f-left">Dung lượng:</span>
+                                                        <div class="capacity-radio-group" style="display:inline-block; margin-left:10px;">
+                                                            @foreach($capacities as $capacity)
+                                                                <label class="capacity-radio-label">
+                                                                    <input type="radio" name="capacity" value="{{ $capacity->id }}" @if($loop->first) checked @endif>
+                                                                    <span class="capacity-radio-custom"></span>
+                                                                    {{ $capacity->name }}
+                                                                </label>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- hr -->
+                                                <hr>
+                                                <div class="single-pro-color-rating clearfix mb-2">
+                                                    <div class="sin-pro-color f-left">
+                                                        <span class="color-title f-left">Số lượng: </span>
+                                                        <span id="variant-quantity">{{ isset($variants[0]) ? $variants[0]->quantity : '' }}</span>
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                                <!-- plus-minus-pro-action -->
+                                                <div class="plus-minus-pro-action clearfix">
+                                                    <div class="sin-plus-minus f-left clearfix">
+                                                        <p class="color-title f-left">Qty</p>
+                                                        <div class=" f-left">
+                                                            <button type="button" class="qty-btn qty-btn-minus">-</button>
+                                                            <input type="text" value="1" name="qtybutton" class="cart-plus-minus-box" id="qty-input" style="width:40px;text-align:center;">
+                                                            <button type="button" class="qty-btn qty-btn-plus">+</button>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                                <!-- plus-minus-pro-action end -->
+                                                <!-- hr -->
+                                                <hr>
+                                                <!-- single-product-price -->
+                                                <h3 id="product-price" class="pro-price">Price: {{ isset($variants[0]) ? number_format($variants[0]->price) : '' }}</h3>
+                                                @if(isset($variants[0]) && $variants[0]->price_sale)
+                                                    <h3 id="product-price-sale" class="pro-price-sale text-danger text-decoration-line-through">
+                                                        {{ number_format($variants[0]->price_sale) }}
+                                                    </h3>
+                                                @else
+                                                    <h3 id="product-price-sale" class="pro-price-sale text-danger text-decoration-line-through" style="display:none"></h3>
+                                                @endif
+                                                <!--  hr -->
+                                                <hr>
+                                                <div class="product-action-btns text-center mt-3">
+                                                    <button type="button" class="button extra-small button-black me-2" tabindex="-1">
+                                                        <span class="text-uppercase">Buy now</span>
+                                                    </button>
+                                                    <button type="button" class="button extra-small button-outline" tabindex="-1">
+                                                        <span class="text-uppercase">Add to cart</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- single-product-info end -->
                                     </div>
-                                    <!-- single-product-info end -->
-                                </div>
+                                </form>
                                 <!-- single-product-tab -->
                                 <div class="row">
                                     <div class="col-lg-12">
@@ -324,6 +327,55 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.qty-btn-plus').addEventListener('click', function() {
         var val = parseInt(qtyInput.value) || 1;
         qtyInput.value = val + 1;
+    });
+
+    document.querySelector('.button-outline').addEventListener('click', function() {
+        var productId = {{ $product->id }};
+        var productName = document.getElementById('product-name').innerText;
+        var colorId = document.querySelector('input[name="color"]:checked').value;
+        var colorName = document.querySelector('input[name="color"]:checked').parentElement.innerText.trim();
+        var capacityId = document.querySelector('input[name="capacity"]:checked').value;
+        var capacityName = document.querySelector('input[name="capacity"]:checked').parentElement.innerText.trim();
+        var qty = parseInt(document.getElementById('qty-input').value) || 1;
+        var price = document.getElementById('product-price').innerText;
+        var priceSaleElem = document.getElementById('product-price-sale');
+        var priceSale = priceSaleElem && priceSaleElem.style.display !== 'none' ? priceSaleElem.innerText : null;
+        var image = document.getElementById('product-image').src;
+        // Tìm variant_id phù hợp
+        var variantId = null;
+        @foreach($variants as $variant)
+            if ({{ $variant->color_id ?? 'null' }} == colorId && {{ $variant->capacity_id ?? 'null' }} == capacityId) {
+                variantId = {{ $variant->id }};
+            }
+        @endforeach
+        var data = {
+            product_id: productId,
+            color_id: colorId,
+            capacity_id: capacityId,
+            variant_id: variantId,
+            quantity: qty,
+            price: price,
+            price_sale: priceSale,
+            image: image
+        };
+        alert(JSON.stringify(data))
+        fetch('/api/add-to-cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({variant_id: data.variant_id, quantity: data.quantity})
+        })
+        .then(res => res.json())
+        .then(resData => {
+            if (resData.success) {
+                window.location.href = '/cart';
+            } else {
+                alert(resData.message || 'Có lỗi xảy ra!');
+            }
+        });
+        // hoặc console.log(data);
     });
 });
 </script>

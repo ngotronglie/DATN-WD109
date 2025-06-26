@@ -13,6 +13,10 @@ use App\Models\ProductVariant;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
+use App\Models\Cart;
+use App\Models\CartItem;
 
 class ClientController extends Controller
 {
@@ -157,6 +161,138 @@ class ClientController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Mã không hợp lệ hoặc đã hết hạn',
+            ]);
+        }
+    }
+
+    public function apiAddToCart(Request $request)
+    {
+        $variantId = $request->input('variant_id');
+        $quantity = $request->input('quantity', 1);
+
+        if (Auth::check()) {
+            $user = Auth::user();
+            $cart = Cart::firstOrCreate(['user_id' => $user->id]);
+            $item = CartItem::where('cart_id', $cart->id)
+                ->where('product_variant_id', $variantId)
+                ->first();
+            if ($item) {
+                $item->quantity += $quantity;
+                $item->save();
+            } else {
+                CartItem::create([
+                    'cart_id' => $cart->id,
+                    'product_variant_id' => $variantId,
+                    'quantity' => $quantity,
+                ]);
+            }
+            return response()->json(['success' => true, 'type' => 'db', 'message' => 'Đã thêm vào giỏ hàng!']);
+        } else {
+            $cart = Session::get('cart', []);
+            $found = false;
+            foreach ($cart as &$item) {
+                if ($item['product_variant_id'] == $variantId) {
+                    $item['quantity'] += $quantity;
+                    $found = true;
+                    break;
+                }
+            }
+            unset($item);
+            if (!$found) {
+                $cart[] = [
+                    'product_variant_id' => $variantId,
+                    'quantity' => $quantity,
+                ];
+            }
+            Session::put('cart', $cart);
+            return response()->json(['success' => true, 'type' => 'session', 'message' => 'Đã thêm vào giỏ hàng!']);
+        }
+    }
+
+    public function showCart()
+    {
+        $user = Auth::user();
+        if ($user) {
+            $cart = Cart::where('user_id', $user->id)->first();
+            $items = $cart ? $cart->items()->with('productVariant.product', 'productVariant.color', 'productVariant.capacity')->get() : collect();
+        } else {
+            $cart = Session::get('cart', []);
+            $variantIds = array_column($cart, 'product_variant_id');
+            $variants = ProductVariant::with('product', 'color', 'capacity')->whereIn('id', $variantIds)->get();
+            $items = collect();
+            foreach ($cart as $item) {
+                $variant = $variants->where('id', $item['product_variant_id'])->first();
+                if ($variant) {
+                    $variant->cart_quantity = $item['quantity'];
+                    $items->push($variant);
+                }
+            }
+        }
+        return view('layouts.user.cart', compact('items', 'user'));
+    }
+
+    public function apiGetCart(Request $request)
+    {
+        if (Auth::check()) {
+            $user = Auth::user();
+            $cart = Cart::where('user_id', $user->id)->first();
+            $items = $cart
+                ? $cart->items()->with('productVariant.product', 'productVariant.color', 'productVariant.capacity')->get()
+                : collect();
+            $result = $items->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'variant_id' => $item->product_variant_id,
+                    'quantity' => $item->quantity,
+                    'name' => $item->productVariant->product->name ?? '',
+                    'color' => $item->productVariant->color->name ?? '',
+                    'capacity' => $item->productVariant->capacity->name ?? '',
+                    'price' => $item->productVariant->price,
+                    'image' => $item->productVariant->image,
+                ];
+            })->values();
+        } else {
+            $cart = Session::get('cart', []);
+            $variantIds = array_column($cart, 'product_variant_id');
+            $variants = ProductVariant::with('product', 'color', 'capacity')->whereIn('id', $variantIds)->get();
+            $result = [];
+            foreach ($cart as $item) {
+                $variant = $variants->where('id', $item['product_variant_id'])->first();
+                if ($variant) {
+                    $result[] = [
+                        'id' => null,
+                        'variant_id' => $variant->id,
+                        'quantity' => $item['quantity'],
+                        'name' => $variant->product->name ?? '',
+                        'color' => $variant->color->name ?? '',
+                        'capacity' => $variant->capacity->name ?? '',
+                        'price' => $variant->price,
+                        'image' => $variant->image,
+                    ];
+                }
+            }
+        }
+        return response()->json(['success' => true, 'data' => $result]);
+    }
+
+    public function apiGetUser(Request $request)
+    {
+        $user = auth()->user();
+        if ($user) {
+            return response()->json([
+                'success' => true,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone ?? '',
+                    'address' => $user->address ?? '',
+                ]
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'user' => null
             ]);
         }
     }

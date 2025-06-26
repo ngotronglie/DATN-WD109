@@ -328,27 +328,4 @@ class ProductController extends Controller
         }
     }
 
-    // Phương thức để xử lý việc xóa ảnh của biến thể
-    public function deleteImage($variantId, $imageId)
-    {
-        try {
-            $image = ImageVariant::findOrFail($imageId);
-            Storage::disk('public')->delete($image->image); // Đảm bảo dùng $image->image
-            $image->delete();
-
-            return response()->json(['success' => true]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-        }
-    }
-
-    // Phương thức để hiển thị trang quản lý ảnh
-    public function addfiledetail($slug)
-    {
-        $product = Product::where('slug', $slug)->with(['variants.color', 'variants.capacity'])->first();
-        if (!$product) {
-            return redirect()->route('admin.products.index')->with('error', 'Không tìm thấy sản phẩm!');
-        }
-        return view('layouts.admin.product.images', compact('product'));
-    }
 }

@@ -91,6 +91,10 @@
                                         <input type="text" class="form-control" id="address" required>
                                     </div>
                                     <div class="mb-3">
+                                        <label for="note" class="form-label">Ghi chú</label>
+                                        <input type="text" class="form-control" id="note" required>
+                                    </div>
+                                    <div class="mb-3">
                                         <label class="form-label">Phương thức thanh toán</label>
                                         <div>
                                             <div class="form-check">
@@ -117,24 +121,7 @@
 
 @section('script-client')
 <script>
-const cartData = [
-    {
-        name: "iPhone 15 Pro Max",
-        color: "Đen",
-        capacity: "256GB",
-        price: 32990000,
-        quantity: 2,
-        image: "https://picsum.photos/200"
-    },
-    {
-        name: "Samsung S24 Ultra",
-        color: "Tím",
-        capacity: "512GB",
-        price: 28990000,
-        quantity: 1,
-        image: "https://picsum.photos/200"
-    }
-];
+let cartData = [];
 
 function formatCurrency(num) {
     return num.toLocaleString('vi-VN') + 'đ';
@@ -243,8 +230,30 @@ document.getElementById('apply-voucher-btn').onclick = async function() {
     }
 };
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const res = await fetch('/api/cart');
+        const data = await res.json();
+        if (data.success) {
+            cartData = data.data;
+        } else {
+            cartData = [];
+        }
+    } catch (e) {
+        cartData = [];
+    }
     renderCartTable(cartData);
+
+    // Lấy thông tin user và fill vào form nếu có
+    try {
+        const userRes = await fetch('/api/user', { credentials: 'same-origin' });
+        const userData = await userRes.json();
+        if (userData.success && userData.user) {
+            document.getElementById('fullname').value = userData.user.name || '';
+            document.getElementById('phone').value = userData.user.phone || '';
+            document.getElementById('address').value = userData.user.address || '';
+        }
+    } catch (e) {}
 });
 </script>
 <style>

@@ -70,6 +70,9 @@ Route::get( '/blogdetail', function () {
 
 Route::get('/api/product-variant', [\App\Http\Controllers\Client\ClientController::class, 'getVariant']);
 Route::get('/api/voucher', [\App\Http\Controllers\Client\ClientController::class, 'getVoucher']);
+Route::post('/api/add-to-cart', [\App\Http\Controllers\Client\ClientController::class, 'apiAddToCart']);
+Route::get('/api/cart', [\App\Http\Controllers\Client\ClientController::class, 'apiGetCart']);
+Route::get('/api/user', [\App\Http\Controllers\Client\ClientController::class, 'apiGetUser']);
 
 Route::get('/register', [RegisterController::class, 'create'])->name('auth.register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
