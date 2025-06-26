@@ -101,13 +101,13 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::get('/', [ProductController::class, 'index'])->name('index');
         Route::get('/create', [ProductController::class, 'create'])->name('create');
         Route::post('/store', [ProductController::class, 'store'])->name('store');
-        Route::get('/edit/{id}', [ProductController::class, 'edit'])->name('edit');
-        Route::put('/update/{id}', [ProductController::class, 'update'])->name('update');
-        Route::delete('/delete/{id}', [ProductController::class, 'destroy'])->name('destroy');
+        Route::get('/edit/{slug}', [ProductController::class, 'edit'])->name('edit');
+        Route::put('/update/{slug}', [ProductController::class, 'update'])->name('update');
+        Route::delete('/delete/{slug}', [ProductController::class, 'destroy'])->name('destroy');
 
         // Quản lý ảnh biến thể
-        Route::get('/{id}/images', [ProductController::class, 'addfiledetail'])->name('addfiledetail');
-        Route::put('/{id}/images', [ProductController::class, 'updateImages'])->name('updateImages');
+        Route::get('/{slug}/images', [ProductController::class, 'addfiledetail'])->name('addfiledetail');
+        Route::put('/{slug}/images', [ProductController::class, 'updateImages'])->name('updateImages');
         Route::delete('/variants/{variantId}/images/{imageId}', [ProductController::class, 'deleteImage'])->name('deleteImage');
     });
 

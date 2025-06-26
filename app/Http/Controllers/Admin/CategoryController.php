@@ -47,7 +47,7 @@ class CategoryController extends Controller
             $result = $this->categories->insertData($data);
 
             if ($result) {
-                return redirect()->route('categories.index')->with('success', 'Thêm danh mục thành công');
+                return redirect()->route('admin.categories.index')->with('success', 'Thêm danh mục thành công');
             } else {
                 return redirect()->back()->withInput()->with('error', 'Thêm danh mục thất bại');
             }

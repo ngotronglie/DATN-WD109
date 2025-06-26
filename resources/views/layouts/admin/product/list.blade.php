@@ -64,12 +64,12 @@
                                     <td class="text-center">{{ $product->updated_at ? \Carbon\Carbon::parse($product->updated_at)->format('d/m/Y H:i') : '-' }}</td>
                                     <td class="text-center">
                                         <div class="btn-group">
-                                            <a href="{{ route('admin.products.edit', $product->id) }}"
+                                            <a href="{{ route('admin.products.edit', $product->slug) }}"
                                                class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i> Sửa
                                             </a>
 
-                                            <form action="{{ route('admin.products.destroy', $product->id) }}"
+                                            <form action="{{ route('admin.products.destroy', $product->slug) }}"
                                                   method="POST"
                                                   style="display:inline;"
                                                   onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">

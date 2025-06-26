@@ -78,11 +78,11 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ route('categories.edit', $category->ID) }}"
+                                            <a href="{{ route('admin.categories.edit', $category->ID) }}"
                                                 class="btn btn-info btn-sm">
                                                 <i class="fas fa-edit"></i> Sửa
                                             </a>
-                                            <form action="{{ route('categories.destroy', $category->ID) }}" method="POST"
+                                            <form action="{{ route('admin.categories.destroy', $category->ID) }}" method="POST"
                                                 class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
