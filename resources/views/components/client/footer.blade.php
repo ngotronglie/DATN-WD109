@@ -1,23 +1,4 @@
         <footer id="footer" class="footer-area footer-2 section">
-            <div class="footer-top footer-top-2 text-center ptb-60">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="footer-logo">
-                                <img src="img/logo/logo.png" alt="">
-                            </div>
-                            <ul class="footer-menu-2">
-                                <li><a href="#">Home</a></li>
-                                <li><a href="#">Products</a></li>
-                                <li><a href="#">Blog</a></li>
-                                <li><a href="#">Pages</a></li>
-                                <li><a href="#">About us</a></li>
-                                <li><a href="#">Contact</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div class="footer-bottom footer-bottom-2 text-center gray-bg">
                 <div class="container">
                     <div class="row">

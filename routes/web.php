@@ -46,6 +46,29 @@ Route::get('/account', function () {
     return view('index.clientdashboard');
 })->name('account');
 
+Route::get('/productdetail', function () {
+    return view('layouts.user.productDetail');
+})->name('productdetail');
+
+Route::get('/cart', function () {
+    return view('layouts.user.cart');
+})->name('cart');
+
+Route::get( '/shop', function () {
+    return view('layouts.user.shop');
+})->name('shop');
+
+
+Route::get( '/blog', function () {
+    return view('layouts.user.blog');
+})->name('blog');
+
+Route::get( '/blogdetail', function () {
+    return view('layouts.user.blogdetail');
+})->name('blogdetail');
+
+
+
 Route::get('/register', [RegisterController::class, 'create'])->name('auth.register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 

@@ -1,41 +1,10 @@
-<!doctype html>
-<html class="no-js" lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{{ $title ?? 'E-commerce' }}</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('subas/img/icon/favicon.png') }}">
-
-    <!-- All CSS Files -->
-    <link rel="stylesheet" href="{{ asset('subas/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/lib/css/nivo-slider.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/css/core.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/css/shortcode/shortcodes.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/css/responsive.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/css/custom.css') }}">
-
-    <!-- Style Customizer (nên xoá nếu không cần dùng) -->
-    <link rel="stylesheet" href="{{ asset('subas/css/style-customizer.css') }}">
-    <link href="#" data-style="styles" rel="stylesheet">
-
-    <!-- Modernizr JS -->
-    <script src="{{ asset('subas/js/vendor/modernizr-3.11.2.min.js') }}"></script>
-</head>
-
-<body>
-    <!-- Header -->
+  <!-- Header -->
     <header class="bg-white shadow py-3">
         <div class="container-fluid d-flex align-items-center justify-content-between px-4">
             <!-- Logo -->
             <div class="logo">
                 <a href="{{ route('home') }}">
-                    <img src="{{ asset('img/logo/logo.png') }}" alt="Logo" height="40">
+                    <img src="{{ asset('frontend/img/logo/logo.png') }}" alt="Logo" height="40">
                 </a>
             </div>
 

@@ -26,7 +26,7 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="blog-image">
-                                            <a href="single-blog.html"><img src="img/blog/4.jpg" alt=""></a>
+                                            <a href="single-blog.html"><img src="{{asset('frontend/img/blog/4.jpg')}}" alt=""></a>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
@@ -49,7 +49,7 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="blog-image">
-                                            <a href="single-blog.html"><img src="img/blog/5.jpg" alt=""></a>
+                                            <a href="single-blog.html"><img src="{{asset('frontend/img/blog/5.jpg')}}" alt=""></a>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
@@ -72,7 +72,7 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="blog-image">
-                                            <a href="single-blog.html"><img src="img/blog/4.jpg" alt=""></a>
+                                            <a href="single-blog.html"><img src="{{asset('frontend/img/blog/4.jpg')}}"" alt=""></a>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
