@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Color;
 use App\Models\Capacity;
 use App\Models\ProductVariant;
+use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -132,6 +133,31 @@ class ClientController extends Controller
             ]);
         } else {
             return response()->json(['success' => false]);
+        }
+    }
+
+    public function getVoucher(Request $request)
+    {
+        $code = $request->input('code');
+        $voucher = Voucher::where('code', $code)
+            ->where('is_active', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_time', '>=', now())
+            ->where('quantity', '>', 0)
+            ->first();
+        if ($voucher) {
+            return response()->json([
+                'success' => true,
+                'discount' => $voucher->discount,
+                'min_money' => $voucher->min_money,
+                'max_money' => $voucher->max_money,
+                'message' => 'Áp dụng thành công',
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mã không hợp lệ hoặc đã hết hạn',
+            ]);
         }
     }
 }

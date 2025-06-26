@@ -69,6 +69,7 @@ Route::get( '/blogdetail', function () {
 })->name('blogdetail');
 
 Route::get('/api/product-variant', [\App\Http\Controllers\Client\ClientController::class, 'getVariant']);
+Route::get('/api/voucher', [\App\Http\Controllers\Client\ClientController::class, 'getVoucher']);
 
 Route::get('/register', [RegisterController::class, 'create'])->name('auth.register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
