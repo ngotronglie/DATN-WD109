@@ -61,6 +61,27 @@
                                 @enderror
                             </div>
 
+                            <div class="row">
+                                <div class="form-group col-md-4">
+                                    <label for="default_price">Giá mặc định</label>
+                                    <input type="number" class="form-control" id="default_price"
+                                           placeholder="Nhập giá mặc định cho tất cả biến thể" min="0">
+                                    <small class="form-text text-muted">Giá này sẽ được áp dụng cho tất cả biến thể khi tạo mới</small>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="default_price_sale">Giá khuyến mãi mặc định</label>
+                                    <input type="number" class="form-control" id="default_price_sale"
+                                           placeholder="Nhập giá khuyến mãi mặc định" min="0">
+                                    <small class="form-text text-muted">Giá khuyến mãi này sẽ được áp dụng cho tất cả biến thể khi tạo mới</small>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="default_quantity">Số lượng mặc định</label>
+                                    <input type="number" class="form-control" id="default_quantity"
+                                           placeholder="Nhập số lượng mặc định cho tất cả biến thể" min="0">
+                                    <small class="form-text text-muted">Số lượng này sẽ được áp dụng cho tất cả biến thể khi tạo mới</small>
+                                </div>
+                            </div>
+
                             <div class="row mt-4">
                                 <div class="col-12">
                                     <h4>Biến thể sản phẩm</h4>
@@ -203,6 +224,11 @@ document.addEventListener('DOMContentLoaded', function() {
             name: option.text
         }));
 
+        // Lấy giá trị mặc định
+        const defaultPrice = document.getElementById('default_price').value || '';
+        const defaultPriceSale = document.getElementById('default_price_sale').value || '';
+        const defaultQuantity = document.getElementById('default_quantity').value || '';
+
         // Xóa nội dung cũ của bảng
         variantsTable.innerHTML = '';
 
@@ -223,13 +249,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         <input type="hidden" name="variants[${variantIndex}][capacity_id]" value="${capacity.id}">
                     </td>
                     <td>
-                        <input type="number" class="form-control" name="variants[${variantIndex}][price]" required min="0">
+                        <input type="number" class="form-control" name="variants[${variantIndex}][price]"
+                               value="${defaultPrice}" required min="0">
                     </td>
                     <td>
-                        <input type="number" class="form-control" name="variants[${variantIndex}][price_sale]" min="0">
+                        <input type="number" class="form-control" name="variants[${variantIndex}][price_sale]"
+                               value="${defaultPriceSale}" min="0">
                     </td>
                     <td>
-                        <input type="number" class="form-control" name="variants[${variantIndex}][quantity]" required min="0">
+                        <input type="number" class="form-control" name="variants[${variantIndex}][quantity]"
+                               value="${defaultQuantity}" required min="0">
                     </td>
                     <td>
                         <div class="variant-images">
@@ -295,6 +324,42 @@ document.addEventListener('DOMContentLoaded', function() {
     // Lắng nghe sự kiện thay đổi của select
     colorSelect.addEventListener('change', generateVariants);
     capacitySelect.addEventListener('change', generateVariants);
+
+    // Lắng nghe sự kiện thay đổi của giá và số lượng mặc định
+    document.getElementById('default_price').addEventListener('input', updateExistingVariants);
+    document.getElementById('default_price_sale').addEventListener('input', updateExistingVariants);
+    document.getElementById('default_quantity').addEventListener('input', updateExistingVariants);
+
+    // Hàm cập nhật giá trị cho các biến thể hiện tại
+    function updateExistingVariants() {
+        const defaultPrice = document.getElementById('default_price').value;
+        const defaultPriceSale = document.getElementById('default_price_sale').value;
+        const defaultQuantity = document.getElementById('default_quantity').value;
+
+        // Cập nhật giá cho tất cả biến thể hiện tại
+        const priceInputs = variantsTable.querySelectorAll('input[name*="[price]"]');
+        priceInputs.forEach(input => {
+            if (defaultPrice) {
+                input.value = defaultPrice;
+            }
+        });
+
+        // Cập nhật giá khuyến mãi cho tất cả biến thể hiện tại
+        const priceSaleInputs = variantsTable.querySelectorAll('input[name*="[price_sale]"]');
+        priceSaleInputs.forEach(input => {
+            if (defaultPriceSale) {
+                input.value = defaultPriceSale;
+            }
+        });
+
+        // Cập nhật số lượng cho tất cả biến thể hiện tại
+        const quantityInputs = variantsTable.querySelectorAll('input[name*="[quantity]"]');
+        quantityInputs.forEach(input => {
+            if (defaultQuantity) {
+                input.value = defaultQuantity;
+            }
+        });
+    }
 
     // Xử lý submit form
     form.addEventListener('submit', function(e) {
