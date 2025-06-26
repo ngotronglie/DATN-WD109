@@ -22,3 +22,24 @@
         <span class="visually-hidden">Next</span>
     </button>
 </div>
+
+<style>
+.carousel-inner .carousel-item {
+    opacity: 0;
+    transition: opacity 0.7s ease-in-out;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    z-index: 1;
+}
+.carousel-inner .carousel-item.active {
+    opacity: 1;
+    position: relative;
+    z-index: 2;
+}
+#carouselExample {
+    position: relative;
+    overflow: hidden;
+}
+</style>

@@ -7,6 +7,9 @@
     <section id="page-content" class="page-wrapper section">
 
         @include('components.client.product')
+
+
+
         <!-- BLOG SECTION START -->
         <div class="blog-section-2 pt-60 pb-30">
             <div class="container">
@@ -120,4 +123,26 @@
         <!-- NEWSLETTER SECTION END -->
     </section>
     <!-- END PAGE CONTENT -->
+@endsection
+
+
+@section('script-client')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var carousel = document.getElementById('carouselExample');
+        if (!carousel) return;
+        var items = carousel.querySelectorAll('.carousel-item');
+        var currentIndex = 0;
+        var totalItems = items.length;
+
+        setInterval(function () {
+            // Remove 'active' from current
+            items[currentIndex].classList.remove('active');
+            // Move to next
+            currentIndex = (currentIndex + 1) % totalItems;
+            // Add 'active' to new
+            items[currentIndex].classList.add('active');
+        }, 2000); // 2 seconds
+    });
+</script>
 @endsection

@@ -33,6 +33,7 @@ Route::get('/search', [ClientController::class, 'search'])->name('search');
 Route::get('/category/{slug}', [ClientController::class, 'category'])->name('category');
 Route::get('/product/{slug}', [ClientController::class, 'product'])->name('product');
 Route::get('/blog/{slug}', [ClientController::class, 'post'])->name('post');
+Route::get('/product/{slug}', [ClientController::class, 'productDetail'])->name('product.detail');
 
 Route::get('/cart', function () {
     return view('index.clientdashboard');
@@ -67,7 +68,7 @@ Route::get( '/blogdetail', function () {
     return view('layouts.user.blogdetail');
 })->name('blogdetail');
 
-
+Route::get('/api/product-variant', [\App\Http\Controllers\Client\ClientController::class, 'getVariant']);
 
 Route::get('/register', [RegisterController::class, 'create'])->name('auth.register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
