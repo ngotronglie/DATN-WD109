@@ -19,33 +19,42 @@
     <link rel="stylesheet" href="{{ asset('subas/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('subas/css/responsive.css') }}">
     <link rel="stylesheet" href="{{ asset('subas/css/custom.css') }}">
-
-    <!-- Style Customizer (nên xoá nếu không cần dùng) -->
     <link rel="stylesheet" href="{{ asset('subas/css/style-customizer.css') }}">
     <link href="#" data-style="styles" rel="stylesheet">
 
     <!-- Modernizr JS -->
     <script src="{{ asset('subas/js/vendor/modernizr-3.11.2.min.js') }}"></script>
+
+    <!-- Flex layout để đẩy footer xuống cuối -->
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+        }
+    </style>
 </head>
 
 <body>
     <!-- Header -->
     <header class="bg-white shadow py-3">
         <div class="container-fluid d-flex align-items-center justify-content-between px-4">
-            <!-- Logo -->
             <div class="logo">
                 <a href="{{ route('home') }}">
-                    <img src="{{ asset('img/logo/logo.png') }}" alt="Logo" height="40">
+                    <img src="{{ asset('frontend/img/logo/logo.png') }}" alt="Logo" height="40">
                 </a>
             </div>
-
-            <!-- Menu -->
             <nav class="d-none d-lg-block">
                 <ul class="nav justify-content-center">
                     <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Products</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Blog</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#"> Pages</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Pages</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
                     @auth
                     @if (Auth::user()->role_id == 2)
@@ -54,8 +63,6 @@
                     @endauth
                 </ul>
             </nav>
-
-            <!-- Auth Links -->
             <div class="d-flex align-items-center gap-3">
                 <a href="{{ route('auth.login') }}">🔐 Đăng nhập</a>
                 <a href="{{ route('auth.register') }}">➕ Đăng ký</a>
@@ -65,13 +72,12 @@
         </div>
     </header>
 
-
     <!-- Main Content -->
     <main class="py-5 bg-light">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-6 bg-white p-5 shadow rounded">
-                    <h3 class="mb-4 text-center">Đăng nhập</h3>
+                    <h3 class="mb-4 text-center fw-bold">🔐 Đăng nhập</h3>
 
                     @if(session('error'))
                     <div class="alert alert-danger">{{ session('error') }}</div>
@@ -79,35 +85,29 @@
 
                     <form action="{{ route('login.store') }}" method="POST">
                         @csrf
-                        <div class="mb-3">
-                            <label>Email</label>
-                            <input type="email" class="form-control" name="email" required>
-                            @error('email')
-                            <small class="text-danger">{{ $message }}</small>
-                            @enderror
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control rounded-pill" id="email" name="email" placeholder="Email" required>
+                            <label for="email">Email</label>
+                            @error('email') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
 
-                        <div class="mb-3">
-                            <label>Mật khẩu</label>
-                            <input type="password" class="form-control" name="password" required>
-                            @error('password')
-                            <small class="text-danger">{{ $message }}</small>
-                            @enderror
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control rounded-pill" id="password" name="password" placeholder="Mật khẩu" required>
+                            <label for="password">Mật khẩu</label>
+                            @error('password') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
 
                         <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary">Đăng nhập</button>
+                            <button type="submit" class="btn btn-primary rounded-pill">🚀 Đăng nhập</button>
                         </div>
 
-                        <div class="text-center">
-                            <p>Bạn chưa có tài khoản? <a href="{{ route('auth.register') }}">Đăng ký</a></p>
-                        </div>
-                        <div class="d-flex justify-content-between">
+                        <div class="text-center mb-3">
+                            <p class="mb-1">Bạn chưa có tài khoản?
+                                <a href="{{ route('auth.register') }}" class="text-decoration-none">Đăng ký</a>
+                            </p>
 
                             @if (Route::has('password.request'))
-                            <a class="btn btn-link" href="{{ route('password.request') }}">
-                                {{ __('Forgot Your Password?') }}
-                            </a>
+                            <a class="text-decoration-none small" href="{{ route('password.request') }}">❓ Quên mật khẩu?</a>
                             @endif
                         </div>
                     </form>
@@ -115,59 +115,30 @@
             </div>
         </div>
     </main>
-    <footer id="footer" class="footer-area footer-2 section">
-        <div class="footer-top footer-top-2 text-center ptb-60">
+
+    <!-- Footer -->
+    <footer id="footer" class="footer-area footer-2 section bg-light mt-auto">
+        <div class="footer-top footer-top-2 text-center ptb-60"></div>
+        <div class="footer-bottom footer-bottom-2 text-center gray-bg py-3">
             <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="footer-logo">
-                            <img src="img/logo/logo.png" alt="">
-                        </div>
+                <div class="row align-items-center">
+                    <div class="col-lg-4 col-md-5 mb-2 mb-md-0">
+                        <p class="mb-0">WD_109 <strong>Web điện thoại</strong></p>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom footer-bottom-2 text-center gray-bg">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-4 col-md-5">
-                        <div class="copyright-text copyright-text-2">
-                            <p class="copy-text"> WD_109 <strong>Web điện thoại</strong> </p>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-4">
-                        <ul class="footer-social footer-social-2">
-                            <li>
-                                <a class="facebook" href="#" title="Facebook"><i
-                                        class="zmdi zmdi-facebook"></i></a>
-                            </li>
-                            <li>
-                                <a class="google-plus" href="#" title="Google Plus"><i
-                                        class="zmdi zmdi-google-plus"></i></a>
-                            </li>
-                            <li>
-                                <a class="twitter" href="#" title="Twitter"><i
-                                        class="zmdi zmdi-twitter"></i></a>
-                            </li>
-                            <li>
-                                <a class="rss" href="#" title="RSS"><i class="zmdi zmdi-rss"></i></a>
-                            </li>
+                    <div class="col-lg-4 col-md-4 mb-2 mb-md-0">
+                        <ul class="footer-social list-inline mb-0">
+                            <li class="list-inline-item"><a class="text-dark" href="#"><i class="zmdi zmdi-facebook"></i></a></li>
+                            <li class="list-inline-item"><a class="text-dark" href="#"><i class="zmdi zmdi-google-plus"></i></a></li>
+                            <li class="list-inline-item"><a class="text-dark" href="#"><i class="zmdi zmdi-twitter"></i></a></li>
+                            <li class="list-inline-item"><a class="text-dark" href="#"><i class="zmdi zmdi-rss"></i></a></li>
                         </ul>
                     </div>
                     <div class="col-lg-4 col-md-3">
-                        <ul class="footer-payment">
-                            <li>
-                                <a href="#"><img src="img/payment/1.jpg" alt=""></a>
-                            </li>
-                            <li>
-                                <a href="#"><img src="img/payment/2.jpg" alt=""></a>
-                            </li>
-                            <li>
-                                <a href="#"><img src="img/payment/3.jpg" alt=""></a>
-                            </li>
-                            <li>
-                                <a href="#"><img src="img/payment/4.jpg" alt=""></a>
-                            </li>
+                        <ul class="list-inline mb-0">
+                            <li class="list-inline-item"><img src="{{ asset('img/payment/1.jpg') }}" alt="" height="30"></li>
+                            <li class="list-inline-item"><img src="{{ asset('img/payment/2.jpg') }}" alt="" height="30"></li>
+                            <li class="list-inline-item"><img src="{{ asset('img/payment/3.jpg') }}" alt="" height="30"></li>
+                            <li class="list-inline-item"><img src="{{ asset('img/payment/4.jpg') }}" alt="" height="30"></li>
                         </ul>
                     </div>
                 </div>
@@ -175,5 +146,4 @@
         </div>
     </footer>
 </body>
-
 </html>

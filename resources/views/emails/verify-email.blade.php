@@ -1,20 +1,42 @@
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 bg-white p-4 shadow rounded text-center">
-            <h2>🎉 Đăng ký thành công!</h2>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.6;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: #007bff;
+            color: #fff !important;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <p>Chào <strong>{{ $user->name }}</strong>,</p>
 
-            <p>
-                Một liên kết xác minh đã được gửi tới
-                <strong>
-                    <a href="https://mail.google.com/mail/u/{{ $user->email }}" target="_blank" class="text-primary">
-                        {{ $user->email }}
-                    </a>
-                </strong>.
-            </p>
+    <p>Chúng tôi đã nhận được yêu cầu đăng ký tài khoản từ bạn. Vui lòng nhấp vào nút bên dưới để xác minh địa chỉ email:</p>
 
-            <p class="mt-4">
-                <a href="{{ route('auth.login') }}" class="btn btn-primary">👉 Quay lại trang đăng nhập</a>
-            </p>
-        </div>
-    </div>
-</div>
+    <p>
+        <a href="{{ route('verify.email', ['email' => $user->email, 'token' => $token]) }}" class="button">
+            ✅ Xác minh email
+        </a>
+    </p>
+
+    <p>Nếu bạn không thực hiện yêu cầu này, bạn có thể bỏ qua email này.</p>
+
+    <p><strong>Lưu ý:</strong> Liên kết này sẽ hết hạn sau 60 phút kể từ thời điểm gửi.</p>
+
+    <p>Trân trọng,<br>Đội ngũ hỗ trợ WD_109</p>
+</body>
+</html>
