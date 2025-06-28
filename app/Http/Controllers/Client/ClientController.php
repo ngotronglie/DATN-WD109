@@ -81,7 +81,7 @@ class ClientController extends Controller
 
     public function contact()
     {
-        return view('client.contact');
+        return view('layouts.user.contact');
     }
 
     public function blog()
@@ -91,9 +91,9 @@ class ClientController extends Controller
 
     public function post($slug)
     {
-
         return view('client.post');
     }
+
     public function search(Request $request)
     {
         return view('client.search');
