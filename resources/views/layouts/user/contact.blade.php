@@ -1,4 +1,9 @@
 @extends('index.clientdashboard')
+
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/contact-map.css') }}">
+@endsection
+
 @section('content')
 <!-- BREADCRUMBS SECTION START -->
 <div class="breadcrumbs-section plr-200 mb-80 section">
@@ -30,7 +35,7 @@
                     <div class="contact-address box-shadow">
                         <i class="zmdi zmdi-pin"></i>
                         <h6>Địa chỉ </h6>
-                        <h6>13 Trịnh Văn Bô, Thành phố Hà </h6>
+                        <h6>13 Trịnh Văn Bô, Nam Từ Liêm, Hà Nội</h6>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -52,7 +57,7 @@
     <!-- ADDRESS SECTION END -->
 
     <!-- GOOGLE MAP SECTION START -->
-    <div class="google-map-section">
+    <div class="google-map-section mb-80">
         <div class="container-fluid">
             <div class="google-map plr-185">
                 <div id="googleMap" style="width:100%;height:400px;"></div>
@@ -99,4 +104,10 @@
     <!-- MESSAGE BOX SECTION END -->
 </section>
 <!-- End page content -->
+@endsection
+
+@section('script-client')
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCDacJcoyPCr-jdlP9HK93h3YKNyf710J0&callback=initMap" async defer></script>
+<script src="{{ asset('js/contact-map.js') }}"></script>
 @endsection

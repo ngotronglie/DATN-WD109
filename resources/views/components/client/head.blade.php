@@ -1,4 +1,3 @@
-
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -32,4 +31,6 @@
 
     <!-- Modernizr JS -->
     <script src="{{ asset('frontend/js/vendor/modernizr-3.11.2.min.js') }}"></script>
+    
+    @yield('styles')
 </head>
