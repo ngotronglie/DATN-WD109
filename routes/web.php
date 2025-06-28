@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Client\ClientController;
+use App\Http\Controllers\Admin\ContactController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -152,4 +153,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Test lỗi
     Route::get('/test-404', fn() => abort(404));
     Route::get('/test-403', fn() => abort(403));
+
+    // Contact
+    Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
 });
