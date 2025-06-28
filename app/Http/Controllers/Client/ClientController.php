@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Session;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Http\Requests\ContactRequest;
+use App\Models\Contact;
 
 class ClientController extends Controller
 {
@@ -298,27 +299,24 @@ class ClientController extends Controller
         }
     }
 
-<<<<<<< HEAD
-    public function contactPost(ContactRequest $request)
-    {
-        // Chỉ validate, chưa xử lý lưu/gửi
-        if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Gửi thành công!']);
-        }
-        return back()->with('success', 'Gửi thành công!');
-=======
     public function submitContact(ContactRequest $request)
     {
         try {
             // Lấy dữ liệu đã được validate
             $validatedData = $request->validated();
             
-            // Ở đây bạn có thể thêm logic để lưu vào database hoặc gửi email
-            // Ví dụ: lưu vào bảng contacts
-            // Contact::create($validatedData);
+            // Thêm user_id nếu user đã đăng nhập
+            if (auth()->check()) {
+                $validatedData['user_id'] = auth()->id();
+            }
             
-            // Hoặc gửi email
-            // Mail::to('admin@example.com')->send(new ContactFormMail($validatedData));
+            // Debug: Log dữ liệu
+            \Log::info('Contact form data:', $validatedData);
+            
+            // Lưu vào database
+            $contact = Contact::create($validatedData);
+            
+            \Log::info('Contact created successfully:', ['id' => $contact->id]);
             
             return response()->json([
                 'success' => true,
@@ -326,11 +324,15 @@ class ClientController extends Controller
             ]);
             
         } catch (\Exception $e) {
+            \Log::error('Contact form error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra. Vui lòng thử lại sau.'
             ], 500);
         }
->>>>>>> feature/contact
     }
 }

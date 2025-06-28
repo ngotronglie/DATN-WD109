@@ -29,7 +29,7 @@ Route::get('/', [ClientController::class, 'index'])->name('home');
 Route::get('/products', [ClientController::class, 'products'])->name('products');
 Route::get('/about', [ClientController::class, 'about'])->name('about');
 Route::get('/contact', [ClientController::class, 'contact'])->name('contact');
-Route::post('/contact', [ClientController::class, 'submitContact'])->name('contact.submit');
+Route::post('/contact', [App\Http\Controllers\Client\ClientController::class, 'submitContact'])->name('contact.post');
 Route::get('/blog', [ClientController::class, 'blog'])->name('blog');
 Route::get('/search', [ClientController::class, 'search'])->name('search');
 Route::get('/category/{slug}', [ClientController::class, 'category'])->name('category');
@@ -87,7 +87,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
 
-Route::post('/contact', [App\Http\Controllers\Client\ClientController::class, 'contactPost'])->name('contact.post');
+Route::post('/contact', [App\Http\Controllers\Client\ClientController::class, 'submitContact'])->name('contact.post');
 
 //  route admin
 
@@ -159,4 +159,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Contact
     Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
+    Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
+    Route::post('/contacts/{contact}/status', [ContactController::class, 'updateStatus'])->name('contacts.updateStatus');
+    Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+    Route::post('/contacts/{contact}/mark-replied', [ContactController::class, 'markAsReplied'])->name('contacts.markReplied');
 });
