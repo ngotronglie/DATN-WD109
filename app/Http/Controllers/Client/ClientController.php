@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Http\Requests\ContactRequest;
 
 class ClientController extends Controller
 {
@@ -295,5 +296,14 @@ class ClientController extends Controller
                 'user' => null
             ]);
         }
+    }
+
+    public function contactPost(ContactRequest $request)
+    {
+        // Chỉ validate, chưa xử lý lưu/gửi
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Gửi thành công!']);
+        }
+        return back()->with('success', 'Gửi thành công!');
     }
 }

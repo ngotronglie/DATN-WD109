@@ -72,29 +72,48 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="message-box box-shadow white-bg">
-                        <form id="contact-form">
+                        <form id="contact-form" method="POST" action="{{ route('contact.post') }}">
+                            @csrf
                             <div class="row">
                                 <div class="col-lg-12">
                                     <h4 class="blog-section-title border-left mb-30">Gửi tin nhắn cho chúng tôi</h4>
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="text" name="con_name" placeholder="Họ và tên của bạn">
+                                    <input type="text" name="con_name" placeholder="Họ và tên của bạn" value="{{ old('con_name') }}">
+                                    @error('con_name')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="text" name="con_email" placeholder="Email của bạn">
+                                    <input type="text" name="con_email" placeholder="Email của bạn" value="{{ old('con_email') }}">
+                                    @error('con_email')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="text" name="con_subject" placeholder="Tiêu đề">
+                                    <input type="text" name="con_subject" placeholder="Tiêu đề" value="{{ old('con_subject') }}">
+                                    @error('con_subject')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="text" name="con_phone" placeholder="Số điện thoại">
+                                    <input type="text" name="con_phone" placeholder="Số điện thoại" value="{{ old('con_phone') }}">
+                                    @error('con_phone')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
                                 </div>
                                 <div class="col-lg-12">
-                                    <textarea class="custom-textarea" name="con_message" placeholder="Nội dung tin nhắn"></textarea>
+                                    <textarea class="custom-textarea" name="con_message" placeholder="Nội dung tin nhắn">{{ old('con_message') }}</textarea>
+                                    @error('con_message')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
                                     <button class="submit-btn-1 mt-30 btn-hover-1" type="submit">Gửi tin nhắn</button>
                                 </div>
                             </div>
                             <p class="form-message"></p>
+                            @if(session('success'))
+                                <div class="alert alert-success mt-2">{{ session('success') }}</div>
+                            @endif
                         </form>
                     </div>
                 </div>
@@ -110,4 +129,5 @@
 <!-- Google Maps API -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCDacJcoyPCr-jdlP9HK93h3YKNyf710J0&callback=initMap" async defer></script>
 <script src="{{ asset('js/contact-map.js') }}"></script>
+<script src="{{ asset('js/contact-validate.js') }}"></script>
 @endsection

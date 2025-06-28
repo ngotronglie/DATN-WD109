@@ -84,6 +84,9 @@ Route::middleware('auth')->group(function () {
     // Các route yêu cầu người dùng đã đăng nhập
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
+
+Route::post('/contact', [App\Http\Controllers\Client\ClientController::class, 'contactPost'])->name('contact.post');
+
 //  route admin
 
 // Route cho dashboard và tất cả các route admin

@@ -67,4 +67,38 @@
 
 .contact-address h6 a:hover {
     color: #007bff;
+}
+
+/* Validation Error Styles */
+.error-message {
+    font-size: 12px !important;
+    color: #dc3545 !important;
+    margin-top: 2px !important;
+    margin-bottom: 0 !important;
+    display: block !important;
+    line-height: 1.2 !important;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* Form input spacing */
+.col-lg-6, .col-lg-12 {
+    margin-bottom: 15px;
+}
+
+.col-lg-6 input, .col-lg-12 input, .col-lg-12 textarea {
+    margin-bottom: 0;
+}
+
+/* Success message */
+.alert-success {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+    padding: 10px !important;
+    border-radius: 4px !important;
+    border: 1px solid #c3e6cb !important;
+    margin-top: 15px !important;
 } 
