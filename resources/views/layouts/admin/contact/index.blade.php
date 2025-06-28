@@ -32,7 +32,7 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>ID người dùng</th>
+                                <th>ID User</th>
                                 <th>Họ và tên</th>
                                 <th>Email</th>
                                 <th>Tiêu đề</th>
@@ -50,14 +50,16 @@
                                     data-phone="{{ $contact->con_phone }}"
                                     data-subject="{{ $contact->con_subject }}"
                                     data-message="{{ $contact->con_message }}"
-                                    data-user-id="{{ $contact->user_id ? $contact->user_id : 'Khách' }}"
+                                    data-user-id="{{ $contact->user_id ? $contact->user_id : '' }}"
                                     data-date="{{ $contact->created_at->format('d/m/Y H:i') }}">
                                     <td><span class="badge bg-primary">#{{ $contact->id }}</span></td>
                                     <td>
                                         @if($contact->user_id)
-                                            <span class="badge bg-azure">{{ $contact->user_id }}</span>
+                                            <span class="badge bg-azure">
+                                                {{ $contact->user_id }}
+                                            </span>
                                         @else
-                                            <span class="badge bg-secondary">Khách</span>
+                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>{{ $contact->con_name }}</td>
