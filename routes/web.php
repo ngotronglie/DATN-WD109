@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Client\ClientController;
+use App\Http\Controllers\Admin\ContactController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -28,6 +29,7 @@ Route::get('/', [ClientController::class, 'index'])->name('home');
 Route::get('/products', [ClientController::class, 'products'])->name('products');
 Route::get('/about', [ClientController::class, 'about'])->name('about');
 Route::get('/contact', [ClientController::class, 'contact'])->name('contact');
+Route::post('/contact', [ClientController::class, 'submitContact'])->name('contact.submit');
 Route::get('/blog', [ClientController::class, 'blog'])->name('blog');
 Route::get('/search', [ClientController::class, 'search'])->name('search');
 Route::get('/category/{slug}', [ClientController::class, 'category'])->name('category');
@@ -154,4 +156,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Test lỗi
     Route::get('/test-404', fn() => abort(404));
     Route::get('/test-403', fn() => abort(403));
+
+    // Contact
+    Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
 });

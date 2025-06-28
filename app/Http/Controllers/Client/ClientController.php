@@ -298,6 +298,7 @@ class ClientController extends Controller
         }
     }
 
+<<<<<<< HEAD
     public function contactPost(ContactRequest $request)
     {
         // Chỉ validate, chưa xử lý lưu/gửi
@@ -305,5 +306,31 @@ class ClientController extends Controller
             return response()->json(['success' => true, 'message' => 'Gửi thành công!']);
         }
         return back()->with('success', 'Gửi thành công!');
+=======
+    public function submitContact(ContactRequest $request)
+    {
+        try {
+            // Lấy dữ liệu đã được validate
+            $validatedData = $request->validated();
+            
+            // Ở đây bạn có thể thêm logic để lưu vào database hoặc gửi email
+            // Ví dụ: lưu vào bảng contacts
+            // Contact::create($validatedData);
+            
+            // Hoặc gửi email
+            // Mail::to('admin@example.com')->send(new ContactFormMail($validatedData));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất có thể.'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra. Vui lòng thử lại sau.'
+            ], 500);
+        }
+>>>>>>> feature/contact
     }
 }
