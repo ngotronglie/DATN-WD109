@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Http\Requests\ContactRequest;
 
 class ClientController extends Controller
 {
@@ -294,6 +295,32 @@ class ClientController extends Controller
                 'success' => false,
                 'user' => null
             ]);
+        }
+    }
+
+    public function submitContact(ContactRequest $request)
+    {
+        try {
+            // Lấy dữ liệu đã được validate
+            $validatedData = $request->validated();
+            
+            // Ở đây bạn có thể thêm logic để lưu vào database hoặc gửi email
+            // Ví dụ: lưu vào bảng contacts
+            // Contact::create($validatedData);
+            
+            // Hoặc gửi email
+            // Mail::to('admin@example.com')->send(new ContactFormMail($validatedData));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất có thể.'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra. Vui lòng thử lại sau.'
+            ], 500);
         }
     }
 }
