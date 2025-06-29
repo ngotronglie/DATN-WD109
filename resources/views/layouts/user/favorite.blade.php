@@ -3,15 +3,19 @@
 @section('content')
         <!-- BREADCRUMBS SETCTION START -->
         <div class="breadcrumbs-section plr-200 mb-80 section">
-            <div class="breadcrumbs overlay-bg">
+            <div class="breadcrumbs" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 200px; display: flex; align-items: center;">
                 <div class="container">
                     <div class="row">
                         <div class="col-lg-12">
-                            <div class="breadcrumbs-inner">
-                                <h1 class="breadcrumbs-title">Sản phẩm yêu thích</h1>
-                                <ul class="breadcrumb-list">
-                                    <li><a href="{{ route('home') }}">Trang chủ</a></li>
-                                    <li>Sản phẩm yêu thích</li>
+                            <div class="breadcrumbs-inner text-center">
+                                <div class="mb-3">
+                                    <i class="zmdi zmdi-favorite" style="font-size: 60px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"></i>
+                                </div>
+                                <h1 class="breadcrumbs-title" style="color: #fff; font-size: 48px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 10px;">Sản phẩm yêu thích</h1>
+                                <p style="color: #fff; font-size: 18px; opacity: 0.9; margin-bottom: 20px;">Khám phá những sản phẩm bạn đã yêu thích</p>
+                                <ul class="breadcrumb-list" style="justify-content: center;">
+                                    <li><a href="{{ route('home') }}" style="color: #fff; opacity: 0.8;">Trang chủ</a></li>
+                                    <li style="color: #fff; opacity: 0.6;">/ Sản phẩm yêu thích</li>
                                 </ul>
                             </div>
                         </div>
@@ -34,7 +38,7 @@
                                 <div class="shop-option box-shadow mb-30 clearfix">
                                     <!-- showing -->
                                     <div class="showing f-right text-end">
-                                        <span>Hiển thị: <span id="favorites-count">0</span> sản phẩm yêu thích</span>
+                                        <span>Hiển thị: <span id="favorites-count">0</span></span>
                                     </div>
                                 </div>
                                 <!-- shop-option end -->
@@ -44,12 +48,13 @@
                                     @if(isset($favorites) && count($favorites) > 0)
                                         <div class="row">
                                             @foreach($favorites as $favorite)
+                                                @if($favorite->product)
                                                 <div class="col-lg-4 col-md-6 mb-4">
                                                     <div class="product-item">
                                                         <div class="product-img">
                                                             <a href="{{ route('product.detail', $favorite->product->slug) }}">
-                                                                @if($favorite->product->variants->first() && $favorite->product->variants->first()->images->first())
-                                                                    <img src="{{ asset('storage/' . $favorite->product->variants->first()->images->first()->image_path) }}" alt="{{ $favorite->product->name }}" />
+                                                                @if($favorite->product->variants && $favorite->product->variants->first() && $favorite->product->variants->first()->image)
+                                                                    <img src="{{ asset($favorite->product->variants->first()->image) }}" alt="{{ $favorite->product->name }}" />
                                                                 @else
                                                                     <img src="{{ asset('frontend/img/product/1.jpg') }}" alt="{{ $favorite->product->name }}" />
                                                                 @endif
@@ -67,18 +72,13 @@
                                                                 <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
                                                             </div>
                                                             <h3 class="pro-price">
-                                                                @if($favorite->product->variants->first())
+                                                                @if($favorite->product->variants && $favorite->product->variants->first())
                                                                     {{ number_format($favorite->product->variants->first()->price) }} VNĐ
                                                                 @else
                                                                     Liên hệ
                                                                 @endif
                                                             </h3>
                                                             <ul class="action-button">
-                                                                <li>
-                                                                    <a href="#" class="remove-favorite" data-favorite-id="{{ $favorite->id }}" title="Xóa khỏi yêu thích">
-                                                                        <i class="zmdi zmdi-favorite" style="color: #e74c3c;"></i>
-                                                                    </a>
-                                                                </li>
                                                                 <li>
                                                                     <a href="{{ route('product.detail', $favorite->product->slug) }}" title="Xem chi tiết">
                                                                         <i class="zmdi zmdi-zoom-in"></i>
@@ -93,6 +93,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                                @endif
                                             @endforeach
                                         </div>
                                     @else

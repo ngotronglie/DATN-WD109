@@ -15,7 +15,10 @@ class FavoriteController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $favorites = $user->favorites()->with(['product.category', 'product.variants'])->get();
+        $favorites = $user->favorites()
+            ->whereHas('product') // Chỉ lấy favorites có product tồn tại
+            ->with(['product.category', 'product.variants'])
+            ->get();
         
         return view('layouts.user.favorite', compact('favorites'));
     }
