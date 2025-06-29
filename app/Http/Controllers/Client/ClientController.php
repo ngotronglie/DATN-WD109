@@ -305,18 +305,19 @@ class ClientController extends Controller
             // Lấy dữ liệu đã được validate
             $validatedData = $request->validated();
             
-            // Thêm user_id nếu user đã đăng nhập
+            // Thêm user_id nếu user đã đăng nhập (ưu tiên từ request, nếu không có thì lấy từ auth)
             if (auth()->check()) {
-                $validatedData['user_id'] = auth()->id();
+                $validatedData['user_id'] = $request->input('user_id') ?? auth()->id();
             }
             
             // Debug: Log dữ liệu
             \Log::info('Contact form data:', $validatedData);
+            \Log::info('User authenticated:', ['user_id' => auth()->id() ?? 'not logged in']);
             
             // Lưu vào database
             $contact = Contact::create($validatedData);
             
-            \Log::info('Contact created successfully:', ['id' => $contact->id]);
+            \Log::info('Contact created successfully:', ['id' => $contact->id, 'user_id' => $contact->user_id]);
             
             return response()->json([
                 'success' => true,

@@ -55,11 +55,11 @@
                                     <td><span class="badge bg-primary">#{{ $contact->id }}</span></td>
                                     <td>
                                         @if($contact->user_id)
-                                            <span class="badge bg-azure">
+                                            <span class="badge bg-primary">
                                                 {{ $contact->user_id }}
                                             </span>
                                         @else
-                                            <span class="text-muted">-</span>
+                                            <span class="badge bg-secondary">Khách</span>
                                         @endif
                                     </td>
                                     <td>{{ $contact->con_name }}</td>

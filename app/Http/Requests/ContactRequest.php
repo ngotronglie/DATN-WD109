@@ -27,6 +27,7 @@ class ContactRequest extends FormRequest
             'con_subject' => 'required|string|max:255',
             'con_phone' => 'required|string|max:20',
             'con_message' => 'required|string|max:1000',
+            'user_id' => 'nullable|exists:users,id',
         ];
     }
 

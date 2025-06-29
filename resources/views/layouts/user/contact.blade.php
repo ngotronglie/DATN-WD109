@@ -2,6 +2,9 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/contact-map.css') }}">
+@auth
+<meta name="user-id" content="{{ auth()->id() }}">
+@endauth
 @endsection
 
 @section('content')

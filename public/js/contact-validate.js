@@ -79,11 +79,22 @@ $(document).ready(function() {
             const originalText = submitBtn.text();
             submitBtn.text('Đang gửi...').prop('disabled', true);
             
+            // Tạo FormData để gửi
+            const formData = new FormData(this);
+            
+            // Thêm user_id nếu user đã đăng nhập
+            const userId = $('meta[name="user-id"]').attr('content');
+            if (userId) {
+                formData.append('user_id', userId);
+            }
+            
             // Gửi form bằng AJAX
             $.ajax({
                 url: $(this).attr('action'),
                 method: 'POST',
-                data: $(this).serialize(),
+                data: formData,
+                processData: false,
+                contentType: false,
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
