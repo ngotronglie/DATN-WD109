@@ -34,6 +34,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Relationship với Favorite - User có nhiều favorites
+     */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    /**
+     * Relationship với Product thông qua Favorite - User có nhiều products yêu thích
+     */
+    public function favoriteProducts()
+    {
+        return $this->belongsToMany(Product::class, 'favorites');
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>
