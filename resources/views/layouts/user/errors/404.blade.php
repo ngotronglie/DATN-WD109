@@ -1,4 +1,4 @@
-@extends('layouts.user.index')
+@extends('index.clientdashboard')
 
 @section('title', '404 - Không tìm thấy trang')
 

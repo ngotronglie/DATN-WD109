@@ -17,7 +17,7 @@ class FavoriteController extends Controller
         $user = Auth::user();
         $favorites = $user->favorites()->with(['product.category', 'product.variants'])->get();
         
-        return view('favorites.index', compact('favorites'));
+        return view('layouts.user.favorite', compact('favorites'));
     }
 
     /**

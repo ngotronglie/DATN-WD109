@@ -42,9 +42,7 @@ Route::get('/cart', function () {
     return view('index.clientdashboard');
 })->name('cart');
 
-Route::get('/wishlist', function () {
-    return view('index.clientdashboard');
-})->name('wishlist');
+Route::get('/wishlist', [App\Http\Controllers\FavoriteController::class, 'index'])->name('wishlist');
 
 Route::get('/account', function () {
     return view('index.clientdashboard');
@@ -85,9 +83,9 @@ Route::post('/login', [LoginController::class, 'store'])->name('login.store');
 
 Route::middleware('auth')->group(function () {
     // Các route yêu cầu người dùng đã đăng nhập
+    Route::post('/favorites', [App\Http\Controllers\FavoriteController::class, 'store']);
+    Route::delete('/favorites/{id}', [App\Http\Controllers\FavoriteController::class, 'destroy']);
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-    // Route cho favorites (wishlist)
-    Route::resource('favorites', FavoriteController::class)->only(['index', 'store', 'destroy']);
 });
 
 Route::post('/contact', [App\Http\Controllers\Client\ClientController::class, 'submitContact'])->name('contact.post');

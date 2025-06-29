@@ -1,4 +1,4 @@
-@extends('layouts.user.index')
+@extends('index.clientdashboard')
 
 @section('title', '403 - Truy cập bị từ chối')
 
