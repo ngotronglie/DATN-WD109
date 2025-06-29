@@ -186,12 +186,74 @@
         </style>
 
         <script>
+        // Cache cho trạng thái yêu thích
+        const favoriteCache = new Map();
+        
+        // Kiểm tra trạng thái yêu thích khi trang load
+        @auth
+        document.addEventListener('DOMContentLoaded', function() {
+            checkFavoriteStatus();
+        });
+        
+        // Hàm kiểm tra trạng thái yêu thích của tất cả sản phẩm
+        function checkFavoriteStatus() {
+            const favoriteButtons = document.querySelectorAll('.add-to-favorite');
+            
+            favoriteButtons.forEach(button => {
+                const productId = button.getAttribute('data-product-id');
+                const icon = button.querySelector('i');
+                
+                // Kiểm tra cache trước
+                if (favoriteCache.has(productId)) {
+                    const isFavorite = favoriteCache.get(productId);
+                    if (isFavorite) {
+                        icon.style.color = '#e74c3c';
+                        button.setAttribute('data-favorited', 'true');
+                    }
+                    return;
+                }
+                
+                // Gọi API kiểm tra trạng thái yêu thích
+                fetch(`/favorites/check/${productId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Lưu vào cache
+                        favoriteCache.set(productId, data.is_favorite);
+                        
+                        if (data.is_favorite) {
+                            // Nếu đã yêu thích thì đổi màu icon thành đỏ
+                            icon.style.color = '#e74c3c';
+                            button.setAttribute('data-favorited', 'true');
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Lỗi khi kiểm tra trạng thái yêu thích:', error);
+                    });
+            });
+        }
+        @endauth
+        
         // Hàm thêm vào yêu thích
         function addToFavorite(event, productId) {
             event.preventDefault();
             
+            // Lấy button và icon chính xác
+            const button = event.target.closest('.add-to-favorite');
+            const icon = button.querySelector('i');
+            
             // Kiểm tra xem user đã đăng nhập chưa
             @auth
+                // Kiểm tra nếu đã yêu thích rồi thì hiển thị thông báo
+                if (button.getAttribute('data-favorited') === 'true') {
+                    showModal('Sản phẩm đã có trong danh sách yêu thích!', 'info');
+                    return;
+                }
+                
                 showModal('Đang thêm sản phẩm vào yêu thích...', 'info');
                 
                 // Tạo form data
@@ -207,30 +269,45 @@
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         // Thay đổi màu icon thành đỏ
-                        const icon = event.target.querySelector('i');
-                        if (icon) {
-                            icon.style.color = '#e74c3c';
-                        }
+                        icon.style.color = '#e74c3c';
+                        button.setAttribute('data-favorited', 'true');
+                        
+                        // Cập nhật cache
+                        favoriteCache.set(productId, true);
                         
                         // Hiển thị thông báo thành công
                         showModal('Đã thêm sản phẩm vào danh sách yêu thích!', 'success');
                     } else {
-                        showModal(data.message || 'Có lỗi xảy ra!', 'error');
+                        // Kiểm tra nếu sản phẩm đã có trong yêu thích thì hiển thị thông báo thông tin
+                        if (data.message && data.message.includes('đã có trong danh sách yêu thích')) {
+                            icon.style.color = '#e74c3c';
+                            button.setAttribute('data-favorited', 'true');
+                            
+                            // Cập nhật cache
+                            favoriteCache.set(productId, true);
+                            
+                            showModal(data.message, 'info');
+                        } else {
+                            showModal(data.message || 'Có lỗi xảy ra!', 'error');
+                        }
                     }
                 })
                 .catch(error => {
+                    console.error('Error:', error);
                     showModal('Có lỗi xảy ra khi thêm vào yêu thích!', 'error');
                 });
             @else
-                // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+                // Nếu chưa đăng nhập, chỉ hiển thị thông báo
                 showModal('Vui lòng đăng nhập để thêm sản phẩm vào yêu thích!', 'warning');
-                setTimeout(function() {
-                    window.location.href = '{{ route("auth.login") }}';
-                }, 2000);
             @endauth
         }
         
@@ -280,10 +357,10 @@
                 }
             }, 100);
             
-            // Tự động đóng sau 5 giây
+            // Tự động đóng sau 3 giây
             setTimeout(function() {
                 closeModal();
-            }, 5000);
+            }, 3000);
         }
         
         // Đóng modal
