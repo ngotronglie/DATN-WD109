@@ -160,7 +160,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/test-403', fn() => abort(403));
 
     // Contact
-    Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
+    Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
     Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
     Route::post('/contacts/{contact}/status', [ContactController::class, 'updateStatus'])->name('contacts.updateStatus');
     Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
