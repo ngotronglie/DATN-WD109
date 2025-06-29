@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Client\ClientController;
 use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\FavoriteController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -85,6 +86,8 @@ Route::post('/login', [LoginController::class, 'store'])->name('login.store');
 Route::middleware('auth')->group(function () {
     // Các route yêu cầu người dùng đã đăng nhập
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    // Route cho favorites (wishlist)
+    Route::resource('favorites', FavoriteController::class)->only(['index', 'store', 'destroy']);
 });
 
 Route::post('/contact', [App\Http\Controllers\Client\ClientController::class, 'submitContact'])->name('contact.post');
