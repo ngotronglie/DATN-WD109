@@ -16,7 +16,9 @@ class FavoriteController extends Controller
     {
         $user = Auth::user();
         $favorites = $user->favorites()
-            ->whereHas('product') // Chỉ lấy favorites có product tồn tại
+            ->whereHas('product', function($query) {
+                $query->where('is_active', 1); // Chỉ lấy sản phẩm đang hoạt động
+            })
             ->with(['product.category', 'product.variants'])
             ->get();
         
@@ -34,6 +36,15 @@ class FavoriteController extends Controller
 
         $user = Auth::user();
         $productId = $request->product_id;
+
+        // Kiểm tra sản phẩm có đang hoạt động không
+        $product = Product::find($productId);
+        if (!$product || $product->is_active != 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sản phẩm không tồn tại hoặc đã bị tắt hoạt động!'
+            ], 400);
+        }
 
         // Kiểm tra xem sản phẩm đã có trong favorites chưa
         $existingFavorite = $user->favorites()->where('product_id', $productId)->first();
@@ -98,5 +109,14 @@ class FavoriteController extends Controller
         return response()->json([
             'count' => $count
         ]);
+    }
+
+    /**
+     * Tự động xóa favorites của sản phẩm đã bị tắt hoạt động hoặc xóa
+     * Method này có thể được gọi từ ProductController khi admin tắt/xóa sản phẩm
+     */
+    public static function removeInactiveProductFavorites($productId)
+    {
+        return Favorite::where('product_id', $productId)->delete();
     }
 }

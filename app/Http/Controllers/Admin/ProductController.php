@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\ImageVariant;
 use App\Models\ProductVariant;
 use App\Models\Category;
+use App\Http\Controllers\FavoriteController;
 
 class ProductController extends Controller
 {
@@ -171,6 +172,11 @@ class ProductController extends Controller
                 'categories_id' => $request->categories_id,
             ]);
 
+            // Nếu sản phẩm bị tắt hoạt động, xóa tất cả favorites
+            if ($request->is_active == 0) {
+                FavoriteController::removeInactiveProductFavorites($product->id);
+            }
+
             // Get existing variant IDs to track what to delete
             $existingVariantIds = $product->variants->pluck('id')->toArray();
             $updatedVariantIds = [];
@@ -266,6 +272,9 @@ class ProductController extends Controller
 
             // Xóa tất cả variants
             ProductVariant::where('product_id', $productId)->delete();
+
+            // Xóa tất cả favorites của sản phẩm này
+            FavoriteController::removeInactiveProductFavorites($productId);
 
             // Xóa product
             $product->delete();
