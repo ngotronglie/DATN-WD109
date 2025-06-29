@@ -80,6 +80,11 @@
                                                             </h3>
                                                             <ul class="action-button">
                                                                 <li>
+                                                                    <a href="#" class="remove-favorite" data-favorite-id="{{ $favorite->id }}" title="Xóa khỏi danh sách yêu thích">
+                                                                        <i class="zmdi zmdi-delete" style="color: #e74c3c;"></i>
+                                                                    </a>
+                                                                </li>
+                                                                <li>
                                                                     <a href="{{ route('product.detail', $favorite->product->slug) }}" title="Xem chi tiết">
                                                                         <i class="zmdi zmdi-zoom-in"></i>
                                                                     </a>
@@ -120,6 +125,36 @@
 @endsection
 
 @section('script-client')
+<style>
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.btn-cancel:hover {
+    background: #e9ecef !important;
+}
+
+.btn-confirm:hover {
+    background: #c82333 !important;
+}
+</style>
+
 <script>
 $(document).ready(function() {
     // Xóa sản phẩm khỏi favorites
@@ -128,33 +163,40 @@ $(document).ready(function() {
         
         const favoriteId = $(this).data('favorite-id');
         const productItem = $(this).closest('.col-lg-4');
+        const productName = $(this).closest('.product-item').find('.product-title a').text();
         
-        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi danh sách yêu thích?')) {
-            $.ajax({
-                url: '/favorites/' + favoriteId,
-                type: 'DELETE',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    productItem.fadeOut(300, function() {
-                        $(this).remove();
-                        updateFavoritesCount();
+        // Hiển thị modal xác nhận
+        showConfirmModal(
+            'Xóa khỏi danh sách yêu thích',
+            `Bạn có chắc chắn muốn xóa sản phẩm "<strong>${productName}</strong>" khỏi danh sách yêu thích?`,
+            function() {
+                // Thực hiện xóa khi xác nhận
+                $.ajax({
+                    url: '/favorites/' + favoriteId,
+                    type: 'DELETE',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        productItem.fadeOut(300, function() {
+                            $(this).remove();
+                            updateFavoritesCount();
+                            
+                            // Kiểm tra nếu không còn sản phẩm nào
+                            if ($('.product-item').length === 0) {
+                                location.reload();
+                            }
+                        });
                         
-                        // Kiểm tra nếu không còn sản phẩm nào
-                        if ($('.product-item').length === 0) {
-                            location.reload();
-                        }
-                    });
-                    
-                    // Hiển thị thông báo thành công
-                    showNotification('Đã xóa sản phẩm khỏi danh sách yêu thích', 'success');
-                },
-                error: function(xhr) {
-                    showNotification('Có lỗi xảy ra khi xóa sản phẩm', 'error');
-                }
-            });
-        }
+                        // Hiển thị thông báo thành công
+                        showNotification('Đã xóa sản phẩm khỏi danh sách yêu thích', 'success');
+                    },
+                    error: function(xhr) {
+                        showNotification('Có lỗi xảy ra khi xóa sản phẩm', 'error');
+                    }
+                });
+            }
+        );
     });
     
     // Thêm vào giỏ hàng
@@ -188,21 +230,124 @@ $(document).ready(function() {
     
     // Hiển thị thông báo
     function showNotification(message, type) {
-        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-        const alertHtml = `
-            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        // Xóa thông báo cũ nếu có
+        $('.custom-notification').remove();
+        
+        const bgColor = type === 'success' ? '#28a745' : '#dc3545';
+        const icon = type === 'success' ? 'zmdi-check-circle' : 'zmdi-alert-circle';
+        
+        const notificationHtml = `
+            <div class="custom-notification" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${bgColor};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 9999;
+                max-width: 300px;
+                display: flex;
+                align-items: center;
+                animation: slideInRight 0.3s ease;
+            ">
+                <i class="zmdi ${icon}" style="font-size: 20px; margin-right: 10px;"></i>
+                <span>${message}</span>
             </div>
         `;
         
-        // Thêm thông báo vào đầu trang
-        $('body').prepend(alertHtml);
+        $('body').append(notificationHtml);
         
-        // Tự động ẩn sau 3 giây
+        // Tự động ẩn sau 5 giây
         setTimeout(function() {
-            $('.alert').fadeOut();
-        }, 3000);
+            $('.custom-notification').fadeOut(300, function() {
+                $(this).remove();
+            });
+        }, 5000);
+    }
+    
+    // Hiển thị modal xác nhận
+    function showConfirmModal(title, message, onConfirm) {
+        // Xóa modal cũ nếu có
+        $('.custom-confirm-modal').remove();
+        
+        const modalHtml = `
+            <div class="custom-confirm-modal" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease;
+            ">
+                <div style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 12px;
+                    max-width: 400px;
+                    width: 90%;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                ">
+                    <div style="margin-bottom: 20px;">
+                        <i class="zmdi zmdi-alert-circle" style="font-size: 50px; color: #e74c3c;"></i>
+                    </div>
+                    <h4 style="margin-bottom: 15px; color: #333;">${title}</h4>
+                    <p style="margin-bottom: 25px; color: #666; line-height: 1.5;">${message}</p>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button class="btn-cancel" style="
+                            padding: 10px 20px;
+                            border: 1px solid #ddd;
+                            background: #f8f9fa;
+                            color: #666;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                        ">Hủy</button>
+                        <button class="btn-confirm" style="
+                            padding: 10px 20px;
+                            border: none;
+                            background: #e74c3c;
+                            color: white;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                        ">Xóa</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        $('body').append(modalHtml);
+        
+        // Xử lý sự kiện click
+        $('.btn-cancel').on('click', function() {
+            $('.custom-confirm-modal').fadeOut(300, function() {
+                $(this).remove();
+            });
+        });
+        
+        $('.btn-confirm').on('click', function() {
+            $('.custom-confirm-modal').fadeOut(300, function() {
+                $(this).remove();
+            });
+            if (onConfirm) onConfirm();
+        });
+        
+        // Đóng modal khi click bên ngoài
+        $('.custom-confirm-modal').on('click', function(e) {
+            if (e.target === this) {
+                $(this).fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }
+        });
     }
     
     // Khởi tạo số lượng favorites
