@@ -117,6 +117,12 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('banners', BannerController::class);
     Route::post('banners/{banner}/status', [BannerController::class, 'updateStatus'])->name('banners.updateStatus');
 
+    // Blogs
+    Route::resource('blogs', \App\Http\Controllers\Admin\BlogController::class);
+
+    // Tag Blogs
+    Route::resource('tag-blogs', \App\Http\Controllers\Admin\TagBlogController::class)->except(['show']);
+
     // Colors và Capacities
     Route::resource('colors', ColorController::class);
     Route::resource('capacities', CapacityController::class);

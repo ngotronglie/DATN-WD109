@@ -29,4 +29,5 @@
 
      <!-- Theme Config js (Require in all Page) -->
      <script src="{{ asset('dashboard/assets/js/config.min.js') }}"></script>
+
 </head>
