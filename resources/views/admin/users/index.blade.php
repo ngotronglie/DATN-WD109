@@ -70,7 +70,7 @@
                                             <td>{{ $user->date_of_birth ? date('d/m/Y', strtotime($user->date_of_birth)) : 'N/A' }}</td>
                                             <td>
                                                 <span class="badge bg-{{ $user->role == 'admin' ? 'danger' : 'info' }}">
-                                                    {{ $user->role == 'admin' ? 'Admin' : 'User' }}
+                                                    {{ ucfirst($user->role) }}
                                                 </span>
                                             </td>
                                             <td>

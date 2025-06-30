@@ -57,11 +57,11 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="role">Vai trò <span class="text-danger">*</span></label>
-                                    <select class="form-control @error('role') is-invalid @enderror" 
-                                        id="role" name="role" required>
+                                    <select class="form-control @error('role') is-invalid @enderror" id="role" name="role" required>
                                         <option value="">Chọn vai trò</option>
-                                        <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                                        <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>User</option>
+                                        @foreach($roles as $role)
+                                            <option value="{{ $role }}" {{ old('role') == $role ? 'selected' : '' }}>{{ ucfirst($role) }}</option>
+                                        @endforeach
                                     </select>
                                     @error('role')
                                         <div class="invalid-feedback">{{ $message }}</div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -18,16 +19,18 @@ class UserController extends Controller
 
     public function create()
     {
-        return view('admin.users.create');
+        $roles = Role::pluck('name');
+        return view('admin.users.create', compact('roles'));
     }
 
     public function store(Request $request)
     {
+        $roles = Role::pluck('name')->toArray();
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role' => ['required', Rule::in(['admin', 'user'])],
+            'role' => ['required', Rule::in($roles)],
             'address' => 'nullable|string|max:255',
             'phone_number' => 'nullable|string|max:20',
             'date_of_birth' => 'nullable|date',
@@ -60,15 +63,17 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        $roles = \App\Models\Role::pluck('name');
+        return view('admin.users.edit', compact('user', 'roles'));
     }
 
     public function update(Request $request, User $user)
     {
+        $roles = Role::pluck('name')->toArray();
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role' => ['required', Rule::in(['admin', 'user'])],
+            'role' => ['required', Rule::in($roles)],
             'password' => 'nullable|string|min:8',
             'address' => 'nullable|string|max:255',
             'phone_number' => 'nullable|string|max:20',
