@@ -165,4 +165,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('/contacts/{contact}/status', [ContactController::class, 'updateStatus'])->name('contacts.updateStatus');
     Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
     Route::post('/contacts/{contact}/mark-replied', [ContactController::class, 'markAsReplied'])->name('contacts.markReplied');
+
+    // Orders
+    Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
 });
