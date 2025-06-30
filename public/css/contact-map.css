@@ -1,0 +1,104 @@
+/* Google Maps Styles */
+.google-map-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.google-map {
+    position: relative;
+}
+
+#googleMap {
+    width: 100%;
+    height: 400px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #googleMap {
+        height: 300px;
+    }
+    
+    .google-map.plr-185 {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    #googleMap {
+        height: 250px;
+    }
+}
+
+/* Contact Address Styles */
+.contact-address {
+    text-align: center;
+    padding: 30px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.contact-address:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.contact-address i {
+    font-size: 40px;
+    color: #007bff;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.contact-address h6 {
+    margin: 5px 0;
+    color: #333;
+    font-weight: 500;
+}
+
+.contact-address h6 a {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.contact-address h6 a:hover {
+    color: #007bff;
+}
+
+/* Validation Error Styles */
+.error-message {
+    font-size: 12px !important;
+    color: #dc3545 !important;
+    margin-top: 2px !important;
+    margin-bottom: 0 !important;
+    display: block !important;
+    line-height: 1.2 !important;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* Form input spacing */
+.col-lg-6, .col-lg-12 {
+    margin-bottom: 15px;
+}
+
+.col-lg-6 input, .col-lg-12 input, .col-lg-12 textarea {
+    margin-bottom: 0;
+}
+
+/* Success message */
+.alert-success {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+    padding: 10px !important;
+    border-radius: 4px !important;
+    border: 1px solid #c3e6cb !important;
+    margin-top: 15px !important;
+} 
