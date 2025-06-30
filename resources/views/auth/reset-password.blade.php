@@ -11,7 +11,7 @@
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('subas/img/icon/favicon.png') }}">
 
-    <!-- All CSS Files -->
+    <!-- CSS Files -->
     <link rel="stylesheet" href="{{ asset('subas/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('subas/lib/css/nivo-slider.css') }}">
     <link rel="stylesheet" href="{{ asset('subas/css/core.css') }}">
@@ -20,20 +20,17 @@
     <link rel="stylesheet" href="{{ asset('subas/css/responsive.css') }}">
     <link rel="stylesheet" href="{{ asset('subas/css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('subas/css/style-customizer.css') }}">
-    <link href="#" data-style="styles" rel="stylesheet">
 
-    <!-- Modernizr JS -->
+    <!-- Modernizr -->
     <script src="{{ asset('subas/js/vendor/modernizr-3.11.2.min.js') }}"></script>
 
-    <!-- Flex layout để đẩy footer xuống cuối -->
+    <!-- Optional: custom styles -->
     <style>
-        html, body {
-            height: 100%;
-            margin: 0;
+        body {
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
         }
-
         main {
             flex: 1;
         }
@@ -44,11 +41,14 @@
     <!-- Header -->
     <header class="bg-white shadow py-3">
         <div class="container-fluid d-flex align-items-center justify-content-between px-4">
+            <!-- Logo -->
             <div class="logo">
                 <a href="{{ route('home') }}">
                     <img src="{{ asset('frontend/img/logo/logo.png') }}" alt="Logo" height="40">
                 </a>
             </div>
+
+            <!-- Menu -->
             <nav class="d-none d-lg-block">
                 <ul class="nav justify-content-center">
                     <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Home</a></li>
@@ -57,12 +57,14 @@
                     <li class="nav-item"><a class="nav-link" href="#">Pages</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
                     @auth
-                    @if (Auth::user()->role_id == 2)
-                    <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản trị</a></li>
-                    @endif
+                        @if (Auth::user()->role_id == 2)
+                        <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản trị</a></li>
+                        @endif
                     @endauth
                 </ul>
             </nav>
+
+            <!-- Auth Links -->
             <div class="d-flex align-items-center gap-3">
                 <a href="{{ route('auth.login') }}">🔐 Đăng nhập</a>
                 <a href="{{ route('auth.register') }}">➕ Đăng ký</a>
@@ -71,52 +73,62 @@
             </div>
         </div>
     </header>
+<main>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h3 class="text-center mb-4">🔒 Đặt lại mật khẩu</h3>
 
-    <!-- Main Content -->
-    <main class="py-5 bg-light">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6 bg-white p-5 shadow rounded">
-                    <h3 class="mb-4 text-center fw-bold">🔐 Đăng nhập</h3>
+                        <form action="{{ route('password.update') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="token" value="{{ $token }}">
 
-                    @if(session('error'))
-                    <div class="alert alert-danger">{{ session('error') }}</div>
-                    @endif
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" id="email" name="email"
+                                       class="form-control rounded-pill px-4 py-3 border-2 shadow-sm"
+                                       placeholder="Nhập email của bạn" required>
+                                @error('email')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
 
-                    <form action="{{ route('login.store') }}" method="POST">
-                        @csrf
-                        <div class="form-floating mb-3">
-                            <input type="email" class="form-control rounded-pill" id="email" name="email" placeholder="Email" required>
-                            <label for="email">Email</label>
-                            @error('email') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
+                            <!-- Mật khẩu mới -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Mật khẩu mới</label>
+                                <input type="password" id="password" name="password"
+                                       class="form-control rounded-pill px-4 py-3 border-2 shadow-sm"
+                                       placeholder="Nhập mật khẩu mới" required>
+                                @error('password')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
 
-                        <div class="form-floating mb-3">
-                            <input type="password" class="form-control rounded-pill" id="password" name="password" placeholder="Mật khẩu" required>
-                            <label for="password">Mật khẩu</label>
-                            @error('password') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
+                            <!-- Xác nhận mật khẩu -->
+                            <div class="mb-3">
+                                <label for="password_confirmation" class="form-label">Xác nhận mật khẩu</label>
+                                <input type="password" id="password_confirmation" name="password_confirmation"
+                                       class="form-control rounded-pill px-4 py-3 border-2 shadow-sm"
+                                       placeholder="Xác nhận lại mật khẩu" required>
+                            </div>
 
-                        <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary rounded-pill">🚀 Đăng nhập</button>
-                        </div>
+                            <!-- Nút submit -->
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary rounded-pill ">
+                                    ✅ Đặt lại mật khẩu
+                                </button>
+                            </div>
+                        </form>
 
-                        <div class="text-center mb-3">
-                            <p class="mb-1">Bạn chưa có tài khoản?
-                                <a href="{{ route('auth.register') }}" class="text-decoration-none">Đăng ký</a>
-                            </p>
-
-                            @if (Route::has('password.request'))
-                            <a class="text-decoration-none small" href="{{ route('password.request') }}">❓ Quên mật khẩu?</a>
-                            @endif
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </main>
-
-    <!-- Footer -->
+    </div>
+</main>
     <footer id="footer" class="footer-area footer-2 section bg-light mt-auto">
         <div class="footer-top footer-top-2 text-center ptb-60"></div>
         <div class="footer-bottom footer-bottom-2 text-center gray-bg py-3">

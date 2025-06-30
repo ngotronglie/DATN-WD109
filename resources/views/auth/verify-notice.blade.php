@@ -11,7 +11,7 @@
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('subas/img/icon/favicon.png') }}">
 
-    <!-- All CSS Files -->
+    <!-- CSS Files -->
     <link rel="stylesheet" href="{{ asset('subas/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('subas/lib/css/nivo-slider.css') }}">
     <link rel="stylesheet" href="{{ asset('subas/css/core.css') }}">
@@ -20,20 +20,17 @@
     <link rel="stylesheet" href="{{ asset('subas/css/responsive.css') }}">
     <link rel="stylesheet" href="{{ asset('subas/css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('subas/css/style-customizer.css') }}">
-    <link href="#" data-style="styles" rel="stylesheet">
 
-    <!-- Modernizr JS -->
+    <!-- Modernizr -->
     <script src="{{ asset('subas/js/vendor/modernizr-3.11.2.min.js') }}"></script>
 
-    <!-- Flex layout để đẩy footer xuống cuối -->
+    <!-- Optional: custom styles -->
     <style>
-        html, body {
-            height: 100%;
-            margin: 0;
+        body {
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
         }
-
         main {
             flex: 1;
         }
@@ -44,11 +41,14 @@
     <!-- Header -->
     <header class="bg-white shadow py-3">
         <div class="container-fluid d-flex align-items-center justify-content-between px-4">
+            <!-- Logo -->
             <div class="logo">
                 <a href="{{ route('home') }}">
                     <img src="{{ asset('frontend/img/logo/logo.png') }}" alt="Logo" height="40">
                 </a>
             </div>
+
+            <!-- Menu -->
             <nav class="d-none d-lg-block">
                 <ul class="nav justify-content-center">
                     <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Home</a></li>
@@ -57,12 +57,14 @@
                     <li class="nav-item"><a class="nav-link" href="#">Pages</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
                     @auth
-                    @if (Auth::user()->role_id == 2)
-                    <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản trị</a></li>
-                    @endif
+                        @if (Auth::user()->role_id == 2)
+                        <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản trị</a></li>
+                        @endif
                     @endauth
                 </ul>
             </nav>
+
+            <!-- Auth Links -->
             <div class="d-flex align-items-center gap-3">
                 <a href="{{ route('auth.login') }}">🔐 Đăng nhập</a>
                 <a href="{{ route('auth.register') }}">➕ Đăng ký</a>
@@ -71,52 +73,32 @@
             </div>
         </div>
     </header>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-4 text-center p-4">
+                <div class="card-body">
+                    <h2 class="text-success mb-3">🎉 Đăng ký thành công!</h2>
 
-    <!-- Main Content -->
-    <main class="py-5 bg-light">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6 bg-white p-5 shadow rounded">
-                    <h3 class="mb-4 text-center fw-bold">🔐 Đăng nhập</h3>
+                    <p class="fs-5">
+                        Một liên kết xác minh đã được gửi tới email:
+                        <strong>
+                            <a href="https://mail.google.com/mail/u/{{ $user->email }}" target="_blank" class="text-decoration-none text-primary">
+                                {{ $user->email }}
+                            </a>
+                        </strong>
+                    </p>
 
-                    @if(session('error'))
-                    <div class="alert alert-danger">{{ session('error') }}</div>
-                    @endif
-
-                    <form action="{{ route('login.store') }}" method="POST">
-                        @csrf
-                        <div class="form-floating mb-3">
-                            <input type="email" class="form-control rounded-pill" id="email" name="email" placeholder="Email" required>
-                            <label for="email">Email</label>
-                            @error('email') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
-
-                        <div class="form-floating mb-3">
-                            <input type="password" class="form-control rounded-pill" id="password" name="password" placeholder="Mật khẩu" required>
-                            <label for="password">Mật khẩu</label>
-                            @error('password') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
-
-                        <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary rounded-pill">🚀 Đăng nhập</button>
-                        </div>
-
-                        <div class="text-center mb-3">
-                            <p class="mb-1">Bạn chưa có tài khoản?
-                                <a href="{{ route('auth.register') }}" class="text-decoration-none">Đăng ký</a>
-                            </p>
-
-                            @if (Route::has('password.request'))
-                            <a class="text-decoration-none small" href="{{ route('password.request') }}">❓ Quên mật khẩu?</a>
-                            @endif
-                        </div>
-                    </form>
+                    <p class="mt-4">
+                        <a href="{{ route('auth.login') }}" class="btn btn-primary rounded-pill px-4 py-2">
+                            👉 Quay lại trang đăng nhập
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>
-    </main>
-
-    <!-- Footer -->
+    </div>
+</div>
     <footer id="footer" class="footer-area footer-2 section bg-light mt-auto">
         <div class="footer-top footer-top-2 text-center ptb-60"></div>
         <div class="footer-bottom footer-bottom-2 text-center gray-bg py-3">

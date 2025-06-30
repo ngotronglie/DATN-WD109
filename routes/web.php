@@ -9,8 +9,10 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Client\ClientController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\FavoriteController;
@@ -80,6 +82,16 @@ Route::post('/register', [RegisterController::class, 'store'])->name('register.s
 
 Route::get('/login', [LoginController::class, 'create'])->name( 'auth.login');
 Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
+
+// Form đặt lại mật khẩu (từ email gửi về)
+Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
+
+Route::get('/verify-email/{email}/{token}', [VerifyEmailController::class, 'verify'])->name('verify.email');
+
 
 Route::middleware('auth')->group(function () {
     // Các route yêu cầu người dùng đã đăng nhập
