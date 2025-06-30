@@ -168,4 +168,20 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Orders
     Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
+
+    // cac route 
+    Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
+    Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+    Route::resource('roles', App\Http\Controllers\Admin\RoleController::class);
+    Route::resource('comments', App\Http\Controllers\Admin\CommentController::class);
+    Route::resource('favorites', App\Http\Controllers\Admin\FavoriteController::class);
+    Route::resource('vouchers', App\Http\Controllers\Admin\VoucherController::class);
+    Route::resource('contacts', App\Http\Controllers\Admin\ContactController::class);
+    Route::resource('colors', App\Http\Controllers\Admin\ColorController::class);
+    Route::resource('capacities', App\Http\Controllers\Admin\CapacityController::class);
+    Route::resource('product_variants', App\Http\Controllers\Admin\ProductVariantController::class);
+    Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
+    Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
+   
 });
