@@ -337,7 +337,7 @@ document.getElementById('go-to-checkout').onclick = function(e) {
         alert('Số điện thoại phải gồm 10 số và bắt đầu bằng 0!');
         return;
     }
-    // Lưu cartData và user info vào localStorage
+    // Lưu cartData, user info và voucher vào localStorage
     const userInfo = {
         fullname: document.getElementById('fullname').value,
         phone: document.getElementById('phone').value,
@@ -347,6 +347,17 @@ document.getElementById('go-to-checkout').onclick = function(e) {
     };
     localStorage.setItem('checkout_cart', JSON.stringify(cartData));
     localStorage.setItem('checkout_user', JSON.stringify(userInfo));
+    const voucherCode = document.getElementById('voucher-input')?.value.trim() || '';
+    if (window.currentVoucher) {
+        localStorage.setItem('checkout_voucher', JSON.stringify(window.currentVoucher));
+    } else {
+        localStorage.removeItem('checkout_voucher');
+    }
+    if (voucherCode) {
+        localStorage.setItem('checkout_voucher_code', voucherCode);
+    } else {
+        localStorage.removeItem('checkout_voucher_code');
+    }
     window.location.href = '/checkout';
 };
 </script>

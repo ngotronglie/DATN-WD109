@@ -402,4 +402,54 @@ class ClientController extends Controller
             return response()->json(['success' => true]);
         }
     }
+
+    public function apiCheckout(Request $request)
+    {
+        try {
+            $data = $request->all();
+            $userId = auth()->check() ? auth()->id() : 0;
+            $orderCode = strtoupper(bin2hex(random_bytes(6)));
+            $order = new \App\Models\Order();
+            $order->user_id = $userId;
+            $order->price = $data['price'] ?? 0;
+            $order->name = $data['name'] ?? '';
+            $order->address = $data['address'] ?? '';
+            $order->email = $data['email'] ?? '';
+            $order->phone = $data['phone'] ?? '';
+            $order->note = $data['note'] ?? '';
+            $order->total_amount = $data['total_amount'] ?? 0;
+            $order->status = 'chờ xử lí';
+            $order->payment_method = $data['payment_method'] ?? 'COD';
+            $order->order_code = $orderCode;
+            $order->voucher_id = $data['voucher_id'] ?? null;
+            $order->status_method = 'chưa thanh toán';
+            $order->save();
+            // Lưu chi tiết đơn hàng
+            if (!empty($data['items']) && is_array($data['items'])) {
+                foreach ($data['items'] as $item) {
+                    \App\Models\OrderDetail::create([
+                        'order_id' => $order->id,
+                        'product_variant_id' => $item['variant_id'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                    ]);
+                }
+            }
+            // Xóa cart
+            if ($userId) {
+                // Nếu là user đã đăng nhập, xóa cart DB
+                $cart = \App\Models\Cart::where('user_id', $userId)->first();
+                if ($cart) {
+                    $cart->items()->delete();
+                    $cart->delete();
+                }
+            } else {
+                // Nếu là khách, xóa session cart
+                \Session::forget('cart');
+            }
+            return response()->json(['success' => true, 'order_id' => $order->id, 'order_code' => $orderCode]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }

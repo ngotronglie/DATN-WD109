@@ -86,6 +86,7 @@ Route::get('/api/cart', [\App\Http\Controllers\Client\ClientController::class, '
 Route::get('/api/user', [\App\Http\Controllers\Client\ClientController::class, 'apiGetUser']);
 Route::post('/api/cart/update-qty', [\App\Http\Controllers\Client\ClientController::class, 'apiUpdateCartQty']);
 Route::post('/api/cart/remove', [\App\Http\Controllers\Client\ClientController::class, 'apiRemoveCartItem']);
+Route::post('/api/checkout', [\App\Http\Controllers\Client\ClientController::class, 'apiCheckout']);
 
 Route::get('/register', [RegisterController::class, 'create'])->name('auth.register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
