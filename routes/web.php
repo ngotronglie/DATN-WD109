@@ -16,6 +16,10 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Client\ClientController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\CommentController;
+use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
+use App\Http\Controllers\Admin\ProductVariantController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -70,6 +74,10 @@ Route::get( '/blog', function () {
 Route::get( '/blogdetail', function () {
     return view('layouts.user.blogdetail');
 })->name('blogdetail');
+
+Route::get('/checkout', function () {
+    return view('layouts.user.checkout');
+});
 
 Route::get('/api/product-variant', [\App\Http\Controllers\Client\ClientController::class, 'getVariant']);
 Route::get('/api/voucher', [\App\Http\Controllers\Client\ClientController::class, 'getVoucher']);
@@ -187,20 +195,20 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('/contacts/{contact}/mark-replied', [ContactController::class, 'markAsReplied'])->name('contacts.markReplied');
 
     // Orders
-    Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
+    Route::resource('orders', OrderController::class);
 
     // cac route
     Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
     Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
     Route::resource('roles', App\Http\Controllers\Admin\RoleController::class);
-    Route::resource('comments', App\Http\Controllers\Admin\CommentController::class);
-    Route::resource('favorites', App\Http\Controllers\Admin\FavoriteController::class);
+    Route::resource('comments', CommentController::class);
+    Route::resource('favorites', AdminFavoriteController::class);
     Route::resource('vouchers', App\Http\Controllers\Admin\VoucherController::class);
     Route::resource('contacts', App\Http\Controllers\Admin\ContactController::class);
     Route::resource('colors', App\Http\Controllers\Admin\ColorController::class);
     Route::resource('capacities', App\Http\Controllers\Admin\CapacityController::class);
-    Route::resource('product_variants', App\Http\Controllers\Admin\ProductVariantController::class);
+    Route::resource('product_variants', ProductVariantController::class);
     Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
     Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
 

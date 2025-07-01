@@ -53,6 +53,10 @@
                                         <strong class="me-2">Tổng tiền:</strong>
                                         <span id="cart-total" style="font-size:1.2em;color:#d9534f;font-weight:600;">0đ</span>
                                     </div>
+                                    <div class="d-flex align-items-center mt-2">
+                                        <strong class="me-2">Phí ship:</strong>
+                                        <span id="cart-shipping" style="color:#ff9800;font-weight:600;">0đ</span>
+                                    </div>
                                     <div class="voucher-box p-2 rounded" id="voucher-box" style="background:#f8f9fa;">
                                         <div class="input-group mb-2">
                                             <input type="text" class="form-control" id="voucher-input" placeholder="Nhập mã giảm giá">
@@ -92,7 +96,7 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="note" class="form-label">Ghi chú</label>
-                                        <input type="text" class="form-control" id="note" required>
+                                        <input type="text" class="form-control" id="note" >
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Phương thức thanh toán</label>
@@ -107,7 +111,10 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn btn-primary w-100">Đặt hàng</button>
+                                     <!-- Thêm nút Đặt hàng ở dưới bảng giỏ hàng -->
+                                <div class="text-end mt-3">
+                                    <button class="btn btn-lg btn-success" id="go-to-checkout" type="button">Đặt hàng</button>
+                                </div>
                                 </form>
                             </div>
                         </div>
@@ -133,19 +140,30 @@ function getCartTotal(cart) {
 
 function updateCartSummary() {
     const total = getCartTotal(cartData);
+    let shipping = 0;
+    if (total > 2000000) {
+        shipping = 0;
+        document.getElementById('cart-shipping').innerText = 'Miễn phí';
+    } else if (total > 0) {
+        shipping = 50000;
+        document.getElementById('cart-shipping').innerText = formatCurrency(shipping);
+    } else {
+        document.getElementById('cart-shipping').innerText = '0đ';
+    }
     document.getElementById('cart-total').innerText = formatCurrency(total);
     // Nếu có voucher hợp lệ thì tính lại
+    let discountAmount = 0;
     if (window.currentVoucher) {
         const { discount, min_money, max_money } = window.currentVoucher;
-        let discountAmount = Math.floor(total * (discount / 100));
+        discountAmount = Math.floor(total * (discount / 100));
         if (min_money && discountAmount < min_money) discountAmount = min_money;
         if (max_money && discountAmount > max_money) discountAmount = max_money;
         document.getElementById('cart-discount').innerText = '-' + formatCurrency(discountAmount);
         document.getElementById('discount-row').style.display = '';
-        document.getElementById('cart-final').innerText = formatCurrency(total - discountAmount);
+        document.getElementById('cart-final').innerText = formatCurrency(total - discountAmount + shipping);
     } else {
         document.getElementById('discount-row').style.display = 'none';
-        document.getElementById('cart-final').innerText = formatCurrency(total);
+        document.getElementById('cart-final').innerText = formatCurrency(total + shipping);
     }
 }
 
@@ -305,6 +323,32 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     } catch (e) {}
 });
+
+document.getElementById('go-to-checkout').onclick = function(e) {
+    if (e) e.preventDefault();
+    // viết require số điện thoại ở đây
+    const phone = document.getElementById('phone').value.trim();
+    // Kiểm tra rỗng hoặc không đúng định dạng (10 số, bắt đầu bằng 0)
+    if (!phone) {
+        alert('Vui lòng nhập số điện thoại!');
+        return;
+    }
+    if (!/^0\d{9}$/.test(phone)) {
+        alert('Số điện thoại phải gồm 10 số và bắt đầu bằng 0!');
+        return;
+    }
+    // Lưu cartData và user info vào localStorage
+    const userInfo = {
+        fullname: document.getElementById('fullname').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value,
+        note: document.getElementById('note').value,
+        payment: document.querySelector('input[name="payment"]:checked')?.value || 'cod'
+    };
+    localStorage.setItem('checkout_cart', JSON.stringify(cartData));
+    localStorage.setItem('checkout_user', JSON.stringify(userInfo));
+    window.location.href = '/checkout';
+};
 </script>
 <style>
 .qty-btn-cart {
