@@ -1,3 +1,28 @@
+@if(isset($banners) && count($banners) > 0)
+<div id="carouselExample" class="carousel slide">
+    <div class="carousel-inner">
+        @foreach($banners as $key => $banner)
+            <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
+                <img src="{{ asset('images/banners/' . $banner->img) }}" class="d-block w-100" alt="{{ $banner->title }}">
+                @if($banner->title || $banner->description)
+                <div class="carousel-caption d-none d-md-block">
+                    <h5>{{ $banner->title }}</h5>
+                    <p>{{ $banner->description }}</p>
+                </div>
+                @endif
+            </div>
+        @endforeach
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+@else
 <div id="carouselExample" class="carousel slide">
     <div class="carousel-inner">
         <div class="carousel-item active">
@@ -22,6 +47,7 @@
         <span class="visually-hidden">Next</span>
     </button>
 </div>
+@endif
 
 <style>
 .carousel-inner .carousel-item {

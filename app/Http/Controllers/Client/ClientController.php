@@ -49,7 +49,8 @@ class ClientController extends Controller
         ) pv ON pv.product_id = p.id
         WHERE p.is_active = 1
         LIMIT 0, 8;');
-        return view('layouts.user.main', compact('products'));
+        $banners = Banner::where('is_active', 1)->get();
+        return view('layouts.user.main', compact('products', 'banners'));
     }
 
     public function products()
