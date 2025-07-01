@@ -178,19 +178,69 @@ function renderCartTable(cart) {
 }
 
 function removeCartItem(index) {
-    cartData.splice(index, 1);
-    renderCartTable(cartData);
+    const item = cartData[index];
+    fetch('/api/cart/remove', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        },
+        body: JSON.stringify({ variant_id: item.variant_id })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.success) {
+            cartData.splice(index, 1);
+            renderCartTable(cartData);
+        } else {
+            alert(res.message || 'Lỗi xóa sản phẩm');
+        }
+    });
 }
 
 function increaseQty(index) {
-    cartData[index].quantity++;
-    renderCartTable(cartData);
+    const item = cartData[index];
+    const newQty = item.quantity + 1;
+    fetch('/api/cart/update-qty', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        },
+        body: JSON.stringify({ variant_id: item.variant_id, quantity: newQty })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.success) {
+            cartData[index].quantity = newQty;
+            renderCartTable(cartData);
+        } else {
+            alert(res.message || 'Lỗi cập nhật số lượng');
+        }
+    });
 }
 
 function decreaseQty(index) {
-    if (cartData[index].quantity > 1) {
-        cartData[index].quantity--;
-        renderCartTable(cartData);
+    const item = cartData[index];
+    if (item.quantity > 1) {
+        const newQty = item.quantity - 1;
+        fetch('/api/cart/update-qty', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+            },
+            body: JSON.stringify({ variant_id: item.variant_id, quantity: newQty })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                cartData[index].quantity = newQty;
+                renderCartTable(cartData);
+            } else {
+                alert(res.message || 'Lỗi cập nhật số lượng');
+            }
+        });
     }
 }
 
@@ -283,3 +333,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 .voucher-box { border: 1.5px dashed #ccc; transition: border 0.2s; }
 </style>
 @endsection
+
+@push('head')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+@endpush

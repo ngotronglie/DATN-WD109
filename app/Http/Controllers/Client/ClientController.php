@@ -304,36 +304,102 @@ class ClientController extends Controller
         try {
             // Lấy dữ liệu đã được validate
             $validatedData = $request->validated();
-            
+
             // Thêm user_id nếu user đã đăng nhập (ưu tiên từ request, nếu không có thì lấy từ auth)
             if (auth()->check()) {
                 $validatedData['user_id'] = $request->input('user_id') ?? auth()->id();
             }
-            
+
             // Debug: Log dữ liệu
             \Log::info('Contact form data:', $validatedData);
             \Log::info('User authenticated:', ['user_id' => auth()->id() ?? 'not logged in']);
-            
+
             // Lưu vào database
             $contact = Contact::create($validatedData);
-            
+
             \Log::info('Contact created successfully:', ['id' => $contact->id, 'user_id' => $contact->user_id]);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất có thể.'
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('Contact form error:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra. Vui lòng thử lại sau.'
             ], 500);
+        }
+    }
+
+    // Cập nhật số lượng sản phẩm trong giỏ hàng
+    public function apiUpdateCartQty(Request $request)
+    {
+        $variantId = $request->input('variant_id');
+        $quantity = $request->input('quantity');
+        if (!$variantId || !$quantity || $quantity < 1) {
+            return response()->json(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
+        }
+        if (Auth::check()) {
+            $user = Auth::user();
+            $cart = Cart::where('user_id', $user->id)->first();
+            if (!$cart) return response()->json(['success' => false, 'message' => 'Không tìm thấy giỏ hàng']);
+            $item = CartItem::where('cart_id', $cart->id)
+                ->where('product_variant_id', $variantId)
+                ->first();
+            if ($item) {
+                $item->quantity = $quantity;
+                $item->save();
+                return response()->json(['success' => true]);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm']);
+            }
+        } else {
+            $cart = Session::get('cart', []);
+            foreach ($cart as &$item) {
+                if ($item['product_variant_id'] == $variantId) {
+                    $item['quantity'] = $quantity;
+                    break;
+                }
+            }
+            unset($item);
+            Session::put('cart', $cart);
+            return response()->json(['success' => true]);
+        }
+    }
+
+    // Xóa sản phẩm khỏi giỏ hàng
+    public function apiRemoveCartItem(Request $request)
+    {
+        $variantId = $request->input('variant_id');
+        if (!$variantId) {
+            return response()->json(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
+        }
+        if (Auth::check()) {
+            $user = Auth::user();
+            $cart = Cart::where('user_id', $user->id)->first();
+            if (!$cart) return response()->json(['success' => false, 'message' => 'Không tìm thấy giỏ hàng']);
+            $item = CartItem::where('cart_id', $cart->id)
+                ->where('product_variant_id', $variantId)
+                ->first();
+            if ($item) {
+                $item->delete();
+                return response()->json(['success' => true]);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm']);
+            }
+        } else {
+            $cart = Session::get('cart', []);
+            $cart = array_filter($cart, function($item) use ($variantId) {
+                return $item['product_variant_id'] != $variantId;
+            });
+            Session::put('cart', array_values($cart));
+            return response()->json(['success' => true]);
         }
     }
 }

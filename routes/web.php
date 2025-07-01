@@ -76,6 +76,8 @@ Route::get('/api/voucher', [\App\Http\Controllers\Client\ClientController::class
 Route::post('/api/add-to-cart', [\App\Http\Controllers\Client\ClientController::class, 'apiAddToCart']);
 Route::get('/api/cart', [\App\Http\Controllers\Client\ClientController::class, 'apiGetCart']);
 Route::get('/api/user', [\App\Http\Controllers\Client\ClientController::class, 'apiGetUser']);
+Route::post('/api/cart/update-qty', [\App\Http\Controllers\Client\ClientController::class, 'apiUpdateCartQty']);
+Route::post('/api/cart/remove', [\App\Http\Controllers\Client\ClientController::class, 'apiRemoveCartItem']);
 
 Route::get('/register', [RegisterController::class, 'create'])->name('auth.register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
@@ -187,7 +189,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Orders
     Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
 
-    // cac route 
+    // cac route
     Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
     Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
@@ -201,5 +203,5 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('product_variants', App\Http\Controllers\Admin\ProductVariantController::class);
     Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
     Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
-   
+
 });
