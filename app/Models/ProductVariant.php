@@ -13,6 +13,7 @@ class ProductVariant extends Model
         'product_id',
         'color_id',
         'capacity_id',
+        'image',
         'price',
         'price_sale',
         'quantity'
@@ -36,4 +37,3 @@ class ProductVariant extends Model
         return $this->belongsTo(Capacity::class);
     }
 }
- 

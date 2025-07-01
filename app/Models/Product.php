@@ -30,6 +30,22 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
+    /**
+     * Relationship với Favorite - Product có nhiều favorites
+     */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    /**
+     * Relationship với User thông qua Favorite - Product được yêu thích bởi nhiều users
+     */
+    public function favoritedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'favorites');
+    }
+
     // Get all active products with pagination
     public function loadAll()
     {

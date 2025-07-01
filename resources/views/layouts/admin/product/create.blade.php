@@ -61,6 +61,27 @@
                                 @enderror
                             </div>
 
+                            <div class="row">
+                                <div class="form-group col-md-4">
+                                    <label for="default_price">Giá mặc định</label>
+                                    <input type="number" class="form-control" id="default_price"
+                                           placeholder="Nhập giá mặc định cho tất cả biến thể" min="0">
+                                    <small class="form-text text-muted">Giá này sẽ được áp dụng cho tất cả biến thể khi tạo mới</small>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="default_price_sale">Giá khuyến mãi mặc định</label>
+                                    <input type="number" class="form-control" id="default_price_sale"
+                                           placeholder="Nhập giá khuyến mãi mặc định" min="0">
+                                    <small class="form-text text-muted">Giá khuyến mãi này sẽ được áp dụng cho tất cả biến thể khi tạo mới</small>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="default_quantity">Số lượng mặc định</label>
+                                    <input type="number" class="form-control" id="default_quantity"
+                                           placeholder="Nhập số lượng mặc định cho tất cả biến thể" min="0">
+                                    <small class="form-text text-muted">Số lượng này sẽ được áp dụng cho tất cả biến thể khi tạo mới</small>
+                                </div>
+                            </div>
+
                             <div class="row mt-4">
                                 <div class="col-12">
                                     <h4>Biến thể sản phẩm</h4>
@@ -103,6 +124,7 @@
                                                     <th>Giá <span class="text-danger">*</span></th>
                                                     <th>Giá khuyến mãi</th>
                                                     <th>Số lượng <span class="text-danger">*</span></th>
+                                                    <th>Ảnh sản phẩm</th>
                                                     <th>Thao tác</th>
                                                 </tr>
                                             </thead>
@@ -137,6 +159,60 @@ document.addEventListener('DOMContentLoaded', function() {
     const variantsTable = document.getElementById('variants-table').getElementsByTagName('tbody')[0];
     const form = document.getElementById('productForm');
 
+    // Thêm event listener cho nút thêm ảnh
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('add-image-btn')) {
+            const variantIndex = e.target.getAttribute('data-variant-index');
+            const fileInput = document.querySelector(`input[name="variants[${variantIndex}][image]"]`);
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+    });
+
+    // Hàm xử lý upload ảnh
+    window.handleImageUpload = function(input, variantIndex) {
+        const previewContainer = document.getElementById(`preview-${variantIndex}`);
+        if (!previewContainer) return;
+
+        previewContainer.innerHTML = ''; // Chỉ 1 ảnh, xóa cũ
+
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            if (!file.type.startsWith('image/')) {
+                alert('Vui lòng chỉ chọn file ảnh!');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'image-preview';
+                previewDiv.innerHTML = `
+                    <img src="${e.target.result}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                    <button type="button" class="btn btn-danger btn-sm mt-1 remove-image"
+                            onclick="removeImage(this, ${variantIndex})">
+                        Xóa
+                    </button>
+                `;
+                previewContainer.appendChild(previewDiv);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Hàm xóa ảnh
+    window.removeImage = function(button, variantIndex) {
+        const previewDiv = button.closest('.image-preview');
+        if (previewDiv) {
+            previewDiv.remove();
+        }
+        // Xóa file khỏi input
+        const input = document.querySelector(`input[name="variants[${variantIndex}][image]"]`);
+        if (input) input.value = '';
+    };
+
     // Hàm tạo các biến thể
     function generateVariants() {
         const selectedColors = Array.from(colorSelect.selectedOptions).map(option => ({
@@ -147,6 +223,11 @@ document.addEventListener('DOMContentLoaded', function() {
             id: option.value,
             name: option.text
         }));
+
+        // Lấy giá trị mặc định
+        const defaultPrice = document.getElementById('default_price').value || '';
+        const defaultPriceSale = document.getElementById('default_price_sale').value || '';
+        const defaultQuantity = document.getElementById('default_quantity').value || '';
 
         // Xóa nội dung cũ của bảng
         variantsTable.innerHTML = '';
@@ -168,13 +249,30 @@ document.addEventListener('DOMContentLoaded', function() {
                         <input type="hidden" name="variants[${variantIndex}][capacity_id]" value="${capacity.id}">
                     </td>
                     <td>
-                        <input type="number" class="form-control" name="variants[${variantIndex}][price]" required min="0">
+                        <input type="number" class="form-control" name="variants[${variantIndex}][price]"
+                               value="${defaultPrice}" required min="0">
                     </td>
                     <td>
-                        <input type="number" class="form-control" name="variants[${variantIndex}][price_sale]" min="0">
+                        <input type="number" class="form-control" name="variants[${variantIndex}][price_sale]"
+                               value="${defaultPriceSale}" min="0">
                     </td>
                     <td>
-                        <input type="number" class="form-control" name="variants[${variantIndex}][quantity]" required min="0">
+                        <input type="number" class="form-control" name="variants[${variantIndex}][quantity]"
+                               value="${defaultQuantity}" required min="0">
+                    </td>
+                    <td>
+                        <div class="variant-images">
+                            <div id="preview-${variantIndex}" class="image-preview-container"></div>
+                            <input type="file" name="variants[${variantIndex}][image]"
+                                   class="form-control variant-image-input"
+                                   accept="image/*"
+                                   style="display: none;"
+                                   onchange="handleImageUpload(this, ${variantIndex})">
+                            <button type="button" class="btn btn-primary btn-sm mt-2 add-image-btn"
+                                    data-variant-index="${variantIndex}">
+                                Thêm ảnh
+                            </button>
+                        </div>
                     </td>
                     <td>
                         <button type="button" class="btn btn-danger btn-sm delete-variant">
@@ -227,6 +325,42 @@ document.addEventListener('DOMContentLoaded', function() {
     colorSelect.addEventListener('change', generateVariants);
     capacitySelect.addEventListener('change', generateVariants);
 
+    // Lắng nghe sự kiện thay đổi của giá và số lượng mặc định
+    document.getElementById('default_price').addEventListener('input', updateExistingVariants);
+    document.getElementById('default_price_sale').addEventListener('input', updateExistingVariants);
+    document.getElementById('default_quantity').addEventListener('input', updateExistingVariants);
+
+    // Hàm cập nhật giá trị cho các biến thể hiện tại
+    function updateExistingVariants() {
+        const defaultPrice = document.getElementById('default_price').value;
+        const defaultPriceSale = document.getElementById('default_price_sale').value;
+        const defaultQuantity = document.getElementById('default_quantity').value;
+
+        // Cập nhật giá cho tất cả biến thể hiện tại
+        const priceInputs = variantsTable.querySelectorAll('input[name*="[price]"]');
+        priceInputs.forEach(input => {
+            if (defaultPrice) {
+                input.value = defaultPrice;
+            }
+        });
+
+        // Cập nhật giá khuyến mãi cho tất cả biến thể hiện tại
+        const priceSaleInputs = variantsTable.querySelectorAll('input[name*="[price_sale]"]');
+        priceSaleInputs.forEach(input => {
+            if (defaultPriceSale) {
+                input.value = defaultPriceSale;
+            }
+        });
+
+        // Cập nhật số lượng cho tất cả biến thể hiện tại
+        const quantityInputs = variantsTable.querySelectorAll('input[name*="[quantity]"]');
+        quantityInputs.forEach(input => {
+            if (defaultQuantity) {
+                input.value = defaultQuantity;
+            }
+        });
+    }
+
     // Xử lý submit form
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -259,82 +393,31 @@ document.addEventListener('DOMContentLoaded', function() {
         form.submit();
     });
 });
-
-// Hàm xử lý upload ảnh
-function handleImageUpload(input, variantIndex) {
-    const previewContainer = document.getElementById(`preview-${variantIndex}`);
-
-    if (input.files) {
-        Array.from(input.files).forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const previewDiv = document.createElement('div');
-                previewDiv.className = 'image-preview';
-                previewDiv.innerHTML = `
-                    <img src="${e.target.result}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
-                    <button type="button" class="btn btn-danger btn-sm mt-1" onclick="removeImage(this, ${variantIndex}, ${previewContainer.children.length})">
-                        <svg width="18px" height="18px" viewBox="0 0 24.00 24.00" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M10 12V17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M14 12V17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M4 7H20" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6 10V18C6 19.6569 7.34315 21 9 21H15C16.6569 21 18 19.6569 18 18V10" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7H9V5Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
-                    </button>
-                `;
-                previewContainer.appendChild(previewDiv);
-            }
-            reader.readAsDataURL(file);
-        });
-    }
-}
-
-function removeImage(button, variantIndex, imageIndex) {
-    const previewDiv = button.closest('.image-preview');
-    previewDiv.remove();
-
-    // Update the FileList in the input
-    const input = document.querySelector(`input[name="variants[${variantIndex}][images][]"]`);
-    const dt = new DataTransfer();
-    const files = input.files;
-
-    for (let i = 0; i < files.length; i++) {
-        if (i !== imageIndex) {
-            dt.items.add(files[i]);
-        }
-    }
-
-    input.files = dt.files;
-}
-
-// Thêm hàm để thêm ảnh mới
-function addMoreImages(variantIndex) {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.name = `variants[${variantIndex}][images][]`;
-    input.className = 'form-control variant-image-input';
-    input.multiple = true;
-    input.accept = 'image/*';
-    input.style.display = 'none';
-    input.onchange = function() {
-        handleImageUpload(this, variantIndex);
-    };
-    document.body.appendChild(input);
-    input.click();
-}
 </script>
 
 <style>
 .variant-images {
     position: relative;
+    min-height: 100px;
 }
 .image-preview-container {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 10px;
+    min-height: 50px;
 }
 .image-preview {
     position: relative;
     display: inline-block;
+    margin: 5px;
 }
 .image-preview img {
     border: 1px solid #ddd;
     border-radius: 4px;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
 }
 .image-preview button {
     position: absolute;
@@ -342,6 +425,10 @@ function addMoreImages(variantIndex) {
     right: -10px;
     padding: 2px 6px;
     font-size: 12px;
+    z-index: 1;
+}
+.add-image-btn {
+    margin-top: 10px;
 }
 </style>
 @endsection

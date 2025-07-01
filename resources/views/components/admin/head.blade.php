@@ -15,6 +15,9 @@
      <!-- App favicon -->
      <link rel="shortcut icon" href="{{ asset('dashboard/assets/images/favicon.ico') }}" />
 
+     <!-- CSRF Token -->
+     <meta name="csrf-token" content="{{ csrf_token() }}">
+
      <!-- Vendor css (Require in all Page) -->
      <link href="{{ asset('dashboard/assets/css/vendor.min.css') }}" rel="stylesheet" type="text/css" />
 

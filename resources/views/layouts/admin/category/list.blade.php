@@ -29,7 +29,7 @@
                                 <h3 class="card-title mb-0">Danh sách Categories</h3>
                             </div>
                             <div class="col-6 text-end">
-                                <a href="{{ route('categories.create') }}" class="btn btn-primary btn-sm">
+                                <a href="{{ route('admin.categories.create') }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-plus"></i> Thêm mới
                                 </a>
                             </div>
@@ -78,11 +78,11 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ route('categories.edit', $category->ID) }}"
+                                            <a href="{{ route('admin.categories.edit', $category->ID) }}"
                                                 class="btn btn-info btn-sm">
                                                 <i class="fas fa-edit"></i> Sửa
                                             </a>
-                                            <form action="{{ route('categories.destroy', $category->ID) }}" method="POST"
+                                            <form action="{{ route('admin.categories.destroy', $category->ID) }}" method="POST"
                                                 class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
