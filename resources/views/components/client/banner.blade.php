@@ -3,11 +3,11 @@
     <div class="carousel-inner">
         @foreach($banners as $key => $banner)
             <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
-                <img src="{{ asset('images/banners/' . $banner->img) }}" class="d-block w-100" alt="{{ $banner->title }}">
+                <img src="{{ asset('images/banners/' . $banner->img) }}" class="d-block w-100 banner-img" alt="{{ $banner->title }}">
                 @if($banner->title || $banner->description)
-                <div class="carousel-caption d-none d-md-block">
-                    <h5>{{ $banner->title }}</h5>
-                    <p>{{ $banner->description }}</p>
+                <div class="carousel-caption custom-caption d-none d-md-block">
+                    <h5 class="banner-title">{{ $banner->title }}</h5>
+                    <p class="banner-desc">{{ $banner->description }}</p>
                 </div>
                 @endif
             </div>
@@ -50,6 +50,18 @@
 @endif
 
 <style>
+.banner-img {
+    max-height: 350px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    background: #f8f9fa;
+}
+.carousel-inner {
+    border-radius: 16px;
+    overflow: hidden;
+}
 .carousel-inner .carousel-item {
     opacity: 0;
     transition: opacity 0.7s ease-in-out;
@@ -67,5 +79,42 @@
 #carouselExample {
     position: relative;
     overflow: hidden;
+    margin-bottom: 24px;
+}
+.custom-caption {
+    background: rgba(0,0,0,0.45);
+    border-radius: 12px;
+    padding: 18px 28px 14px 28px;
+    left: 50%;
+    bottom: 32px;
+    transform: translateX(-50%);
+    max-width: 80%;
+    text-align: center;
+}
+.banner-title {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.banner-desc {
+    color: #f1f1f1;
+    font-size: 1.1rem;
+    margin-bottom: 0;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.18);
+}
+@media (max-width: 768px) {
+    .custom-caption {
+        padding: 10px 10px 8px 10px;
+        max-width: 98%;
+        bottom: 12px;
+    }
+    .banner-title {
+        font-size: 1.2rem;
+    }
+    .banner-desc {
+        font-size: 0.95rem;
+    }
 }
 </style>
