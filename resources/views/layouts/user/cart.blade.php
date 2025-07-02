@@ -109,6 +109,10 @@
                                                 <input class="form-check-input" type="radio" name="payment" id="bank" value="bank">
                                                 <label class="form-check-label" for="bank">Chuyển khoản ngân hàng</label>
                                             </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="payment" id="vnpay" value="vnpay">
+                                                <label class="form-check-label" for="vnpay">Thanh toán online VNPAY</label>
+                                            </div>
                                         </div>
                                     </div>
                                      <!-- Thêm nút Đặt hàng ở dưới bảng giỏ hàng -->

@@ -214,3 +214,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
 
 });
+
+// Route VNPAY
+Route::get('/vnpay/payment', [ClientController::class, 'vnpayPayment'])->name('vnpay.payment');
+Route::get('/vnpay/return', [ClientController::class, 'vnpayReturn'])->name('vnpay.return');
