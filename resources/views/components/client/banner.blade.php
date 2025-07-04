@@ -61,7 +61,7 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
-    border-radius: 8px;
+    border-radius: 16px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     background: #f8f8f8;
 }
@@ -110,7 +110,7 @@
     }
     .carousel-inner .carousel-item img {
         max-height: 180px;
-        border-radius: 6px;
+        border-radius: 10px;
         width: 100vw;
         min-width: 100vw;
     }
@@ -122,6 +122,7 @@
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
+        border-radius: 10px;
     }
     .carousel-caption h5 {
         font-size: 0.95rem;
