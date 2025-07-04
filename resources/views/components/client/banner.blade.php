@@ -1,17 +1,22 @@
 <div id="carouselExample" class="carousel slide">
     <div class="carousel-inner">
-        <div class="carousel-item active">
-            <img src="https://cdn.hoanghamobile.com/i/home/Uploads/2025/05/13/thu-cu-wweb.png" class="d-block w-100"
-                alt="...">
-        </div>
-        <div class="carousel-item">
-            <img src="https://cdn.hoanghamobile.com/i/home/Uploads/2025/06/16/xiaomi-tivi-web.png" class="d-block w-100"
-                alt="...">
-        </div>
-        <div class="carousel-item">
-            <img src="https://cdn.hoanghamobile.com/i/home/Uploads/2025/05/06/a56-a36-atsh-1200x375.jpg"
-                class="d-block w-100" alt="...">
-        </div>
+        @if(isset($banners) && count($banners) > 0)
+            @foreach($banners as $index => $banner)
+                <div class="carousel-item @if($index == 0) active @endif">
+                    <img src="{{ asset('images/banners/' . $banner->img) }}" class="d-block w-100" alt="{{ $banner->title }}">
+                    @if($banner->title || $banner->description)
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>{{ $banner->title }}</h5>
+                            <p>{{ $banner->description }}</p>
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        @else
+            <div class="carousel-item active">
+                <img src="https://via.placeholder.com/1200x375?text=No+Banner+Available" class="d-block w-100" alt="No banner">
+            </div>
+        @endif
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
