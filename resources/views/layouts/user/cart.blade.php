@@ -3,22 +3,27 @@
 @section('content')
 
 <!-- BREADCRUMBS SETCTION START -->
-<div class="breadcrumbs-section plr-200 mb-80 section">
+<!-- BREADCRUMBS SETCTION START -->
+<div class="breadcrumbs section plr-200 mb-80" style="margin-top: 15px;">
     <div class="breadcrumbs overlay-bg">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="breadcrumbs-inner">
-                        <h1 class="breadcrumbs-title">Shopping Cart</h1>
-                        <ul class="breadcrumb-list">
-                            <li><a href="index.html">Home</a></li>
-                            <li>Shopping Cart</li>
+                        <ul class="d-flex align-items-center gap-2">
+                            <li><a href="{{ route('home') }}">Trang chủ</a></li>
+                            <li><span class="text-muted">/</span></li>
+                            <li>Giỏ hàng</li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+<!-- Tiêu đề Giỏ hàng ở giữa -->
+<div class="text-center mb-4">
+    <h2 class="fw-bold" style="font-size: 2.2rem; color: #dc3545;">🛒 Giỏ hàng</h2>
 </div>
 <!-- BREADCRUMBS SETCTION END -->
 
@@ -391,6 +396,18 @@
     };
 </script>
 <style>
+      /* Làm chữ trong các input rõ ràng, to, đậm */
+    #phone,
+    #voucher-input,
+    #cart-total,
+    #cart-shipping,
+    #cart-final,
+    #cart-discount {
+        font-size: 1.1rem !important;
+        font-weight: 600;
+        font-style: normal;
+        font-family: 'Arial', sans-serif;
+    }
     .qty-btn-cart {
         width: 28px;
         height: 28px;
