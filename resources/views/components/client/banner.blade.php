@@ -29,6 +29,10 @@
 </div>
 
 <style>
+#carouselExample {
+    position: relative;
+    overflow: hidden;
+}
 .carousel-inner .carousel-item {
     opacity: 0;
     transition: opacity 0.7s ease-in-out;
@@ -37,14 +41,93 @@
     left: 0;
     top: 0;
     z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    height: 340px;
 }
 .carousel-inner .carousel-item.active {
     opacity: 1;
     position: relative;
     z-index: 2;
+    display: flex;
 }
-#carouselExample {
-    position: relative;
-    overflow: hidden;
+.carousel-inner .carousel-item img {
+    width: 100vw;
+    max-width: 100vw;
+    min-width: 100vw;
+    max-height: 340px;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    background: #f8f8f8;
+}
+.carousel-caption {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(30,30,30,0.55);
+    border-radius: 14px;
+    padding: 16px 24px 12px 24px;
+    color: #fff;
+    min-width: 180px;
+    max-width: 340px;
+    width: 100%;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+    text-align: center;
+    border: none;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    font-weight: 500;
+    filter: none;
+}
+.carousel-caption h5 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.5px;
+    text-transform: none;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+.carousel-caption p {
+    font-size: 0.98rem;
+    margin-bottom: 0.5rem;
+    font-weight: 400;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.13);
+    margin-top: 0.18rem;
+}
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+}
+@media (max-width: 768px) {
+    .carousel-inner .carousel-item {
+        height: 180px;
+        min-height: 100px;
+    }
+    .carousel-inner .carousel-item img {
+        max-height: 180px;
+        border-radius: 6px;
+        width: 100vw;
+        min-width: 100vw;
+    }
+    .carousel-caption {
+        padding: 6px 8px 5px 8px;
+        font-size: 0.95rem;
+        max-width: 90vw;
+        min-width: 0;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+    .carousel-caption h5 {
+        font-size: 0.95rem;
+    }
+    .carousel-caption p {
+        font-size: 0.85rem;
+    }
 }
 </style>
