@@ -404,67 +404,71 @@ class ClientController extends Controller
     }
 
     public function apiCheckout(Request $request)
-    {
-        try {
-            $data = $request->all();
-            $userId = auth()->check() ? auth()->id() : 0;
-            $orderCode = strtoupper(bin2hex(random_bytes(6)));
-            $order = new \App\Models\Order();
-            $order->user_id = $userId;
-            $order->price = $data['price'] ?? 0;
-            $order->name = $data['name'] ?? '';
-            $order->address = $data['address'] ?? '';
-            $order->email = $data['email'] ?? '';
-            $order->phone = $data['phone'] ?? '';
-            $order->note = $data['note'] ?? '';
-            $order->total_amount = $data['total_amount'] ?? 0;
-            $order->status = 0; // 0: chờ xử lý
-            $order->payment_method = $data['payment_method'] ?? 'COD';
-            $order->order_code = $orderCode;
-            $order->voucher_id = $data['voucher_id'] ?? null;
-            $order->status_method = 'chưa thanh toán';
-            $order->save();
-            // Lưu chi tiết đơn hàng
-            if (!empty($data['items']) && is_array($data['items'])) {
-                foreach ($data['items'] as $item) {
-                    \App\Models\OrderDetail::create([
-                        'order_id' => $order->id,
-                        'product_variant_id' => $item['variant_id'],
-                        'quantity' => $item['quantity'],
-                        'price' => $item['price'],
-                    ]);
-                }
-            }
-            if (!empty($order->email)) {
-                try {
-                    Mail::send('emails.order-success', compact('order'), function ($message) use ($order) {
-                        $message->to($order->email);
-                        $message->subject('Xác nhận đơn hàng #' . $order->order_code);
-                    });
-                } catch (\Exception $e) {
-                    \Log::error('Lỗi gửi mail đơn hàng #' . $order->order_code . ': ' . $e->getMessage());
-                }
-            } else {
-                \Log::warning('Không gửi được mail vì email trống cho đơn hàng #' . $order->order_code);
-            }
+{
+    try {
+        $data = $request->all();
+        $userId = auth()->check() ? auth()->id() : 0;
+        $orderCode = strtoupper(bin2hex(random_bytes(6)));
 
-            // Xóa cart
-            if ($userId) {
-                // Nếu là user đã đăng nhập, xóa cart DB
-                $cart = \App\Models\Cart::where('user_id', $userId)->first();
-                if ($cart) {
-                    $cart->items()->delete();
-                    $cart->delete();
-                }
-            } else {
-                // Nếu là khách, xóa session cart
-                \Session::forget('cart');
+        $order = new \App\Models\Order();
+        $order->user_id = $userId;
+        $order->price = $data['price'] ?? 0;
+        $order->name = $data['name'] ?? '';
+        $order->address = $data['address'] ?? '';
+        $order->email = $data['email'] ?? '';
+        $order->phone = $data['phone'] ?? '';
+        $order->note = $data['note'] ?? '';
+        $order->total_amount = $data['total_amount'] ?? 0;
+        $order->status = 0; // chờ xử lý
+        $order->payment_method = $data['payment_method'] ?? 'COD';
+        $order->order_code = $orderCode;
+        $order->voucher_id = $data['voucher_id'] ?? null;
+        $order->status_method = 'chưa thanh toán';
+        $order->save();
+
+        // Lưu chi tiết đơn hàng
+        if (!empty($data['items']) && is_array($data['items'])) {
+            foreach ($data['items'] as $item) {
+                \App\Models\OrderDetail::create([
+                    'order_id' => $order->id,
+                    'product_variant_id' => $item['variant_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                ]);
             }
-            return response()->json(['success' => true, 'order_id' => $order->id, 'order_code' => $orderCode]);
-        } catch (\Throwable $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
+
+        // ✅ Gửi mail nếu KHÔNG phải thanh toán qua VNPAY
+        if (strtolower($order->payment_method) !== 'vnpay' && !empty($order->email)) {
+            try {
+                Mail::send('emails.order-success', compact('order'), function ($message) use ($order) {
+                    $message->to($order->email);
+                    $message->subject('Xác nhận đơn hàng #' . $order->order_code);
+                });
+            } catch (\Exception $e) {
+                \Log::error('Lỗi gửi mail đơn hàng #' . $order->order_code . ': ' . $e->getMessage());
+            }
+        } elseif (empty($order->email)) {
+            \Log::warning('Không gửi được mail vì email trống cho đơn hàng #' . $order->order_code);
+        }
+
+        // Xóa cart
+        if ($userId) {
+            $cart = \App\Models\Cart::where('user_id', $userId)->first();
+            if ($cart) {
+                $cart->items()->delete();
+                $cart->delete();
+            }
+        } else {
+            \Session::forget('cart');
+        }
+
+        return response()->json(['success' => true, 'order_id' => $order->id, 'order_code' => $orderCode]);
+    } catch (\Throwable $e) {
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
     }
+}
+
 
     /**
      * Khởi tạo thanh toán VNPAY sandbox
