@@ -19,6 +19,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Http\Requests\ContactRequest;
 use App\Models\Contact;
+use Illuminate\Support\Facades\Mail;
 
 class ClientController extends Controller
 {
@@ -241,7 +242,7 @@ class ClientController extends Controller
             $items = $cart
                 ? $cart->items()->with('productVariant.product', 'productVariant.color', 'productVariant.capacity')->get()
                 : collect();
-            $result = $items->map(function($item) {
+            $result = $items->map(function ($item) {
                 return [
                     'id' => $item->id,
                     'variant_id' => $item->product_variant_id,
@@ -323,7 +324,6 @@ class ClientController extends Controller
                 'success' => true,
                 'message' => 'Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất có thể.'
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Contact form error:', [
                 'message' => $e->getMessage(),
@@ -395,7 +395,7 @@ class ClientController extends Controller
             }
         } else {
             $cart = Session::get('cart', []);
-            $cart = array_filter($cart, function($item) use ($variantId) {
+            $cart = array_filter($cart, function ($item) use ($variantId) {
                 return $item['product_variant_id'] != $variantId;
             });
             Session::put('cart', array_values($cart));
@@ -435,6 +435,19 @@ class ClientController extends Controller
                     ]);
                 }
             }
+            if (!empty($order->email)) {
+                try {
+                    Mail::send('emails.order-success', compact('order'), function ($message) use ($order) {
+                        $message->to($order->email);
+                        $message->subject('Xác nhận đơn hàng #' . $order->order_code);
+                    });
+                } catch (\Exception $e) {
+                    \Log::error('Lỗi gửi mail đơn hàng #' . $order->order_code . ': ' . $e->getMessage());
+                }
+            } else {
+                \Log::warning('Không gửi được mail vì email trống cho đơn hàng #' . $order->order_code);
+            }
+
             // Xóa cart
             if ($userId) {
                 // Nếu là user đã đăng nhập, xóa cart DB
@@ -468,7 +481,7 @@ class ClientController extends Controller
         $vnp_HashSecret = "P0UF7KKIR9E1T9M3AKLW1QLYUW7O6HJO"; // Chuỗi bí mật
         $vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
         $vnp_Returnurl = route('vnpay.return');
-        
+
         $vnp_TxnRef = $order->order_code;
         $vnp_OrderInfo = 'Thanh toan don hang ' . $order->order_code;
         $vnp_OrderType = 'billpayment';
@@ -510,7 +523,7 @@ class ClientController extends Controller
             }
             $query .= urlencode($key) . "=" . urlencode($value) . '&';
         }
-        
+
         $vnp_Url = $vnp_Url . "?" . $query;
         if (isset($vnp_HashSecret)) {
             $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret);
@@ -523,18 +536,35 @@ class ClientController extends Controller
     /**
      * Nhận callback từ VNPAY
      */
-    public function vnpayReturn(Request $request)
-    {
-        $vnp_ResponseCode = $request->input('vnp_ResponseCode');
-        $vnp_TxnRef = $request->input('vnp_TxnRef');
-        $order = \App\Models\Order::where('order_code', $vnp_TxnRef)->first();
-        if ($order && $vnp_ResponseCode == '00') {
-            $order->status_method = 'đã thanh toán';
-            $order->status = true;
-            $order->save();
-            return view('layouts.user.vnpay_success', ['order' => $order]);
+public function vnpayReturn(Request $request)
+{
+    $vnp_ResponseCode = $request->input('vnp_ResponseCode');
+    $vnp_TxnRef = $request->input('vnp_TxnRef');
+    $order = \App\Models\Order::where('order_code', $vnp_TxnRef)->first();
+    
+    if ($order && $vnp_ResponseCode == '00') {
+        $order->status_method = 'đã thanh toán';
+        $order->status = true;
+        $order->save();
+
+        // Gửi mail xác nhận
+        if (!empty($order->email)) {
+            try {
+                Mail::send('emails.order-success', compact('order'), function ($message) use ($order) {
+                    $message->to($order->email);
+                    $message->subject('Xác nhận đơn hàng #' . $order->order_code);
+                });
+            } catch (\Exception $e) {
+                \Log::error('Lỗi gửi mail đơn hàng #' . $order->order_code . ': ' . $e->getMessage());
+            }
         } else {
-            return view('layouts.user.vnpay_fail', ['order' => $order]);
+            \Log::warning('Không gửi được mail vì email trống cho đơn hàng #' . $order->order_code);
         }
+
+        return view('layouts.user.vnpay_success', ['order' => $order]);
+    } else {
+        return view('layouts.user.vnpay_fail', ['order' => $order]);
     }
+}
+
 }

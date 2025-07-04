@@ -36,7 +36,7 @@
                 <a href="{{ route('auth.register') }}">➕ Đăng ký</a>
                 @endauth
                 <a href="{{ route('wishlist') }}">❤️ Wishlist</a>
-                <a href="#"><i class="zmdi zmdi-shopping-cart-plus"></i></a>
+                <a href="{{ route('cart') }}"><i class="zmdi zmdi-shopping-cart-plus"></i></a>
             </div>
         </div>
     </header>
