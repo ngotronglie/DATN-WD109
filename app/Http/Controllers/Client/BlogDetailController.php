@@ -112,5 +112,18 @@ class BlogDetailController extends Controller
 
        return redirect()->route('blog.detail.show', $blog->slug)->with('success', 'Bài viết đã được tạo thành công.');
    }
-
+   /**
+     * Hiển thị form chỉnh sửa blog (chỉ admin)
+     */
+    public function edit($slug)
+    {
+        if (!Auth::check() || !Auth::user()->is_admin) {
+            abort(403);
+        }
+        
+        $blog = Blog::where('slug', $slug)->firstOrFail();
+        $tags = TagBlog::all();
+        
+        return view('layouts.user.blog.edit', compact('blog', 'tags'));
+    }
 }
