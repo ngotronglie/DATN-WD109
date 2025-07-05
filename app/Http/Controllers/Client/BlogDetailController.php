@@ -78,6 +78,39 @@ class BlogDetailController extends Controller
         $tags = TagBlog::all();
         return view('layouts.user.blog.create', compact('tags'));
     }
+    /**
+    * Lưu blog mới (chỉ admin)
+    */
+   public function store(Request $request)
+   {
+       if (!Auth::check() || !Auth::user()->is_admin) {
+           abort(403);
+       }
+       
+       $request->validate([
+           'slug' => 'required|string|max:255|unique:blogs,slug',
+           'content' => 'required|string',
+           'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+           'tag_ids' => 'nullable|array',
+           'tag_ids.*' => 'exists:tag_blog,id',
+       ]);
 
+       $data = $request->except('image', 'tag_ids');
+       $data['user_id'] = Auth::id();
+       $data['is_active'] = $request->has('is_active');
+
+       if ($request->hasFile('image')) {
+           $path = $request->file('image')->store('public/images/blogs');
+           $data['image'] = \Illuminate\Support\Facades\Storage::url($path);
+       }
+
+       $blog = Blog::create($data);
+
+       if ($request->has('tag_ids')) {
+           $blog->tags()->sync($request->tag_ids);
+       }
+
+       return redirect()->route('blog.detail.show', $blog->slug)->with('success', 'Bài viết đã được tạo thành công.');
+   }
 
 }
