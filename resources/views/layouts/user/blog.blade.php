@@ -1,5 +1,9 @@
 @extends('index.clientdashboard')
 
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/blog-custom.css') }}">
+@endsection
+
 @section('content')
 
         <!-- BREADCRUMBS SETCTION START -->
@@ -25,10 +29,21 @@
         <!-- Start page content -->
         <div id="page-content" class="page-wrapper section">
 
-            <!-- BLOG SECTION START -->
-            <div class="blog-section mb-50">
-                <div class="container">
-                    <div class="row">
+                    <!-- BLOG SECTION START -->
+        <div class="blog-section mb-50">
+            <div class="container">
+                @auth
+                    @if(Auth::user()->is_admin)
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <a href="{{ route('blog.detail.create') }}" class="btn btn-primary">
+                                    <i class="zmdi zmdi-plus"></i> Tạo bài viết mới
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+                @endauth
+                <div class="row">
                         <!-- blog-option start -->
                         <div class="col-lg-12">
                             <div class="blog-option box-shadow mb-30  clearfix">
@@ -171,231 +186,49 @@
                         <!-- blog-option end -->
                     </div>
                     <div class="row">
+                        @forelse($blogs as $blog)
                         <!-- blog-item start -->
                         <div class="col-lg-4 col-md-6">
                             <div class="blog-item">
-                                <img src="{{asset('frontend/img/blog/1.jpg')}}" alt="">
+                                <img src="{{ $blog->image ? asset($blog->image) : asset('frontend/img/blog/1.jpg') }}" alt="{{ $blog->slug }}">
                                 <div class="blog-desc">
-                                    <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                    <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
+                                    <h5 class="blog-title"><a href="{{ route('blog.detail.show', $blog->slug) }}">{{ $blog->slug }}</a></h5>
+                                    <p>{{ Str::limit(strip_tags($blog->content), 150) }}</p>
                                     <div class="read-more">
-                                        <a href="single-blog.html">Read more</a>
+                                        <a href="{{ route('blog.detail.show', $blog->slug) }}">Read more</a>
                                     </div>
                                     <ul class="blog-meta">
                                         <li>
-                                            <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
+                                            <a href="#"><i class="zmdi zmdi-eye"></i>{{ $blog->view }} Views</a>
                                         </li>
                                         <li>
-                                            <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
+                                            <a href="#"><i class="zmdi zmdi-account"></i>{{ $blog->user->name ?? 'Admin' }}</a>
                                         </li>
                                         <li>
-                                            <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
+                                            <a href="#"><i class="zmdi zmdi-calendar"></i>{{ $blog->created_at->format('d/m/Y') }}</a>
                                         </li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
                         <!-- blog-item end -->
-                        <!-- blog-item start -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="blog-item">
-                                <img src="{{asset('frontend/img/blog/2.jpg')}}" alt="">
-                                <div class="blog-desc">
-                                    <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                    <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
-                                    <div class="read-more">
-                                        <a href="single-blog.html">Read more</a>
-                                    </div>
-                                    <ul class="blog-meta">
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
-                                        </li>
-                                    </ul>
-                                </div>
+                        @empty
+                        <div class="col-12">
+                            <div class="text-center">
+                                <h4>Không có bài viết nào</h4>
+                                <p>Hiện tại chưa có bài viết nào được đăng.</p>
                             </div>
                         </div>
-                        <!-- blog-item end -->
-                        <!-- blog-item start -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="blog-item">
-                                <img src="{{asset('frontend/img/blog/3.jpg')}}" alt="">
-                                <div class="blog-desc">
-                                    <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                    <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
-                                    <div class="read-more">
-                                        <a href="single-blog.html">Read more</a>
-                                    </div>
-                                    <ul class="blog-meta">
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
-                                        </li>
-                                    </ul>
-                                </div>
+                        @endforelse
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="pagination-wrapper text-center">
+                                {{ $blogs->links() }}
                             </div>
                         </div>
-                        <!-- blog-item end -->
-                        <!-- blog-item start -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="blog-item">
-                                <img src="{{asset('frontend/img/blog/4.jpg')}}" alt="">
-                                <div class="blog-desc">
-                                    <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                    <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
-                                    <div class="read-more">
-                                        <a href="single-blog.html">Read more</a>
-                                    </div>
-                                    <ul class="blog-meta">
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- blog-item end -->
-                        <!-- blog-item start -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="blog-item">
-                                <img src="{{asset('frontend/img/blog/5.jpg')}}" alt="">
-                                <div class="blog-desc">
-                                    <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                    <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
-                                    <div class="read-more">
-                                        <a href="single-blog.html">Read more</a>
-                                    </div>
-                                    <ul class="blog-meta">
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- blog-item end -->
-                        <!-- blog-item start -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="blog-item">
-                                <img src="{{asset('frontend/img/blog/6.jpg')}}" alt="">
-                                <div class="blog-desc">
-                                    <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                    <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
-                                    <div class="read-more">
-                                        <a href="single-blog.html">Read more</a>
-                                    </div>
-                                    <ul class="blog-meta">
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- blog-item end -->
-                        <!-- blog-item start -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="blog-item">
-                                <img src="{{asset('frontend/img/blog/1.jpg')}}" alt="">
-                                <div class="blog-desc">
-                                    <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                    <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
-                                    <div class="read-more">
-                                        <a href="single-blog.html">Read more</a>
-                                    </div>
-                                    <ul class="blog-meta">
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- blog-item end -->
-                        <!-- blog-item start -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="blog-item">
-                                <img src="{{asset('frontend/img/blog/7.jpg')}}" alt="">
-                                <div class="blog-desc">
-                                    <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                    <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
-                                    <div class="read-more">
-                                        <a href="single-blog.html">Read more</a>
-                                    </div>
-                                    <ul class="blog-meta">
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- blog-item end -->
-                        <!-- blog-item start -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="blog-item">
-                                <img src="{{asset('frontend/img/blog/8.jpg')}}" alt="">
-                                <div class="blog-desc">
-                                    <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                    <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
-                                    <div class="read-more">
-                                        <a href="single-blog.html">Read more</a>
-                                    </div>
-                                    <ul class="blog-meta">
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- blog-item end -->
                     </div>
                 </div>
             </div>
