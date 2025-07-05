@@ -126,4 +126,42 @@ class BlogDetailController extends Controller
         
         return view('layouts.user.blog.edit', compact('blog', 'tags'));
     }
+
+     /**
+     * Cập nhật blog (chỉ admin)
+     */
+    public function update(Request $request, $slug)
+    {
+        if (!Auth::check() || !Auth::user()->is_admin) {
+            abort(403);
+        }
+        
+        $blog = Blog::where('slug', $slug)->firstOrFail();
+        
+        $request->validate([
+            'slug' => 'required|string|max:255|unique:blogs,slug,' . $blog->id,
+            'content' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'tag_ids' => 'nullable|array',
+            'tag_ids.*' => 'exists:tag_blog,id',
+        ]);
+
+        $data = $request->except('image', 'tag_ids');
+        $data['is_active'] = $request->has('is_active');
+
+        if ($request->hasFile('image')) {
+            // Xóa ảnh cũ nếu có
+            if ($blog->image) {
+                \Illuminate\Support\Facades\Storage::delete(str_replace('/storage', 'public', $blog->image));
+            }
+            $path = $request->file('image')->store('public/images/blogs');
+            $data['image'] = \Illuminate\Support\Facades\Storage::url($path);
+        }
+
+        $blog->update($data);
+        $blog->tags()->sync($request->tag_ids ?? []);
+
+        return redirect()->route('blog.detail.show', $blog->slug)->with('success', 'Bài viết đã được cập nhật thành công.');
+    }
+
 }
