@@ -208,4 +208,30 @@ class BlogDetailController extends Controller
         
         return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags', 'tag'));
     }
+     /**
+     * Tìm kiếm blog theo từ khóa
+     */
+    public function search(Request $request)
+    {
+        $keyword = $request->get('keyword');
+        
+        $blogs = Blog::with(['user', 'tags'])
+            ->where('is_active', true)
+            ->where(function($query) use ($keyword) {
+                $query->where('slug', 'like', "%{$keyword}%")
+                      ->orWhere('content', 'like', "%{$keyword}%");
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(9);
+            
+        $recentBlogs = Blog::with('user')
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+            
+        $tags = TagBlog::withCount('blogs')->get();
+        
+        return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags', 'keyword'));
+    }
 }
