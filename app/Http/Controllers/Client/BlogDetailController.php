@@ -163,5 +163,49 @@ class BlogDetailController extends Controller
 
         return redirect()->route('blog.detail.show', $blog->slug)->with('success', 'Bài viết đã được cập nhật thành công.');
     }
+ /**
+     * Xóa blog (chỉ admin)
+     */
+    public function destroy($slug)
+    {
+        if (!Auth::check() || !Auth::user()->is_admin) {
+            abort(403);
+        }
+        
+        $blog = Blog::where('slug', $slug)->firstOrFail();
+        
+        if ($blog->image) {
+            \Illuminate\Support\Facades\Storage::delete(str_replace('/storage', 'public', $blog->image));
+        }
+        
+        $blog->tags()->detach();
+        $blog->delete();
+        
+        return redirect()->route('blog.detail.index')->with('success', 'Bài viết đã được xóa thành công.');
+    }
 
+    /**
+     * Tìm kiếm blog theo tag
+     */
+    public function searchByTag($tagId)
+    {
+        $tag = TagBlog::findOrFail($tagId);
+        $blogs = Blog::with(['user', 'tags'])
+            ->where('is_active', true)
+            ->whereHas('tags', function($query) use ($tagId) {
+                $query->where('tag_blog.id', $tagId);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(9);
+            
+        $recentBlogs = Blog::with('user')
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+            
+        $tags = TagBlog::withCount('blogs')->get();
+        
+        return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags', 'tag'));
+    }
 }
