@@ -66,5 +66,18 @@ class BlogDetailController extends Controller
         
         return view('layouts.user.blogDetail', compact('blog', 'relatedBlogs', 'recentBlogs', 'tags'));
     }
+    /**
+     * Hiển thị form tạo blog mới (chỉ admin)
+     */
+    public function create()
+    {
+        if (!Auth::check() || !Auth::user()->is_admin) {
+            abort(403);
+        }
+        
+        $tags = TagBlog::all();
+        return view('layouts.user.blog.create', compact('tags'));
+    }
+
 
 }
