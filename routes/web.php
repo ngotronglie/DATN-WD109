@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\EmailOrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VoucherController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -120,6 +122,10 @@ Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showRes
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
 
 Route::get('/verify-email/{email}/{token}', [VerifyEmailController::class, 'verify'])->name('verify.email');
+
+Route::post('/order/place', [EmailOrderController::class, 'placeOrder'])->name('order.place');
+Route::post('/order/cancel/{id}', [EmailOrderController::class, 'cancelOrder'])->name('order.cancel');
+
 
 
 Route::middleware('auth')->group(function () {
