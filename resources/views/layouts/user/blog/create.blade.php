@@ -103,5 +103,7 @@
             .trim('-');
         this.value = slug;
     });
+    
 </script>
+
 @endsection 
