@@ -1,25 +1,25 @@
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Comment;
-use App\Models\Blog;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
-    public function store(Request $request, $blogId)
+    // Hiển thị danh sách bình luận
+    public function index()
     {
-        $request->validate([
-            'content' => 'required|string|max:1000',
-        ]);
+        $comments = Comment::with(['blog', 'user'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
-        $comment = Comment::create([
-            'blog_id' => $blogId,
-            'user_id' => Auth::id(),
-            'content' => $request->content,
-            'parent_id' => $request->parent_id, // nếu có trả lời bình luận
-        ]);
+        return view('admin.comments.index', compact('comments'));
+    }
 
-        return back()->with('success', 'Bình luận đã được gửi!');
+    // Xóa bình luận
+    public function destroy(Comment $comment)
+    {
+        $comment->delete();
+        return back()->with('success', 'Đã xóa bình luận thành công!');
     }
 }
