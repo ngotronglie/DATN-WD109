@@ -138,65 +138,37 @@
                                 <!-- comments on t this post -->
                                 <div class="post-comments mb-60">
                                     <h4 class="blog-section-title border-left mb-30">comments on this product</h4>
-                                    <!-- single-comments -->
-                                    <div class="media mt-30">
-                                        <div class="media-left pr-30">
-                                            <a href="#"><img class="media-object" src="{{asset('frontend/img/author/2.jpg')}}" alt="#"></a>
-                                        </div>
-                                        <div class="media-body">
-                                            <div class="clearfix">
-                                                <div class="name-commenter f-left">
-                                                    <h6 class="media-heading"><a href="#">Gerald Barnes</a></h6>
-                                                    <p class="mb-10">27 Jun, 2019 at 2:30pm</p>
-                                                </div>
-                                                <ul class="reply-delate f-right">
-                                                    <li><a href="#">Reply</a></li>
-                                                    <li>/</li>
-                                                    <li><a href="#">Delate</a></li>
-                                                </ul>
+                                    <!-- Hiển thị danh sách bình luận -->
+                                    <div class="comments">
+                                        <h5>Bình luận</h5>
+                                        @foreach($blog->comments()->whereNull('parent_id')->latest()->get() as $comment)
+                                            <div class="comment mb-2">
+                                                <strong>{{ $comment->user->name ?? 'Khách' }}</strong>:
+                                                <span>{{ $comment->content }}</span>
+                                                <div class="text-muted small">{{ $comment->created_at->diffForHumans() }}</div>
+                                                <!-- Hiển thị trả lời nếu có -->
+                                                @foreach($comment->replies as $reply)
+                                                    <div class="reply ms-4">
+                                                        <strong>{{ $reply->user->name ?? 'Khách' }}</strong>:
+                                                        <span>{{ $reply->content }}</span>
+                                                        <div class="text-muted small">{{ $reply->created_at->diffForHumans() }}</div>
+                                                    </div>
+                                                @endforeach
                                             </div>
-                                            <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer accumsan egestas elese ifend. Phasellus a felis atestese bibendum feugiat ut eget eni Praesent  messages in con sectetur posuere dolor non.</p>
-                                        </div>
+                                        @endforeach
                                     </div>
-                                    <!-- single-comments -->
-                                    <div class="media mt-30">
-                                        <div class="media-left pr-30">
-                                            <a href="#"><img class="media-object" src="{{asset('frontend/img/author/3.jpg')}}" alt="#"></a>
+                                    <!-- Form bình luận -->
+                                    @if(Auth::check())
+                                    <form action="{{ route('comments.store', $blog->id) }}" method="POST" class="mt-3">
+                                        @csrf
+                                        <div class="mb-2">
+                                            <textarea name="content" class="form-control" rows="3" placeholder="Nhập bình luận..."></textarea>
                                         </div>
-                                        <div class="media-body">
-                                            <div class="clearfix">
-                                                <div class="name-commenter f-left">
-                                                    <h6 class="media-heading"><a href="#">Gerald Barnes</a></h6>
-                                                    <p class="mb-10">27 Jun, 2019 at 2:30pm</p>
-                                                </div>
-                                                <ul class="reply-delate f-right">
-                                                    <li><a href="#">Reply</a></li>
-                                                    <li>/</li>
-                                                    <li><a href="#">Delate</a></li>
-                                                </ul>
-                                            </div>
-                                            <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer accumsan egestas elese ifend. Phasellus a felis atestese bibendum feugiat ut eget eni Praesent  messages in con sectetur posuere dolor non.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- leave your comment -->
-                                <div class="leave-comment">
-                                    <h4 class="blog-section-title border-left mb-30">leave your comment</h4>
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <input type="text" name="name" placeholder="Subas Chandra Das">
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <input type="text" name="email" placeholder="Email address here...">
-                                        </div>
-                                        <div class="col-lg-12">
-                                            <input type="text" name="subject" placeholder="Subject here...">
-                                        </div>
-                                        <div class="col-lg-12">
-                                            <textarea class="custom-textarea" placeholder="Your comment here..."></textarea>
-                                        </div>
-                                    </div>
-                                    <button class="submit-btn-1 black-bg mt-30 btn-hover-2" type="submit">submit comment</button>
+                                        <button type="submit" class="btn btn-primary btn-sm">Gửi bình luận</button>
+                                    </form>
+                                    @else
+                                        <div class="alert alert-info mt-3">Bạn cần <a href="{{ route('login') }}">đăng nhập</a> để bình luận.</div>
+                                    @endif
                                 </div>
                                 <!--  -->
                             </div>
