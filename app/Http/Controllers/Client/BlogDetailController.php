@@ -34,37 +34,13 @@ class BlogDetailController extends Controller
      */
     public function show($slug)
     {
-        $blog = Blog::with(['user', 'tags'])
+        $blog = \App\Models\Blog::with(['user', 'tags'])
             ->where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
-            
-        // Tăng lượt xem
-        $blog->increment('view');
-        
-        // Lấy blog liên quan
-        $relatedBlogs = Blog::with('user')
-            ->where('is_active', true)
-            ->where('id', '!=', $blog->id)
-            ->whereHas('tags', function($query) use ($blog) {
-                $query->whereIn('tag_blog.id', $blog->tags->pluck('id'));
-            })
-            ->orWhere('user_id', $blog->user_id)
-            ->limit(3)
-            ->get();
-            
-        // Lấy blog gần đây
-        $recentBlogs = Blog::with('user')
-            ->where('is_active', true)
-            ->where('id', '!=', $blog->id)
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
-            
-        // Lấy tất cả tags
-        $tags = TagBlog::withCount('blogs')->get();
-        
-        return view('layouts.user.blogDetail', compact('blog', 'relatedBlogs', 'recentBlogs', 'tags'));
+
+        // Lấy các dữ liệu khác nếu cần (bài viết liên quan, bình luận, ...)
+        return view('layouts.user.blogDetail', compact('blog'));
     }
     /**
      * Hiển thị form tạo blog mới (chỉ admin)
