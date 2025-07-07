@@ -7,12 +7,13 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use App\Models\Product;
 
 class UserController extends Controller
 {
     public function index()
     {
-        $users = User::paginate(10);
+        $users = User::paginate(10); // hoặc số lượng bạn muốn mỗi trang
         return view('admin.users.index', compact('users'));
     }
 
@@ -63,48 +64,28 @@ class UserController extends Controller
         return view('admin.users.edit', compact('user'));
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request, $id)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role' => ['required', Rule::in(['admin', 'user'])],
-            'password' => 'nullable|string|min:8',
-            'address' => 'nullable|string|max:255',
-            'phone_number' => 'nullable|string|max:20',
-            'date_of_birth' => 'nullable|date',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
+        $user = User::findOrFail($id);
+        $data = $request->all();
 
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => $request->role,
-            'address' => $request->address,
-            'phone_number' => $request->phone_number,
-            'date_of_birth' => $request->date_of_birth,
+        // Mapping role string to role_id
+        $roleMap = [
+            'admin' => 1,
+            'user' => 2,
         ];
+        $data['role_id'] = $roleMap[$data['role']] ?? null;
 
+        // Nếu có mật khẩu mới thì mã hóa
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
-        }
-
-        if ($request->hasFile('avatar')) {
-            // Xóa ảnh cũ nếu tồn tại
-            if ($user->avatar && file_exists(public_path($user->avatar))) {
-                unlink(public_path($user->avatar));
-            }
-            
-            $avatar = $request->file('avatar');
-            $avatarName = time() . '.' . $avatar->getClientOriginalExtension();
-            $avatar->move(public_path('uploads/avatars'), $avatarName);
-            $data['avatar'] = 'uploads/avatars/' . $avatarName;
+        } else {
+            unset($data['password']);
         }
 
         $user->update($data);
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'Thông tin người dùng đã được cập nhật thành công.');
+        return redirect()->route('admin.users.index')->with('success', 'Cập nhật thành công');
     }
 
     public function destroy(User $user)

@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\Client\ShopController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -62,16 +63,13 @@ Route::get('/cart', function () {
     return view('layouts.user.cart');
 })->name('cart');
 
-Route::get( '/shop', function () {
-    return view('layouts.user.shop');
-})->name('shop');
+Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 
-
-Route::get( '/blog', function () {
+Route::get('/blog', function () {
     return view('layouts.user.blog');
 })->name('blog');
 
-Route::get( '/blogdetail', function () {
+Route::get('/blogdetail', function () {
     return view('layouts.user.blogdetail');
 })->name('blogdetail');
 
@@ -214,3 +212,5 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
 
 });
+
+Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.show');
