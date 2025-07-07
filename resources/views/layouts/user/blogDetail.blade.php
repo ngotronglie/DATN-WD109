@@ -203,51 +203,25 @@
                             <aside class="widget widget-product box-shadow mb-30">
                                 <h6 class="widget-title border-left mb-20">recent blogs</h6>
                                 @forelse($recentBlogs as $recentBlog)
-                                <!-- product-item start -->
-                                <div class="product-item">
-                                    <div class="product-img">
-                                        <a href="{{ route('blog.detail.show', $recentBlog->slug) }}">
-                                            <img src="{{ $recentBlog->image ? asset($recentBlog->image) : asset('frontend/img/blog/1.jpg') }}" alt="{{ $recentBlog->slug }}"/>
-                                        </a>
+                                    <!-- product-item start -->
+                                    <div class="product-item">
+                                        <div class="product-img">
+                                            <a href="{{ route('blog.detail.show', $recentBlog->slug) }}">
+                                                <img src="{{ $recentBlog->image ? asset($recentBlog->image) : asset('frontend/img/blog/1.jpg') }}" alt="{{ $recentBlog->slug }}"/>
+                                            </a>
+                                        </div>
+                                        <div class="product-info">
+                                            <h6 class="product-title">
+                                                <a href="{{ route('blog.detail.show', $recentBlog->slug) }}">{{ $recentBlog->slug }}</a>
+                                            </h6>
+                                            <h3 class="pro-price">$ 869.00</h3>
+                                        </div>
                                     </div>
-                                    <div class="product-info">
-                                        <h6 class="product-title">
-                                            <a href="{{ route('blog.detail.show', $recentBlog->slug) }}">{{ $recentBlog->slug }}</a>
-                                        </h6>
-                                        <h3 class="pro-price">$ 869.00</h3>
-                                    </div>
-                                </div>
-                                <!-- product-item end -->
-                                <!-- product-item start -->
-                                <div class="product-item">
-                                    <div class="product-img">
-                                        <a href="single-product.html">
-                                            <img src="{{asset('frontend/img/product/8.jpg')}}" alt=""/>
-                                        </a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h6 class="product-title">
-                                            <a href="single-product.html">Product Name</a>
-                                        </h6>
-                                        <h3 class="pro-price">$ 869.00</h3>
-                                    </div>
-                                </div>
-                                <!-- product-item end -->
-                                <!-- product-item start -->
-                                <div class="product-item">
-                                    <div class="product-img">
-                                        <a href="single-product.html">
-                                            <img src="{{asset('frontend/img/product/12.jpg')}}" alt=""/>
-                                        </a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h6 class="product-title">
-                                            <a href="single-product.html">Product Name</a>
-                                        </h6>
-                                        <h3 class="pro-price">$ 869.00</h3>
-                                    </div>
-                                </div>
-                                <!-- product-item end -->
+                                    <!-- product-item end -->
+                                @empty
+                                    <div>Không có bài viết gần đây.</div>
+                                @endforelse
+                                <!-- Các product-item tĩnh phía dưới nếu muốn giữ lại thì để ngoài forelse, hoặc xóa đi nếu không cần -->
                             </aside>
                             <!-- operating-system -->
                             <aside class="widget operating-system box-shadow">
