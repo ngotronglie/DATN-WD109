@@ -188,37 +188,26 @@
                     <div class="row">
                         @forelse($blogs as $blog)
                         <!-- blog-item start -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="blog-item">
-                                <img src="{{ $blog->image ? asset($blog->image) : asset('frontend/img/blog/1.jpg') }}" alt="{{ $blog->slug }}">
-                                <div class="blog-desc">
-                                    <h5 class="blog-title"><a href="{{ route('blog.detail.show', $blog->slug) }}">{{ $blog->slug }}</a></h5>
-                                    <p>{{ Str::limit(strip_tags($blog->content), 150) }}</p>
-                                    <div class="read-more">
-                                        <a href="{{ route('blog.detail.show', $blog->slug) }}">Read more</a>
-                                    </div>
-                                    <ul class="blog-meta">
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-eye"></i>{{ $blog->view }} Views</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-account"></i>{{ $blog->user->name ?? 'Admin' }}</a>
-                                        </li>
-                                        <li>
-                                            <a href="#"><i class="zmdi zmdi-calendar"></i>{{ $blog->created_at->format('d/m/Y') }}</a>
-                                        </li>
-                                    </ul>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                @if($blog->image)
+                                    <img src="{{ $blog->image }}" class="card-img-top" alt="{{ $blog->slug }}">
+                                @endif
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ $blog->slug }}</h5>
+                                    <p class="card-text">
+                                        {{ \Illuminate\Support\Str::limit(strip_tags($blog->content), 100) }}
+                                    </p>
+                                    <a href="{{ route('blog.detail.show', $blog->slug) }}" class="btn btn-primary btn-sm">Xem chi tiết</a>
+                                </div>
+                                <div class="card-footer text-muted small">
+                                    Tác giả: {{ $blog->user->name ?? 'N/A' }} | {{ $blog->created_at->format('d/m/Y') }}
                                 </div>
                             </div>
                         </div>
                         <!-- blog-item end -->
                         @empty
-                        <div class="col-12">
-                            <div class="text-center">
-                                <h4>Không có bài viết nào</h4>
-                                <p>Hiện tại chưa có bài viết nào được đăng.</p>
-                            </div>
-                        </div>
+                        <div class="col-12">Chưa có bài viết nào.</div>
                         @endforelse
                     </div>
                     
