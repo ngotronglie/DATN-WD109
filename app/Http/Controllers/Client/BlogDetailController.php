@@ -14,7 +14,7 @@ class BlogDetailController extends Controller
      */
     public function index()
     {
-        $blogs = Blog::with(['user', 'tags'])
+        $blogs = \App\Models\Blog::with('user')
             ->where('is_active', true)
             ->orderBy('created_at', 'desc')
             ->paginate(9);
