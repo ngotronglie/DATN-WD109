@@ -56,6 +56,7 @@
                         <!-- Thông tin tổng kết sẽ render bằng JS -->
                     </div>
                     <button class="btn btn-primary w-100 mt-3" id="confirm-order-btn">Xác nhận đặt hàng</button>
+                    <button class="btn btn-danger w-100 mt-3" id="vnpay-payment-btn" style="display:none;">Thanh toán online VNPAY</button>
                 </div>
             </div>
         </div>
@@ -175,6 +176,42 @@ document.getElementById('confirm-order-btn').onclick = async function() {
     }
     console.log('voucher_id:', voucher_id);
     const finalTotal = total - discountAmount + shipping;
+    if (user.payment === 'vnpay') {
+        // Gọi API tạo đơn, sau đó chuyển hướng sang VNPAY
+        const res = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+            },
+            body: JSON.stringify({
+                user_id: 0,
+                name: user.fullname,
+                address: `${user.address}`,
+                email: user.email || '',
+                phone: user.phone,
+                note: user.note || '',
+                total_amount: finalTotal,
+                price: total,
+                status: 'chờ xử lí',
+                payment_method: 'vnpay',
+                voucher_id: voucher_id,
+                status_method: 'chưa thanh toán',
+                items: cart.map(item => ({
+                    variant_id: item.variant_id,
+                    quantity: item.quantity,
+                    price: item.price
+                }))
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            window.location.href = '/vnpay/payment?order_id=' + data.order_id;
+        } else {
+            alert('Có lỗi khi tạo đơn hàng, vui lòng thử lại!');
+        }
+        return;
+    }
     // Gửi dữ liệu về API
     const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -211,6 +248,73 @@ document.getElementById('confirm-order-btn').onclick = async function() {
         window.location.href = '/';
     } else {
         alert('Có lỗi khi đặt hàng, vui lòng thử lại!');
+    }
+};
+
+// Hiển thị nút VNPAY nếu chọn phương thức thanh toán online
+function updateVnpayButton() {
+    const user = JSON.parse(localStorage.getItem('checkout_user') || 'null');
+    if (user && user.payment === 'vnpay') {
+        document.getElementById('vnpay-payment-btn').style.display = '';
+        document.getElementById('confirm-order-btn').style.display = 'none';
+    } else {
+        document.getElementById('vnpay-payment-btn').style.display = 'none';
+        document.getElementById('confirm-order-btn').style.display = '';
+    }
+}
+document.addEventListener('DOMContentLoaded', updateVnpayButton);
+
+document.getElementById('vnpay-payment-btn').onclick = async function() {
+    const cart = JSON.parse(localStorage.getItem('checkout_cart') || '[]');
+    const user = JSON.parse(localStorage.getItem('checkout_user') || 'null');
+    const voucher = JSON.parse(localStorage.getItem('checkout_voucher') || 'null');
+    if (!cart.length || !user) {
+        alert('Không có dữ liệu đơn hàng. Vui lòng quay lại giỏ hàng!');
+        window.location.href = '/cart';
+        return;
+    }
+    let total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    let shipping = total > 2000000 ? 0 : (total > 0 ? 50000 : 0);
+    let discountAmount = 0;
+    let voucher_id = null;
+    if (voucher) {
+        discountAmount = Math.floor(total * (voucher.discount / 100));
+        if (voucher.min_money && discountAmount < voucher.min_money) discountAmount = voucher.min_money;
+        if (voucher.max_money && discountAmount > voucher.max_money) discountAmount = voucher.max_money;
+        voucher_id = voucher.id || null;
+    }
+    const finalTotal = total - discountAmount + shipping;
+    const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        },
+        body: JSON.stringify({
+            user_id: 0,
+            name: user.fullname,
+            address: `${user.address}`,
+            email: user.email || '',
+            phone: user.phone,
+            note: user.note || '',
+            total_amount: finalTotal,
+            price: total,
+            status: 'chờ xử lí',
+            payment_method: 'vnpay',
+            voucher_id: voucher_id,
+            status_method: 'chưa thanh toán',
+            items: cart.map(item => ({
+                variant_id: item.variant_id,
+                quantity: item.quantity,
+                price: item.price
+            }))
+        })
+    });
+    const data = await res.json();
+    if (data.success) {
+        window.location.href = '/vnpay/payment?order_id=' + data.order_id;
+    } else {
+        alert('Có lỗi khi tạo đơn hàng, vui lòng thử lại!');
     }
 };
 </script>

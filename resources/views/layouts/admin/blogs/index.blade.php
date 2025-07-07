@@ -81,4 +81,10 @@
         </div>
     </div>
 </div>
-@endsection 
+
+<script>
+console.log('Script đã chạy!');
+</script>
+@endsection
+
+@yield('script') 

@@ -13,7 +13,7 @@
                 <ul class="nav justify-content-center">
                     <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Products</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Blog</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('client.blog.index') }}">Blog</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"> Pages</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
                     @auth
@@ -36,7 +36,7 @@
                 <a href="{{ route('auth.register') }}">➕ Đăng ký</a>
                 @endauth
                 <a href="{{ route('wishlist') }}">❤️ Wishlist</a>
-                <a href="#"><i class="zmdi zmdi-shopping-cart-plus"></i></a>
+                <a href="{{ route('cart') }}"><i class="zmdi zmdi-shopping-cart-plus"></i></a>
             </div>
         </div>
     </header>
