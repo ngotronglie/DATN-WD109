@@ -235,3 +235,5 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 // Route VNPAY
 Route::get('/vnpay/payment', [ClientController::class, 'vnpayPayment'])->name('vnpay.payment');
 Route::get('/vnpay/return', [ClientController::class, 'vnpayReturn'])->name('vnpay.return');
+
+Route::get('/blogs', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('client.blog.index');
