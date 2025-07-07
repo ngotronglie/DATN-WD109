@@ -1,0 +1,157 @@
+/* Blog Custom Styles */
+.blog-tags {
+    margin: 20px 0;
+}
+
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tag-item {
+    display: inline-block;
+    padding: 5px 12px;
+    background-color: #f8f9fa;
+    color: #495057;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.tag-item:hover {
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+}
+
+.admin-actions {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border-left: 4px solid #007bff;
+}
+
+.admin-actions .btn {
+    margin-right: 10px;
+}
+
+.pagination-wrapper {
+    margin-top: 30px;
+}
+
+.pagination {
+    justify-content: center;
+}
+
+.pagination .page-link {
+    color: #007bff;
+    border: 1px solid #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.blog-item {
+    transition: transform 0.3s ease;
+}
+
+.blog-item:hover {
+    transform: translateY(-5px);
+}
+
+.blog-item img {
+    transition: opacity 0.3s ease;
+}
+
+.blog-item:hover img {
+    opacity: 0.8;
+}
+
+.blog-meta li {
+    margin-right: 15px;
+}
+
+.blog-meta a {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+.blog-meta a:hover {
+    color: #007bff;
+}
+
+/* Form styles */
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* Alert styles */
+.alert {
+    border-radius: 5px;
+    border: none;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Card styles */
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-actions .btn {
+        display: block;
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    
+    .tags-list {
+        justify-content: center;
+    }
+    
+    .blog-meta li {
+        margin-right: 10px;
+        font-size: 12px;
+    }
+} 
