@@ -1,5 +1,9 @@
 @extends('index.clientdashboard')
 
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/blog-custom.css') }}">
+@endsection
+
 @section('content')
     <!-- BREADCRUMBS SETCTION START -->
     <div class="breadcrumbs-section plr-200 mb-80 section">

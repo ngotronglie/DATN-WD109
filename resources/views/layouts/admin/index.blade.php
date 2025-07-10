@@ -380,5 +380,6 @@
 
                </div>
                <!-- End Container Fluid -->
+               @yield('script')
 
 @endsection
