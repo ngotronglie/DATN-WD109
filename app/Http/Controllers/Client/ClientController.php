@@ -59,7 +59,7 @@ class ClientController extends Controller
         $categories = Categories::with('children')->whereNull('parent_id')->get();
         $products = Product::where('is_active', 1)->paginate(12);
 
-        return view('client.products');
+        return view('layouts.user.shop', compact('categories', 'products'));
     }
 
     public function category($slug)
