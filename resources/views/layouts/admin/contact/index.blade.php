@@ -37,7 +37,6 @@
                                 <th>Tiêu đề</th>
                                 <th>Nội dung</th>
                                 <th>Ngày gửi</th>
-                                <th>Trạng thái</th>
                                 <th>Thao tác</th>
                             </tr>
                         </thead>
@@ -60,16 +59,7 @@
                                     </td>
                                     <td>{{ $contact->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        <select class="form-select form-select-sm status-select" data-contact-id="{{ $contact->id }}">
-                                            <option value="pending" {{ $contact->status == 'pending' ? 'selected' : '' }}>Chờ xử lý</option>
-                                            <option value="replied" {{ $contact->status == 'replied' ? 'selected' : '' }}>Đã phản hồi</option>
-                                        </select>
-                                    </td>
-                                    <td>
                                         <div class="d-flex flex-column gap-1">
-                                            <button class="btn btn-sm btn-success w-100" onclick="markAsReplied({{ $contact->id }}, event)" title="Đánh dấu đã phản hồi">
-                                                <i class="ti ti-mail me-1"></i>Phản hồi
-                                            </button>
                                             <button class="btn btn-sm btn-danger w-100" onclick="deleteContact({{ $contact->id }}, event)" title="Xóa">
                                                 <i class="ti ti-trash me-1"></i>Xóa
                                             </button>
@@ -166,47 +156,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const statusSelects = document.querySelectorAll('.status-select');
-    
-    statusSelects.forEach(select => {
-        select.addEventListener('change', function() {
-            const contactId = this.dataset.contactId;
-            const status = this.value;
-            
-            // Gửi request cập nhật trạng thái
-            fetch(`/admin/contacts/${contactId}/status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ status: status })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Cập nhật style cho select
-                    this.style.borderColor = '';
-                    this.style.color = '';
-                    
-                    switch(status) {
-                        case 'pending':
-                            this.style.borderColor = '#dc3545';
-                            this.style.color = '#dc3545';
-                            break;
-                        case 'replied':
-                            this.style.borderColor = '#198754';
-                            this.style.color = '#198754';
-                            break;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra khi cập nhật trạng thái');
-            });
-        });
-    });
+    // Xóa select trạng thái, option trạng thái, hàm markAsReplied, các fetch liên quan đến cập nhật trạng thái, và các đoạn JS/HTML liên quan đến phản hồi.
 });
 
 function showMessageDetail(contactId) {
@@ -260,53 +210,6 @@ function deleteContact(contactId, event) {
     } catch (error) {
         console.error('Error deleting contact:', error);
         alert('Có lỗi xảy ra khi xóa tin nhắn');
-    }
-}
-
-function markAsReplied(contactId, event) {
-    try {
-        // Hiển thị loading
-        const btn = event.target.closest('button');
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="ti ti-loader ti-spin"></i>';
-        btn.disabled = true;
-        
-        fetch(`/admin/contacts/${contactId}/mark-replied`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Cập nhật select status
-                const select = document.querySelector(`select[data-contact-id="${contactId}"]`);
-                if (select) {
-                    select.value = 'replied';
-                    select.style.borderColor = '#198754';
-                    select.style.color = '#198754';
-                }
-                
-                // Hiển thị thông báo thành công
-                showNotification('Đã đánh dấu đã phản hồi', 'success');
-            } else {
-                showNotification('Có lỗi xảy ra', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Có lỗi xảy ra', 'error');
-        })
-        .finally(() => {
-            // Khôi phục button
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-        });
-    } catch (error) {
-        console.error('Error marking as replied:', error);
-        alert('Có lỗi xảy ra khi cập nhật trạng thái');
     }
 }
 
