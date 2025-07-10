@@ -34,14 +34,12 @@
                                                     {{ number_format($product->product_price_discount) }} đ</h3>
                                             @else
                                                 <h3 class="pro-price">{{ number_format($product->product_price) }} đ
+
                                                 </h3>
                                             @endif
                                             <ul class="action-button">
                                                 <li>
-                                                    <a href="#" class="add-to-favorite"
-                                                        data-product-id="{{ $product->product_id }}"
-                                                        title="Thêm vào yêu thích"
-                                                        onclick="addToFavorite(event, {{ $product->product_id }})">
+                                                    <a href="#" class="add-to-favorite" data-product-id="{{ $product->product_id }}" title="Thêm vào yêu thích" onclick="addToFavorite(event, {{ $product->product_id }})">
                                                         <i class="zmdi zmdi-favorite"></i>
                                                     </a>
                                                 </li>
@@ -57,11 +55,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- product-item end -->
                             @endforeach
                         </div>
                     </div>
-                    <!-- popular-product end -->
+                    <!-- Kết thúc sản phẩm phổ biến -->
                 </div>
             </div>
         </div>
