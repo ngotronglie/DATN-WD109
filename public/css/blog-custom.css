@@ -193,3 +193,15 @@
 .zmdi-favorite.text-danger {
     color: #6c757d !important;
 } 
+
+.widget-tags-list {
+    display: block;
+    padding-left: 0;
+}
+.widget-tags-list li {
+    display: block;
+    margin-bottom: 8px;
+}
+.widget-tags-list li:last-child {
+    margin-bottom: 0;
+} 

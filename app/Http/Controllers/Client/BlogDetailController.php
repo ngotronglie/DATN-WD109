@@ -242,4 +242,26 @@ class BlogDetailController extends Controller
 
         return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags', 'authors'));
     }
+
+    public function filterByTag($id)
+    {
+        $blogs = \App\Models\Blog::with('user')
+            ->where('is_active', true)
+            ->whereHas('tags', function($query) use ($id) {
+                $query->where('tag_blog.id', $id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(9);
+
+        $recentBlogs = \App\Models\Blog::with('user')
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        $tags = \App\Models\TagBlog::withCount('blogs')->get();
+        $authors = \App\Models\User::whereIn('id', \App\Models\Blog::pluck('user_id')->unique())->get();
+
+        return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags', 'authors'));
+    }
 }

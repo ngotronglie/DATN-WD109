@@ -254,3 +254,4 @@ Route::get('/blog-detail/{slug}', [\App\Http\Controllers\Client\BlogDetailContro
 
 Route::post('/blogs/{blog}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
 Route::get('/blog/author/{id}', [\App\Http\Controllers\Client\BlogDetailController::class, 'filterByAuthor'])->name('blog.author');
+Route::get('/blog/tag/{id}', [\App\Http\Controllers\Client\BlogDetailController::class, 'filterByTag'])->name('blog.tag');

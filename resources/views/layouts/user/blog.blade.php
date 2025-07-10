@@ -100,13 +100,13 @@
                                     <aside class="widget widget-tags box-shadow">
                                         <h6 class="widget-title border-left mb-20">Thẻ</h6>
                                         <ul class="widget-tags-list">
-                                            <li><a href="#">Điện thoại</a></li>
-                                            <li><a href="#">Android</a></li>
-                                            <li><a href="#">iOS</a></li>
-                                            <li><a href="#">Phụ kiện</a></li>
-                                            <li><a href="#">Windows Phone</a></li>
-                                            <li><a href="#">Máy tính bảng</a></li>
-                                            <li><a href="#">Khuyến mãi</a></li>
+                                            @if(isset($tags) && count($tags))
+                                                @foreach($tags as $tag)
+                                                    <li><a href="{{ route('blog.tag', $tag->id) }}" class="tag-filter-link">{{ $tag->name_tag }}</a></li>
+                                                @endforeach
+                                            @else
+                                                <li><span>Không có thẻ</span></li>
+                                            @endif
                                         </ul>
                                     </aside>
                                 </div>
