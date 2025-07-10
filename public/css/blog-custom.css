@@ -155,3 +155,41 @@
         font-size: 12px;
     }
 } 
+
+/* Đổi hiệu ứng hover của blog-item và nút từ màu cam sang màu xám (ưu tiên cao) */
+.blog-item:hover, .blog-item:focus, .blog-item:active {
+    box-shadow: 0 4px 24px 0 rgba(108,117,125,0.15);
+    border-color: #6c757d !important;
+}
+
+.blog-item .btn-outline-primary:hover, .blog-item .btn-outline-primary:focus {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    color: #fff !important;
+}
+
+.blog-item .blog-title a:hover, .blog-item .blog-title a:focus {
+    color: #6c757d !important;
+    text-decoration: underline;
+}
+
+/* Ghi đè màu cam mặc định của theme cho các nút, link, meta, action-button */
+.action-button > li:hover > a,
+.product-item:hover .action-button > li > a,
+.banner-button a:hover,
+.read-more a:hover,
+.blog-meta a:hover,
+.widget-tags-list li:hover a,
+.btn-primary:hover,
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+    background: #6c757d !important;
+    border-color: #6c757d !important;
+    color: #fff !important;
+}
+
+/* Ghi đè màu cam cho icon yêu thích, nếu muốn xám luôn */
+.blog-meta i.text-danger,
+.zmdi-favorite.text-danger {
+    color: #6c757d !important;
+} 

@@ -173,231 +173,44 @@
                     <!-- blog-option end -->
                 </div>
                 <div class="row">
-                    <!-- blog-item start -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="blog-item">
-                            <img src="{{ asset('frontend/img/blog/1.jpg') }}" alt="">
-                            <div class="blog-desc">
-                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
-                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
-                                <div class="read-more">
-                                    <a href="#">Xem thêm</a>
+                    @if(isset($blogs) && count($blogs))
+                        @foreach($blogs as $blog)
+                        <!-- blog-item start -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="blog-item card h-100 shadow-sm border-0">
+                                <img src="{{ $blog->image ? asset($blog->image) : asset('frontend/img/blog/1.jpg') }}"
+                                     alt="{{ $blog->slug }}"
+                                     class="card-img-top rounded-top"
+                                     style="object-fit:cover; height:220px;">
+                                <div class="blog-desc card-body d-flex flex-column">
+                                    <h5 class="blog-title card-title mb-2 text-primary" style="font-size:1.2rem;">
+                                        <a href="#" class="text-decoration-none text-primary">{{ $blog->slug }}</a>
+                                    </h5>
+                                    <p class="card-text text-muted mb-3" style="min-height:60px;">
+                                        {{ \Illuminate\Support\Str::limit(strip_tags($blog->content), 100) }}
+                                    </p>
+                                    <div class="mt-auto">
+                                        <a href="#" class="btn btn-outline-primary btn-sm px-3">Xem thêm</a>
+                                    </div>
                                 </div>
-                                <ul class="blog-meta">
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
+                                <ul class="blog-meta list-inline card-footer bg-white border-0 py-2 mb-0 text-center small">
+                                    <li class="list-inline-item me-3">
+                                        <i class="zmdi zmdi-favorite text-danger"></i> 89 Lượt thích
                                     </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
+                                    <li class="list-inline-item me-3">
+                                        <i class="zmdi zmdi-comments text-info"></i> 59 Bình luận
                                     </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
+                                    <li class="list-inline-item">
+                                        <i class="zmdi zmdi-share text-success"></i> 29 Chia sẻ
                                     </li>
                                 </ul>
                             </div>
                         </div>
-                    </div>
-                    <!-- blog-item end -->
-                    <!-- blog-item start -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="blog-item">
-                            <img src="{{ asset('frontend/img/blog/2.jpg') }}" alt="">
-                            <div class="blog-desc">
-                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
-                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
-                                <div class="read-more">
-                                    <a href="#">Xem thêm</a>
-                                </div>
-                                <ul class="blog-meta">
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- blog-item end -->
-                    <!-- blog-item start -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="blog-item">
-                            <img src="{{ asset('frontend/img/blog/3.jpg') }}" alt="">
-                            <div class="blog-desc">
-                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
-                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
-                                <div class="read-more">
-                                    <a href="#">Xem thêm</a>
-                                </div>
-                                <ul class="blog-meta">
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- blog-item end -->
-                    <!-- blog-item start -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="blog-item">
-                            <img src="{{ asset('frontend/img/blog/4.jpg') }}" alt="">
-                            <div class="blog-desc">
-                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
-                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
-                                <div class="read-more">
-                                    <a href="#">Xem thêm</a>
-                                </div>
-                                <ul class="blog-meta">
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- blog-item end -->
-                    <!-- blog-item start -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="blog-item">
-                            <img src="{{ asset('frontend/img/blog/5.jpg') }}" alt="">
-                            <div class="blog-desc">
-                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
-                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
-                                <div class="read-more">
-                                    <a href="#">Xem thêm</a>
-                                </div>
-                                <ul class="blog-meta">
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- blog-item end -->
-                    <!-- blog-item start -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="blog-item">
-                            <img src="{{ asset('frontend/img/blog/6.jpg') }}" alt="">
-                            <div class="blog-desc">
-                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
-                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
-                                <div class="read-more">
-                                    <a href="#">Xem thêm</a>
-                                </div>
-                                <ul class="blog-meta">
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- blog-item end -->
-                    <!-- blog-item start -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="blog-item">
-                            <img src="{{ asset('frontend/img/blog/1.jpg') }}" alt="">
-                            <div class="blog-desc">
-                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
-                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
-                                <div class="read-more">
-                                    <a href="#">Xem thêm</a>
-                                </div>
-                                <ul class="blog-meta">
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- blog-item end -->
-                    <!-- blog-item start -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="blog-item">
-                            <img src="{{ asset('frontend/img/blog/7.jpg') }}" alt="">
-                            <div class="blog-desc">
-                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
-                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
-                                <div class="read-more">
-                                    <a href="#">Xem thêm</a>
-                                </div>
-                                <ul class="blog-meta">
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- blog-item end -->
-                    <!-- blog-item start -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="blog-item">
-                            <img src="{{ asset('frontend/img/blog/8.jpg') }}" alt="">
-                            <div class="blog-desc">
-                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
-                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
-                                <div class="read-more">
-                                    <a href="#">Xem thêm</a>
-                                </div>
-                                <ul class="blog-meta">
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- blog-item end -->
+                        <!-- blog-item end -->
+                        @endforeach
+                    @else
+                        <div class="col-12 text-center">Chưa có bài viết nào.</div>
+                    @endif
                 </div>
             </div>
         </div>
