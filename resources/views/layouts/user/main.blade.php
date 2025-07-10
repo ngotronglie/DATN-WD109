@@ -16,7 +16,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="section-title text-start mb-40">
-                            <h2 class="uppercase">Latest blog</h2>
+                            <h2 class="uppercase">Bài viết mới nhất</h2>
                             <h6>There are many variations of passages of brands available,</h6>
                         </div>
                     </div>
@@ -105,7 +105,7 @@
                     <div class="col-lg-8 offset-lg-2">
                         <div class="newsletter">
                             <div class="newsletter-info text-center">
-                                <h2 class="newsletter-title">get a newsletter</h2>
+                                <h2 class="newsletter-title">Nhận được một bản tin</h2>
                                 <p>Make sure that you never miss our interesting news <br class="hidden-xs">by
                                     joining our newsletter program.</p>
                             </div>
