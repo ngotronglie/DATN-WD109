@@ -12,10 +12,10 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="breadcrumbs-inner">
-                            <h1 class="breadcrumbs-title">Blog</h1>
+                            <h1 class="breadcrumbs-title">Bài viết</h1>
                             <ul class="breadcrumb-list">
-                                <li><a href="/">Home</a></li>
-                                <li>Blog</li>
+                                <li><a href="/">Trang chủ</a></li>
+                                <li>Bài viết</li>
                             </ul>
                         </div>
                     </div>
@@ -37,55 +37,55 @@
                             <!-- categories -->
                             <div class="dropdown f-left">
                                 <button class="option-btn">
-                                    Categories
+                                    Danh mục
                                     <i class="zmdi zmdi-chevron-down"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-width mt-30">
                                     <aside class="widget widget-categories box-shadow">
-                                        <h6 class="widget-title border-left mb-20">Categories</h6>
+                                        <h6 class="widget-title border-left mb-20">Danh mục</h6>
                                         <div id="cat-treeview" class="product-cat">
                                             <ul>
-                                                <li class="closed"><a href="#">Brand One</a>
+                                                <li class="closed"><a href="#">Thương hiệu Một</a>
                                                     <ul>
-                                                        <li><a href="#">Mobile</a></li>
-                                                        <li><a href="#">Tab</a></li>
-                                                        <li><a href="#">Watch</a></li>
-                                                        <li><a href="#">Head Phone</a></li>
-                                                        <li><a href="#">Memory</a></li>
+                                                        <li><a href="#">Điện thoại</a></li>
+                                                        <li><a href="#">Máy tính bảng</a></li>
+                                                        <li><a href="#">Đồng hồ</a></li>
+                                                        <li><a href="#">Tai nghe</a></li>
+                                                        <li><a href="#">Bộ nhớ</a></li>
                                                     </ul>
                                                 </li>
-                                                <li class="open"><a href="#">Brand Two</a>
+                                                <li class="open"><a href="#">Thương hiệu Hai</a>
                                                     <ul>
-                                                        <li><a href="#">Mobile</a></li>
-                                                        <li><a href="#">Tab</a></li>
-                                                        <li><a href="#">Watch</a></li>
-                                                        <li><a href="#">Head Phone</a></li>
-                                                        <li><a href="#">Memory</a></li>
+                                                        <li><a href="#">Điện thoại</a></li>
+                                                        <li><a href="#">Máy tính bảng</a></li>
+                                                        <li><a href="#">Đồng hồ</a></li>
+                                                        <li><a href="#">Tai nghe</a></li>
+                                                        <li><a href="#">Bộ nhớ</a></li>
                                                     </ul>
                                                 </li>
-                                                <li class="closed"><a href="#">Accessories</a>
+                                                <li class="closed"><a href="#">Phụ kiện</a>
                                                     <ul>
-                                                        <li><a href="#">Footwear</a></li>
-                                                        <li><a href="#">Sunglasses</a></li>
-                                                        <li><a href="#">Watches</a></li>
-                                                        <li><a href="#">Utilities</a></li>
+                                                        <li><a href="#">Giày dép</a></li>
+                                                        <li><a href="#">Kính mát</a></li>
+                                                        <li><a href="#">Đồng hồ</a></li>
+                                                        <li><a href="#">Tiện ích</a></li>
                                                     </ul>
                                                 </li>
-                                                <li class="closed"><a href="#">Top Brands</a>
+                                                <li class="closed"><a href="#">Top thương hiệu</a>
                                                     <ul>
-                                                        <li><a href="#">Mobile</a></li>
-                                                        <li><a href="#">Tab</a></li>
-                                                        <li><a href="#">Watch</a></li>
-                                                        <li><a href="#">Head Phone</a></li>
-                                                        <li><a href="#">Memory</a></li>
+                                                        <li><a href="#">Điện thoại</a></li>
+                                                        <li><a href="#">Máy tính bảng</a></li>
+                                                        <li><a href="#">Đồng hồ</a></li>
+                                                        <li><a href="#">Tai nghe</a></li>
+                                                        <li><a href="#">Bộ nhớ</a></li>
                                                     </ul>
                                                 </li>
-                                                <li class="closed"><a href="#">Jewelry</a>
+                                                <li class="closed"><a href="#">Trang sức</a>
                                                     <ul>
-                                                        <li><a href="#">Footwear</a></li>
-                                                        <li><a href="#">Sunglasses</a></li>
-                                                        <li><a href="#">Watches</a></li>
-                                                        <li><a href="#">Utilities</a></li>
+                                                        <li><a href="#">Giày dép</a></li>
+                                                        <li><a href="#">Kính mát</a></li>
+                                                        <li><a href="#">Đồng hồ</a></li>
+                                                        <li><a href="#">Tiện ích</a></li>
                                                     </ul>
                                                 </li>
                                             </ul>
@@ -96,22 +96,22 @@
                             <!-- recent-product -->
                             <div class="dropdown f-left">
                                 <button class="option-btn">
-                                    Recent Post
+                                    Bài viết mới
                                     <i class="zmdi zmdi-chevron-down"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-width mt-30">
                                     <aside class="widget widget-product box-shadow">
-                                        <h6 class="widget-title border-left mb-20">recent products</h6>
+                                        <h6 class="widget-title border-left mb-20">Bài viết mới</h6>
                                         <!-- product-item start -->
                                         <div class="product-item">
                                             <div class="product-img">
-                                                <a href="single-product.html">
+                                                <a href="#">
                                                     <img src="{{ asset('frontend/img/cart/4.jpg') }}" alt=""/>
                                                 </a>
                                             </div>
                                             <div class="product-info">
                                                 <h6 class="product-title multi-line mt-10">
-                                                    <a href="single-product.html">Dummy Blog Name</a>
+                                                    <a href="#">Tên bài viết mẫu</a>
                                                 </h6>
                                             </div>
                                         </div>
@@ -119,13 +119,13 @@
                                         <!-- product-item start -->
                                         <div class="product-item">
                                             <div class="product-img">
-                                                <a href="single-product.html">
+                                                <a href="#">
                                                     <img src="{{ asset('frontend/img/cart/5.jpg') }}" alt=""/>
                                                 </a>
                                             </div>
                                             <div class="product-info">
                                                 <h6 class="product-title multi-line mt-10">
-                                                    <a href="single-product.html">Dummy Blog Name</a>
+                                                    <a href="#">Tên bài viết mẫu</a>
                                                 </h6>
                                             </div>
                                         </div>
@@ -133,13 +133,13 @@
                                         <!-- product-item start -->
                                         <div class="product-item">
                                             <div class="product-img">
-                                                <a href="single-product.html">
+                                                <a href="#">
                                                     <img src="{{ asset('frontend/img/cart/6.jpg') }}" alt=""/>
                                                 </a>
                                             </div>
                                             <div class="product-info">
                                                 <h6 class="product-title multi-line mt-10">
-                                                    <a href="single-product.html">Dummy Blog Name</a>
+                                                    <a href="#">Tên bài viết mẫu</a>
                                                 </h6>
                                             </div>
                                         </div>
@@ -150,20 +150,20 @@
                             <!-- Tags -->
                             <div class="dropdown f-left">
                                 <button class="option-btn">
-                                    Tags
+                                    Thẻ
                                     <i class="zmdi zmdi-chevron-down"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-width mt-30">
                                     <aside class="widget widget-tags box-shadow">
-                                        <h6 class="widget-title border-left mb-20">Tags</h6>
+                                        <h6 class="widget-title border-left mb-20">Thẻ</h6>
                                         <ul class="widget-tags-list">
-                                            <li><a href="#">Bleckgerry ios</a></li>
-                                            <li><a href="#">Symban</a></li>
-                                            <li><a href="#">IOS</a></li>
-                                            <li><a href="#">Bleckgerry</a></li>
+                                            <li><a href="#">Điện thoại</a></li>
+                                            <li><a href="#">Android</a></li>
+                                            <li><a href="#">iOS</a></li>
+                                            <li><a href="#">Phụ kiện</a></li>
                                             <li><a href="#">Windows Phone</a></li>
-                                            <li><a href="#">Windows Phone</a></li>
-                                            <li><a href="#">Androids</a></li>
+                                            <li><a href="#">Máy tính bảng</a></li>
+                                            <li><a href="#">Khuyến mãi</a></li>
                                         </ul>
                                     </aside>
                                 </div>
@@ -178,20 +178,20 @@
                         <div class="blog-item">
                             <img src="{{ asset('frontend/img/blog/1.jpg') }}" alt="">
                             <div class="blog-desc">
-                                <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
+                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
+                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
                                 <div class="read-more">
-                                    <a href="single-blog.html">Read more</a>
+                                    <a href="#">Xem thêm</a>
                                 </div>
                                 <ul class="blog-meta">
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
+                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
+                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
+                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
                                     </li>
                                 </ul>
                             </div>
@@ -203,20 +203,20 @@
                         <div class="blog-item">
                             <img src="{{ asset('frontend/img/blog/2.jpg') }}" alt="">
                             <div class="blog-desc">
-                                <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
+                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
+                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
                                 <div class="read-more">
-                                    <a href="single-blog.html">Read more</a>
+                                    <a href="#">Xem thêm</a>
                                 </div>
                                 <ul class="blog-meta">
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
+                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
+                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
+                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
                                     </li>
                                 </ul>
                             </div>
@@ -228,20 +228,20 @@
                         <div class="blog-item">
                             <img src="{{ asset('frontend/img/blog/3.jpg') }}" alt="">
                             <div class="blog-desc">
-                                <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
+                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
+                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
                                 <div class="read-more">
-                                    <a href="single-blog.html">Read more</a>
+                                    <a href="#">Xem thêm</a>
                                 </div>
                                 <ul class="blog-meta">
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
+                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
+                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
+                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
                                     </li>
                                 </ul>
                             </div>
@@ -253,20 +253,20 @@
                         <div class="blog-item">
                             <img src="{{ asset('frontend/img/blog/4.jpg') }}" alt="">
                             <div class="blog-desc">
-                                <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
+                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
+                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
                                 <div class="read-more">
-                                    <a href="single-blog.html">Read more</a>
+                                    <a href="#">Xem thêm</a>
                                 </div>
                                 <ul class="blog-meta">
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
+                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
+                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
+                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
                                     </li>
                                 </ul>
                             </div>
@@ -278,20 +278,20 @@
                         <div class="blog-item">
                             <img src="{{ asset('frontend/img/blog/5.jpg') }}" alt="">
                             <div class="blog-desc">
-                                <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
+                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
+                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
                                 <div class="read-more">
-                                    <a href="single-blog.html">Read more</a>
+                                    <a href="#">Xem thêm</a>
                                 </div>
                                 <ul class="blog-meta">
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
+                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
+                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
+                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
                                     </li>
                                 </ul>
                             </div>
@@ -303,20 +303,20 @@
                         <div class="blog-item">
                             <img src="{{ asset('frontend/img/blog/6.jpg') }}" alt="">
                             <div class="blog-desc">
-                                <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
+                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
+                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
                                 <div class="read-more">
-                                    <a href="single-blog.html">Read more</a>
+                                    <a href="#">Xem thêm</a>
                                 </div>
                                 <ul class="blog-meta">
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
+                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
+                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
+                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
                                     </li>
                                 </ul>
                             </div>
@@ -328,20 +328,20 @@
                         <div class="blog-item">
                             <img src="{{ asset('frontend/img/blog/1.jpg') }}" alt="">
                             <div class="blog-desc">
-                                <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
+                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
+                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
                                 <div class="read-more">
-                                    <a href="single-blog.html">Read more</a>
+                                    <a href="#">Xem thêm</a>
                                 </div>
                                 <ul class="blog-meta">
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
+                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
+                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
+                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
                                     </li>
                                 </ul>
                             </div>
@@ -353,20 +353,20 @@
                         <div class="blog-item">
                             <img src="{{ asset('frontend/img/blog/7.jpg') }}" alt="">
                             <div class="blog-desc">
-                                <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
+                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
+                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
                                 <div class="read-more">
-                                    <a href="single-blog.html">Read more</a>
+                                    <a href="#">Xem thêm</a>
                                 </div>
                                 <ul class="blog-meta">
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
+                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
+                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
+                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
                                     </li>
                                 </ul>
                             </div>
@@ -378,20 +378,20 @@
                         <div class="blog-item">
                             <img src="{{ asset('frontend/img/blog/8.jpg') }}" alt="">
                             <div class="blog-desc">
-                                <h5 class="blog-title"><a href="single-blog.html">dummy Blog name</a></h5>
-                                <p>There are many variations of passages of psum available, but the majority have suffered alterat on in some form, by injected humour, randomis words which don't look even slightly.</p>
+                                <h5 class="blog-title"><a href="#">Tên bài viết mẫu</a></h5>
+                                <p>Có rất nhiều biến thể của Lorem Ipsum, nhưng phần lớn đã bị thay đổi dưới nhiều hình thức, bởi sự thêm vào của các yếu tố hài hước, hoặc bởi các từ ngẫu nhiên không có ý nghĩa.</p>
                                 <div class="read-more">
-                                    <a href="single-blog.html">Read more</a>
+                                    <a href="#">Xem thêm</a>
                                 </div>
                                 <ul class="blog-meta">
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Like</a>
+                                        <a href="#"><i class="zmdi zmdi-favorite"></i>89 Lượt thích</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Comments</a>
+                                        <a href="#"><i class="zmdi zmdi-comments"></i>59 Bình luận</a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Share</a>
+                                        <a href="#"><i class="zmdi zmdi-share"></i>29 Chia sẻ</a>
                                     </li>
                                 </ul>
                             </div>
