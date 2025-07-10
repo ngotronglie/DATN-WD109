@@ -37,60 +37,25 @@
                             <!-- categories -->
                             <div class="dropdown f-left">
                                 <button class="option-btn">
-                                    Danh mục
+                                    Tác giả
                                     <i class="zmdi zmdi-chevron-down"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-width mt-30">
-                                    <aside class="widget widget-categories box-shadow">
-                                        <h6 class="widget-title border-left mb-20">Danh mục</h6>
-                                        <div id="cat-treeview" class="product-cat">
-                                            <ul>
-                                                <li class="closed"><a href="#">Thương hiệu Một</a>
-                                                    <ul>
-                                                        <li><a href="#">Điện thoại</a></li>
-                                                        <li><a href="#">Máy tính bảng</a></li>
-                                                        <li><a href="#">Đồng hồ</a></li>
-                                                        <li><a href="#">Tai nghe</a></li>
-                                                        <li><a href="#">Bộ nhớ</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="open"><a href="#">Thương hiệu Hai</a>
-                                                    <ul>
-                                                        <li><a href="#">Điện thoại</a></li>
-                                                        <li><a href="#">Máy tính bảng</a></li>
-                                                        <li><a href="#">Đồng hồ</a></li>
-                                                        <li><a href="#">Tai nghe</a></li>
-                                                        <li><a href="#">Bộ nhớ</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="closed"><a href="#">Phụ kiện</a>
-                                                    <ul>
-                                                        <li><a href="#">Giày dép</a></li>
-                                                        <li><a href="#">Kính mát</a></li>
-                                                        <li><a href="#">Đồng hồ</a></li>
-                                                        <li><a href="#">Tiện ích</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="closed"><a href="#">Top thương hiệu</a>
-                                                    <ul>
-                                                        <li><a href="#">Điện thoại</a></li>
-                                                        <li><a href="#">Máy tính bảng</a></li>
-                                                        <li><a href="#">Đồng hồ</a></li>
-                                                        <li><a href="#">Tai nghe</a></li>
-                                                        <li><a href="#">Bộ nhớ</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="closed"><a href="#">Trang sức</a>
-                                                    <ul>
-                                                        <li><a href="#">Giày dép</a></li>
-                                                        <li><a href="#">Kính mát</a></li>
-                                                        <li><a href="#">Đồng hồ</a></li>
-                                                        <li><a href="#">Tiện ích</a></li>
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </aside>
+                                    <h6 class="widget-title border-left mb-20">Tác giả</h6>
+                                    <div id="author-treeview" class="product-cat">
+                                        <ul>
+                                            <li>
+                                                <a href="{{ route('blog') }}" class="author-filter-link" style="font-weight:bold;">Tất cả tác giả</a>
+                                            </li>
+                                            @if(isset($authors) && count($authors))
+                                                @foreach($authors as $author)
+                                                    <li><a href="{{ route('blog.author', $author->id) }}" class="author-filter-link">{{ $author->name }}</a></li>
+                                                @endforeach
+                                            @else
+                                                <li>Không có tác giả</li>
+                                            @endif
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                             <!-- recent-product -->
@@ -217,4 +182,24 @@
         <!-- BLOG SECTION END -->
     </div>
     <!-- End page content -->
+@endsection
+
+@section('script-client')
+<script>
+    // Lưu vị trí cuộn trước khi chuyển trang
+    document.querySelectorAll('.author-filter-link').forEach(function(link) {
+        link.addEventListener('click', function() {
+            sessionStorage.setItem('scrollPosition', window.scrollY);
+        });
+    });
+
+    // Khi trang load xong, cuộn về vị trí cũ nếu có
+    window.addEventListener('DOMContentLoaded', function() {
+        const scrollY = sessionStorage.getItem('scrollPosition');
+        if (scrollY !== null) {
+            window.scrollTo(0, parseInt(scrollY));
+            sessionStorage.removeItem('scrollPosition');
+        }
+    });
+</script>
 @endsection

@@ -27,7 +27,10 @@ class BlogDetailController extends Controller
             
         $tags = TagBlog::withCount('blogs')->get();
         
-        return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags'));
+        $categories = \App\Models\Categories::with('children')->where('Is_active', 1)->whereNull('Parent_id')->get();
+        
+        $authors = \App\Models\User::whereIn('id', Blog::pluck('user_id')->unique())->get();
+        return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags', 'authors'));
     }
       /**
      * Hiển thị chi tiết một blog
@@ -218,5 +221,25 @@ class BlogDetailController extends Controller
         $tags = TagBlog::withCount('blogs')->get();
         
         return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags', 'keyword'));
+    }
+
+    public function filterByAuthor($id)
+    {
+        $blogs = \App\Models\Blog::with('user')
+            ->where('is_active', true)
+            ->where('user_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(9);
+
+        $recentBlogs = \App\Models\Blog::with('user')
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        $tags = \App\Models\TagBlog::withCount('blogs')->get();
+        $authors = \App\Models\User::whereIn('id', \App\Models\Blog::pluck('user_id')->unique())->get();
+
+        return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags', 'authors'));
     }
 }
