@@ -67,48 +67,26 @@
                                 <div class="dropdown-menu dropdown-width mt-30">
                                     <aside class="widget widget-product box-shadow">
                                         <h6 class="widget-title border-left mb-20">Bài viết mới</h6>
-                                        <!-- product-item start -->
-                                        <div class="product-item">
-                                            <div class="product-img">
-                                                <a href="#">
-                                                    <img src="{{ asset('frontend/img/cart/4.jpg') }}" alt=""/>
-                                                </a>
+                                        @if(isset($recentBlogs) && count($recentBlogs))
+                                            @foreach($recentBlogs as $recent)
+                                                <div class="product-item">
+                                                    <div class="product-img">
+                                                        <a href="#">
+                                                            <img src="{{ $recent->image ? asset($recent->image) : asset('frontend/img/blog/1.jpg') }}" alt="{{ $recent->slug }}"/>
+                                                        </a>
+                                                    </div>
+                                                    <div class="product-info">
+                                                        <h6 class="product-title multi-line mt-10">
+                                                            <a href="#">{{ $recent->slug }}</a>
+                                                        </h6>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @else
+                                            <div class="product-item">
+                                                <div class="product-info">Chưa có bài viết mới.</div>
                                             </div>
-                                            <div class="product-info">
-                                                <h6 class="product-title multi-line mt-10">
-                                                    <a href="#">Tên bài viết mẫu</a>
-                                                </h6>
-                                            </div>
-                                        </div>
-                                        <!-- product-item end -->
-                                        <!-- product-item start -->
-                                        <div class="product-item">
-                                            <div class="product-img">
-                                                <a href="#">
-                                                    <img src="{{ asset('frontend/img/cart/5.jpg') }}" alt=""/>
-                                                </a>
-                                            </div>
-                                            <div class="product-info">
-                                                <h6 class="product-title multi-line mt-10">
-                                                    <a href="#">Tên bài viết mẫu</a>
-                                                </h6>
-                                            </div>
-                                        </div>
-                                        <!-- product-item end -->
-                                        <!-- product-item start -->
-                                        <div class="product-item">
-                                            <div class="product-img">
-                                                <a href="#">
-                                                    <img src="{{ asset('frontend/img/cart/6.jpg') }}" alt=""/>
-                                                </a>
-                                            </div>
-                                            <div class="product-info">
-                                                <h6 class="product-title multi-line mt-10">
-                                                    <a href="#">Tên bài viết mẫu</a>
-                                                </h6>
-                                            </div>
-                                        </div>
-                                        <!-- product-item end -->
+                                        @endif
                                     </aside>
                                 </div>
                             </div>
