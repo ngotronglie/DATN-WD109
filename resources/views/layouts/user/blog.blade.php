@@ -67,6 +67,11 @@
                                 <div class="dropdown-menu dropdown-width mt-30">
                                     <aside class="widget widget-product box-shadow">
                                         <h6 class="widget-title border-left mb-20">Bài viết mới</h6>
+                                        <ul>
+                                            <li>
+                                                <a href="{{ route('blog') }}" class="author-filter-link" style="font-weight:bold;">Tất cả bài viết</a>
+                                            </li>
+                                        </ul>
                                         @if(isset($recentBlogs) && count($recentBlogs))
                                             @foreach($recentBlogs as $recent)
                                                 <div class="product-item">
@@ -100,6 +105,9 @@
                                     <aside class="widget widget-tags box-shadow">
                                         <h6 class="widget-title border-left mb-20">Thẻ</h6>
                                         <ul class="widget-tags-list">
+                                            <li>
+                                                <a href="{{ route('blog') }}" class="tag-filter-link" style="font-weight:bold;">Tất cả thẻ</a>
+                                            </li>
                                             @if(isset($tags) && count($tags))
                                                 @foreach($tags as $tag)
                                                     <li><a href="{{ route('blog.tag', $tag->id) }}" class="tag-filter-link">{{ $tag->name_tag }}</a></li>
