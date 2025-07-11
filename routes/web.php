@@ -87,9 +87,14 @@ Route::get( '/shop', function () {
 })->name('shop');
 
 
-Route::get( '/blog', function () {
-    return view('layouts.user.blog');
-})->name('blog');
+// Route cũ (bị lỗi vì không truyền biến $blogs)
+// Route::get( '/blog', function () {
+//     return view('layouts.user.blog');
+// })->name('blog');
+
+// Route mới: dùng controller để truyền dữ liệu cho view
+use App\Http\Controllers\Client\BlogDetailController;
+Route::get('/blog', [BlogDetailController::class, 'index'])->name('blog');
 
 Route::get( '/blogdetail', function () {
     return view('layouts.user.blogdetail');
@@ -248,3 +253,5 @@ Route::get('/blogs', [\App\Http\Controllers\Client\BlogDetailController::class, 
 Route::get('/blog-detail/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('blog.detail.show');
 
 Route::post('/blogs/{blog}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
+Route::get('/blog/author/{id}', [\App\Http\Controllers\Client\BlogDetailController::class, 'filterByAuthor'])->name('blog.author');
+Route::get('/blog/tag/{id}', [\App\Http\Controllers\Client\BlogDetailController::class, 'filterByTag'])->name('blog.tag');

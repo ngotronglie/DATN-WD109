@@ -10,14 +10,13 @@
           <!-- Menu -->
           <nav class="d-none d-lg-block">
               <ul class="nav justify-content-center">
-                  <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Trang chủ</a></li>
-                  <li class="nav-item"><a class="nav-link" href="{{ route('products') }}">Sản phẩm</a></li>
+                  <li class="nav-item"><a class="nav-link" href="#">Sản phẩm</a></li>
                   <li class="nav-item"><a class="nav-link" href="{{ route('blog') }}">Bài viết</a></li>
-                  <li class="nav-item"><a class="nav-link" href="{{ route('contact') }}">Liên hệ</a></li>
+                  <li class="nav-item"><a class="nav-link" href="#">Trang</a></li>
+                  <li class="nav-item"><a class="nav-link" href="/contact">Liên hệ</a></li>
                   @auth
                       @if (Auth::user()->role_id == 2)
-                          <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản
-                                  trị</a></li>
+                          <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản trị</a></li>
                       @endif
                   @endauth
               </ul>
