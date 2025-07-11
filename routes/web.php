@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\EmailOrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VoucherController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -43,6 +45,24 @@ Route::get('/category/{slug}', [ClientController::class, 'category'])->name('cat
 Route::get('/product/{slug}', [ClientController::class, 'product'])->name('product');
 Route::get('/blog/{slug}', [ClientController::class, 'post'])->name('post');
 Route::get('/product/{slug}', [ClientController::class, 'productDetail'])->name('product.detail');
+
+// Blog Detail Routes
+Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('index');
+   
+    Route::get('/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('show');
+    Route::get('/tag/{tagId}', [\App\Http\Controllers\Client\BlogDetailController::class, 'searchByTag'])->name('tag');
+    Route::get('/search', [\App\Http\Controllers\Client\BlogDetailController::class, 'search'])->name('search');
+    
+    // Admin routes (cần đăng nhập và là admin)
+    Route::middleware(['auth', 'is_admin'])->group(function () {
+        Route::get('/create', [\App\Http\Controllers\Client\BlogDetailController::class, 'create'])->name('create');
+        Route::post('/store', [\App\Http\Controllers\Client\BlogDetailController::class, 'store'])->name('store');
+        Route::get('/{slug}/edit', [\App\Http\Controllers\Client\BlogDetailController::class, 'edit'])->name('edit');
+        Route::put('/{slug}/update', [\App\Http\Controllers\Client\BlogDetailController::class, 'update'])->name('update');
+        Route::delete('/{slug}/delete', [\App\Http\Controllers\Client\BlogDetailController::class, 'destroy'])->name('destroy');
+    });
+});
 
 Route::get('/cart', function () {
     return view('index.clientdashboard');
@@ -102,6 +122,10 @@ Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showRes
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
 
 Route::get('/verify-email/{email}/{token}', [VerifyEmailController::class, 'verify'])->name('verify.email');
+
+Route::post('/order/place', [EmailOrderController::class, 'placeOrder'])->name('order.place');
+Route::post('/order/cancel/{id}', [EmailOrderController::class, 'cancelOrder'])->name('order.cancel');
+
 
 
 Route::middleware('auth')->group(function () {
@@ -203,7 +227,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
     Route::resource('roles', App\Http\Controllers\Admin\RoleController::class);
-    Route::resource('comments', CommentController::class);
+    Route::resource('comments', \App\Http\Controllers\Admin\CommentController::class)->only(['index', 'destroy']);
     Route::resource('favorites', AdminFavoriteController::class);
     Route::resource('vouchers', App\Http\Controllers\Admin\VoucherController::class);
     Route::resource('contacts', App\Http\Controllers\Admin\ContactController::class);
@@ -218,3 +242,9 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 // Route VNPAY
 Route::get('/vnpay/payment', [ClientController::class, 'vnpayPayment'])->name('vnpay.payment');
 Route::get('/vnpay/return', [ClientController::class, 'vnpayReturn'])->name('vnpay.return');
+//route blogs
+Route::get('/blogs', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('client.blog.index');
+
+Route::get('/blog-detail/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('blog.detail.show');
+
+Route::post('/blogs/{blog}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
