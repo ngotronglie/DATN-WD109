@@ -28,29 +28,11 @@ class CategoryRequest extends FormRequest
             'Is_active' => ['required', 'in:0,1'],
         ];
 
-     
         if ($this->isMethod('PUT')) {
-            $category = Categories::find($this->route('id'));
-            
-          
-            $hasChanges = false;
-            if ($category) {
-                $hasChanges = $this->input('Name') !== $category->Name ||
-                             $this->input('Parent_id') != $category->Parent_id ||
-                             $this->input('Is_active') != $category->Is_active ||
-                             $this->hasFile('Image');
-            }
-
-            if (!$hasChanges) {
-                $rules['no_changes'] = ['required'];
-            }
-
-       
             if ($this->hasFile('Image')) {
                 $rules['Image'] = ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'];
             }
         } else {
-          
             $rules['Image'] = ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'];
         }
 

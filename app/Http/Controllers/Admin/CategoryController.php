@@ -80,13 +80,8 @@ class CategoryController extends Controller
                 $data['Image'] = 'storage/categories/' . $imageName;
             }
 
-            $result = $this->categories->updateData($data, $id);
-
-            if ($result) {
-                return redirect()->route('categories.index')->with('success', 'Cập nhật danh mục thành công');
-            } else {
-                return redirect()->back()->withInput()->with('error', 'Cập nhật danh mục thất bại');
-            }
+            $this->categories->updateData($data, $id);
+            return redirect()->route('admin.categories.index')->with('success', 'Cập nhật danh mục thành công');
         } catch (\Exception $e) {
             return redirect()->back()->withInput()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }

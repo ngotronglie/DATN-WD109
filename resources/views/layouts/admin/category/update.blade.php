@@ -37,11 +37,11 @@
                             <select class="form-control @error('Parent_id') is-invalid @enderror"
                                 id="Parent_id" name="Parent_id">
                                 <option value="">Chọn danh mục cha</option>
-                                @foreach($categories as $category)
-                                    @if($category->ID != $category->ID)
-                                        <option value="{{ $category->ID }}"
-                                            {{ old('Parent_id', $category->Parent_id) == $category->ID ? 'selected' : '' }}>
-                                            {{ $category->Name }}
+                                @foreach($categories as $parentCategory)
+                                    @if($parentCategory->ID != $category->ID)
+                                        <option value="{{ $parentCategory->ID }}"
+                                            {{ old('Parent_id', $category->Parent_id) == $parentCategory->ID ? 'selected' : '' }}>
+                                            {{ $parentCategory->Name }}
                                         </option>
                                     @endif
                                 @endforeach
