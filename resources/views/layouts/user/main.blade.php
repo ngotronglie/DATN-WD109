@@ -3,12 +3,82 @@
 @section('content')
     @include('components.client.banner')
 
+<!-- CATEGORY SECTION START -->
+<div class="category-section py-4">
+    <div class="container">
+        <div class="row justify-content-center align-items-center flex-nowrap overflow-auto" style="gap: 0.5rem;">
+            @foreach($categories as $category)
+                <div class="col-6 col-md-3 d-flex justify-content-center p-0" style="max-width: 120px;">
+                    <div class="category-item text-center">
+                        <a href="#" style="display:inline-block;width:90px;height:70px;overflow:hidden;">
+                            <img src="{{ asset($category->Image) }}" alt="{{ $category->Name }}" style="width:90px;height:70px;object-fit:cover;border-radius:10px;">
+                        </a>
+                        <div class="fw-bold" style="font-size: 0.95rem;">{{ $category->Name }}</div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+<!-- CATEGORY SECTION END -->
+
     <!-- START PAGE CONTENT -->
     <section id="page-content" class="page-wrapper section">
 
         @include('components.client.product')
 
-
+        <!-- SERVICE SECTION START -->
+        <div class="service-section py-4">
+            <div class="container">
+                <div class="row flex-nowrap overflow-auto justify-content-center align-items-center text-center" style="gap: 0.1rem;">
+                    <div class="col-6 col-md-3 mb-3 mb-md-0 p-0" style="max-width: 200px;">
+                        <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-2">
+                            <div style="background:#f5f5f5;border-radius:50%;width:80px;height:80px;display:flex;align-items:center;justify-content:center;">
+                                <img src="{{ asset('images/logoicon/Screenshot 2025-07-11 210847.png') }}" alt="Free Shipping" style="width:38px;height:38px;">
+                            </div>
+                            <div>
+                                <div class="fw-bold">Free Shipping</div>
+                                <div class="text-muted small">Đơn hàng trên 500K</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3 mb-md-0 p-0" style="max-width: 200px;">
+                        <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-2">
+                            <div style="background:#f5f5f5;border-radius:50%;width:80px;height:80px;display:flex;align-items:center;justify-content:center;">
+                                <img src="{{ asset('images/logoicon/logo24h.png') }}" alt="Support 24/7" style="width:38px;height:38px;">
+                            </div>
+                            <div>
+                                <div class="fw-bold">Support 24/7</div>
+                                <div class="text-muted small">Hỗ trợ mọi lúc</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3 mb-md-0 p-0" style="max-width: 200px;">
+                        <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-2">
+                            <div style="background:#f5f5f5;border-radius:50%;width:80px;height:80px;display:flex;align-items:center;justify-content:center;">
+                                <img src="{{ asset('images/logoicon/Screenshot 2025-07-11 210222.png') }}" alt="Money Return" style="width:38px;height:38px;">
+                            </div>
+                            <div>
+                                <div class="fw-bold">Money Return</div>
+                                <div class="text-muted small">Hoàn tiền 7 ngày</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3 mb-md-0 p-0" style="max-width: 200px;">
+                        <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-2">
+                            <div style="background:#f5f5f5;border-radius:50%;width:80px;height:80px;display:flex;align-items:center;justify-content:center;">
+                                <img src="{{ asset('images/logoicon/Screenshot 2025-07-11 210141.png') }}" alt="Order Discount" style="width:38px;height:38px;">
+                            </div>
+                            <div>
+                                <div class="fw-bold">Order Discount</div>
+                                <div class="text-muted small">Ưu đãi mỗi ngày</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- SERVICE SECTION END -->
 
         <!-- BLOG SECTION START -->
         <div class="blog-section-2 pt-60 pb-30">
