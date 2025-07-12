@@ -156,7 +156,11 @@ class ClientController extends Controller
         $colors = Color::all();
         $capacities = Capacity::all();
         $categories = \App\Models\Categories::with('children')->whereNull('Parent_id')->get();
-        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories'));
+        
+        // Lấy bình luận của sản phẩm
+        $comments = $product->rootComments()->paginate(10);
+        
+        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories', 'comments'));
     }
 
     public function getVariant(Request $request)
@@ -616,3 +620,4 @@ public function vnpayReturn(Request $request)
 }
 
 }
+

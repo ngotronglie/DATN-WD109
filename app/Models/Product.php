@@ -46,6 +46,22 @@ class Product extends Model
         return $this->belongsToMany(User::class, 'favorites');
     }
 
+    /**
+     * Relationship với ProductComment - Product có nhiều comments
+     */
+    public function comments()
+    {
+        return $this->hasMany(ProductComment::class);
+    }
+
+    /**
+     * Lấy bình luận gốc với replies
+     */
+    public function rootComments()
+    {
+        return $this->comments()->withReplies()->latest();
+    }
+
     // Get all active products with pagination
     public function loadAll()
     {

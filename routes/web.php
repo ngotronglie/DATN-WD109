@@ -21,6 +21,8 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\ProductCommentController;
+use App\Http\Controllers\Admin\ProductCommentController as AdminProductCommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +47,13 @@ Route::get('/category/{slug}', [ClientController::class, 'category'])->name('cat
 Route::get('/product/{slug}', [ClientController::class, 'product'])->name('product');
 Route::get('/blog/{slug}', [ClientController::class, 'post'])->name('post');
 Route::get('/product/{slug}', [ClientController::class, 'productDetail'])->name('product.detail');
+
+// Product Comment Routes
+Route::middleware('auth')->group(function () {
+    Route::post('/product/{productId}/comments', [ProductCommentController::class, 'store'])->name('product.comments.store');
+    Route::delete('/product-comments/{id}', [ProductCommentController::class, 'destroy'])->name('product.comments.destroy');
+    Route::post('/product-comments/{commentId}/reply', [ProductCommentController::class, 'reply'])->name('product.comments.reply');
+});
 
 // Blog Detail Routes
 Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
@@ -197,6 +206,14 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::get('/{slug}/images', [ProductController::class, 'addfiledetail'])->name('addfiledetail');
         Route::put('/{slug}/images', [ProductController::class, 'updateImages'])->name('updateImages');
         Route::delete('/variants/{variantId}/images/{imageId}', [ProductController::class, 'deleteImage'])->name('deleteImage');
+    });
+
+    // Product Comments Management
+    Route::prefix('product-comments')->name('product-comments.')->group(function () {
+        Route::get('/', [AdminProductCommentController::class, 'index'])->name('index');
+        Route::get('/{id}', [AdminProductCommentController::class, 'show'])->name('show');
+        Route::delete('/{id}', [AdminProductCommentController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/reply', [AdminProductCommentController::class, 'reply'])->name('reply');
     });
 
     // Users

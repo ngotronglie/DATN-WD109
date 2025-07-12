@@ -160,10 +160,165 @@
                                 <div class="single-product-tab reviews-tab">
                                     <ul class="nav mb-20">
                                         <li><a class="active" href="#description" data-bs-toggle="tab">Mô tả sản phẩm</a></li>
+                                        <li><a href="#reviews" data-bs-toggle="tab">Đánh giá & Bình luận</a></li>
                                     </ul>
                                     <div class="tab-content">
                                         <div role="tabpanel" class="tab-pane active show" id="description">
                                             <p>{{ $product->description }}</p>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane" id="reviews">
+                                            <!-- Bình luận và đánh giá -->
+                                            <div class="reviews-tab-desc">
+                                                <div class="row">
+                                                    <div class="col-lg-8">
+                                                        <!-- Thống kê đánh giá -->
+                                                        <div class="rating-summary mb-4">
+                                                            <h5>Đánh giá trung bình</h5>
+                                                            <div class="d-flex align-items-center mb-3">
+                                                                <div class="rating-stars me-3">
+                                                                    @php
+                                                                        $avgRating = $comments->avg('rating') ?? 0;
+                                                                        $totalComments = $comments->total();
+                                                                    @endphp
+                                                                    @for($i = 1; $i <= 5; $i++)
+                                                                        <i class="zmdi zmdi-star {{ $i <= $avgRating ? 'text-warning' : 'text-muted' }}"></i>
+                                                                    @endfor
+                                                                    <span class="ms-2">{{ number_format($avgRating, 1) }}/5</span>
+                                                                </div>
+                                                                <span class="text-muted">({{ $totalComments }} bình luận)</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Danh sách bình luận -->
+                                                        <div class="comments-section">
+                                                            <h5>Bình luận ({{ $totalComments }})</h5>
+                                                            @forelse($comments as $comment)
+                                                                <div class="media mt-30 mb-4">
+                                                                    <div class="media-left me-3">
+                                                                        <img class="media-object rounded-circle" 
+                                                                             src="{{ $comment->user->avatar ?? asset('frontend/img/author/1.jpg') }}" 
+                                                                             alt="{{ $comment->user->name }}" 
+                                                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                                                    </div>
+                                                                    <div class="media-body">
+                                                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                                                            <div>
+                                                                                <h6 class="media-heading mb-1">{{ $comment->user->name ?? 'Khách' }}</h6>
+                                                                                @if($comment->rating)
+                                                                                    <div class="rating-stars mb-1">
+                                                                                        @for($i = 1; $i <= 5; $i++)
+                                                                                            <i class="zmdi zmdi-star {{ $i <= $comment->rating ? 'text-warning' : 'text-muted' }}" style="font-size: 14px;"></i>
+                                                                                        @endfor
+                                                                                    </div>
+                                                                                @endif
+                                                                                <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small>
+                                                                            </div>
+                                                                            @if(Auth::check() && (Auth::id() == $comment->user_id || Auth::user()->role->name === 'admin'))
+                                                                                <form action="{{ route('product.comments.destroy', $comment->id) }}" method="POST" class="d-inline">
+                                                                                    @csrf
+                                                                                    @method('DELETE')
+                                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xóa bình luận này?')">
+                                                                                        <i class="zmdi zmdi-delete"></i>
+                                                                                    </button>
+                                                                                </form>
+                                                                            @endif
+                                                                        </div>
+                                                                        <p class="mb-2">{{ $comment->content }}</p>
+                                                                        
+                                                                        <!-- Nút trả lời -->
+                                                                        @if(Auth::check())
+                                                                            <button class="btn btn-sm btn-outline-primary reply-btn" data-comment-id="{{ $comment->id }}">
+                                                                                <i class="zmdi zmdi-reply"></i> Trả lời
+                                                                            </button>
+                                                                            
+                                                                            <!-- Form trả lời (ẩn) -->
+                                                                            <div class="reply-form mt-2" id="reply-form-{{ $comment->id }}" style="display: none;">
+                                                                                <form action="{{ route('product.comments.reply', $comment->id) }}" method="POST">
+                                                                                    @csrf
+                                                                                    <div class="form-group">
+                                                                                        <textarea name="content" class="form-control" rows="2" placeholder="Viết trả lời..."></textarea>
+                                                                                    </div>
+                                                                                    <div class="mt-2">
+                                                                                        <button type="submit" class="btn btn-sm btn-primary">Gửi trả lời</button>
+                                                                                        <button type="button" class="btn btn-sm btn-secondary cancel-reply" data-comment-id="{{ $comment->id }}">Hủy</button>
+                                                                                    </div>
+                                                                                </form>
+                                                                            </div>
+                                                                        @endif
+                                                                        
+                                                                        <!-- Hiển thị trả lời -->
+                                                                        @foreach($comment->replies as $reply)
+                                                                            <div class="reply ms-4 mt-3 p-3 bg-light rounded">
+                                                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                                                    <div>
+                                                                                        <h6 class="mb-1">{{ $reply->user->name ?? 'Khách' }}</h6>
+                                                                                        <small class="text-muted">{{ $reply->created_at->diffForHumans() }}</small>
+                                                                                    </div>
+                                                                                    @if(Auth::check() && (Auth::id() == $reply->user_id || Auth::user()->role->name === 'admin'))
+                                                                                        <form action="{{ route('product.comments.destroy', $reply->id) }}" method="POST" class="d-inline">
+                                                                                            @csrf
+                                                                                            @method('DELETE')
+                                                                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xóa trả lời này?')">
+                                                                                                <i class="zmdi zmdi-delete"></i>
+                                                                                            </button>
+                                                                                        </form>
+                                                                                    @endif
+                                                                                </div>
+                                                                                <p class="mb-0">{{ $reply->content }}</p>
+                                                                            </div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                </div>
+                                                            @empty
+                                                                <div class="text-center py-4">
+                                                                    <i class="zmdi zmdi-comment-outline text-muted" style="font-size: 48px;"></i>
+                                                                    <p class="text-muted mt-2">Chưa có bình luận nào cho sản phẩm này.</p>
+                                                                </div>
+                                                            @endforelse
+                                                            
+                                                            <!-- Phân trang -->
+                                                            @if($comments->hasPages())
+                                                                <div class="d-flex justify-content-center mt-4">
+                                                                    {{ $comments->links() }}
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-lg-4">
+                                                        <!-- Form bình luận -->
+                                                        @if(Auth::check())
+                                                            <div class="comment-form">
+                                                                <h5>Viết bình luận</h5>
+                                                                <form action="{{ route('product.comments.store', $product->id) }}" method="POST">
+                                                                    @csrf
+                                                                    <div class="form-group mb-3">
+                                                                        <label for="rating">Đánh giá:</label>
+                                                                        <div class="rating-input">
+                                                                            @for($i = 5; $i >= 1; $i--)
+                                                                                <input type="radio" name="rating" value="{{ $i }}" id="star{{ $i }}">
+                                                                                <label for="star{{ $i }}" class="zmdi zmdi-star"></label>
+                                                                            @endfor
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="form-group mb-3">
+                                                                        <label for="content">Nội dung bình luận:</label>
+                                                                        <textarea name="content" class="form-control" rows="4" placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..." required></textarea>
+                                                                    </div>
+                                                                    <button type="submit" class="btn btn-primary">
+                                                                        <i class="zmdi zmdi-send"></i> Gửi bình luận
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        @else
+                                                            <div class="alert alert-info">
+                                                                <i class="zmdi zmdi-info"></i>
+                                                                <a href="{{ route('auth.login') }}">Đăng nhập</a> để viết bình luận.
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -235,6 +390,73 @@
 @endsection
 
 @section('script-client')
+<link rel="stylesheet" href="{{ asset('css/product-comments.css') }}">
+<style>
+/* Rating Stars CSS */
+.rating-stars {
+    display: inline-block;
+}
+
+.rating-stars i {
+    font-size: 18px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 5px;
+}
+
+.rating-input input[type="radio"] {
+    display: none;
+}
+
+.rating-input label {
+    font-size: 24px;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.rating-input label:hover,
+.rating-input label:hover ~ label,
+.rating-input input[type="radio"]:checked ~ label {
+    color: #ffc107;
+}
+
+/* Comment styles */
+.comments-section {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.reply {
+    border-left: 3px solid #007bff;
+}
+
+.media-object {
+    border: 2px solid #f8f9fa;
+}
+
+/* Success/Error messages */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     function updateVariant() {
@@ -371,9 +593,58 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-});
-</script>
 
+    // Reply functionality
+    document.querySelectorAll('.reply-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.getAttribute('data-comment-id');
+            const replyForm = document.getElementById(`reply-form-${commentId}`);
+            
+            // Hide all other reply forms
+            document.querySelectorAll('.reply-form').forEach(form => {
+                form.style.display = 'none';
+            });
+            
+            // Show this reply form
+            replyForm.style.display = 'block';
+        });
+    });
+
+    // Cancel reply functionality
+    document.querySelectorAll('.cancel-reply').forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.getAttribute('data-comment-id');
+            const replyForm = document.getElementById(`reply-form-${commentId}`);
+            replyForm.style.display = 'none';
+        });
+    });
+
+    // Show success/error messages
+    @if(session('success'))
+        showAlert('{{ session('success') }}', 'success');
+    @endif
+
+    @if(session('error'))
+        showAlert('{{ session('error') }}', 'danger');
+    @endif
+
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Insert at the top of the page
+        document.body.insertBefore(alertDiv, document.body.firstChild);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+});
 </script>
 <style>
         .thumb-wrapper {

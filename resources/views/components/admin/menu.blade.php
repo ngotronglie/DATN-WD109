@@ -77,7 +77,13 @@
                          <li class="nav-item">
                               <a class="nav-link" href="{{ route('admin.comments.index') }}">
                                    <span class="nav-icon"><iconify-icon icon="solar:chat-round-dots-broken"></iconify-icon></span>
-                                   <span class="nav-text">Bình luận</span>
+                                   <span class="nav-text">Bình luận blog</span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.product-comments.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:chat-square-dots-broken"></iconify-icon></span>
+                                   <span class="nav-text">Bình luận sản phẩm</span>
                               </a>
                          </li>
                          <li class="nav-item">
