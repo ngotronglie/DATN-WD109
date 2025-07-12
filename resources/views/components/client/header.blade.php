@@ -11,11 +11,11 @@
             <!-- Menu -->
             <nav class="d-none d-lg-block">
                 <ul class="nav justify-content-center">
-                    <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Products</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Trang chủ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('shop.index') }}">Sản phẩm</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('client.blog.index') }}">Blog</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"> Pages</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact">Liên hệ</a></li>
                     @auth
                     @if (Auth::user()->role_id == 2)
                     <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản trị</a></li>
@@ -35,7 +35,7 @@
                 <a href="{{ route('auth.login') }}">🔐 Đăng nhập</a>
                 <a href="{{ route('auth.register') }}">➕ Đăng ký</a>
                 @endauth
-                <a href="{{ route('wishlist') }}">❤️ Wishlist</a>
+                <a href="{{ route('wishlist') }}">❤️ Yêu thích</a>
                 <a href="{{ route('cart') }}"><i class="zmdi zmdi-shopping-cart-plus"></i></a>
             </div>
         </div>

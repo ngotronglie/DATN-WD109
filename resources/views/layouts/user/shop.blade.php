@@ -45,12 +45,17 @@
                                     </ul>
                                     <!-- short-by -->
                                     <div class="short-by f-left text-center">
-                                        <span>Sort by :</span>
-                                        <select name="sort" onchange="this.form.submit()">
-                                            <option value="">Sắp xếp</option>
-                                            <option value="az" {{ request('sort') == 'az' ? 'selected' : '' }}>Tên A-Z</option>
-                                            <option value="za" {{ request('sort') == 'za' ? 'selected' : '' }}>Tên Z-A</option>
-                                        </select>
+                                        <form method="GET" action="{{ route('shop.index') }}" id="sortForm">
+                                            <span>Sort by :</span>
+                                            <select name="sort" onchange="document.getElementById('sortForm').submit()">
+                                                <option value="">Sắp xếp</option>
+                                                <option value="az" {{ request('sort') == 'az' ? 'selected' : '' }}>Tên A-Z</option>
+                                                <option value="za" {{ request('sort') == 'za' ? 'selected' : '' }}>Tên Z-A</option>
+                                            </select>
+                                            @foreach(request()->except('sort', 'page') as $key => $value)
+                                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                            @endforeach
+                                        </form>
                                     </div>
                                     <!-- showing -->
                                     <div class="showing f-right text-end">
@@ -193,22 +198,16 @@
                                 </div>
                                 <!-- Tab Content end -->
                                 <!-- shop-pagination start -->
-                                <ul class="shop-pagination box-shadow text-center ptblr-10-30">
-                                    <li><a href="#"><i class="zmdi zmdi-chevron-left"></i></a></li>
-                                    <li><a href="#">01</a></li>
-                                    <li><a href="#">02</a></li>
-                                    <li><a href="#">03</a></li>
-                                    <li><a href="#">...</a></li>
-                                    <li><a href="#">05</a></li>
-                                    <li class="active"><a href="#"><i class="zmdi zmdi-chevron-right"></i></a></li>
-                                </ul>
+                                <div class="mt-3">
+                                    {{ $products->links('pagination::bootstrap-4') }}
+                                </div>
                                 <!-- shop-pagination end -->
                             </div>
                         </div>
                         <div class="col-lg-3 order-lg-1 order-2">
                             <!-- widget-categories -->
                             <aside class="widget widget-categories box-shadow mb-30">
-                                <h6 class="widget-title border-left mb-20">Categories</h6>
+                                <h6 class="widget-title border-left mb-20">Danh mục</h6>
                                 <div id="cat-treeview" class="product-cat">
                                     <ul>
                                         @foreach($allCategories as $cat)
@@ -224,7 +223,7 @@
                             </aside>
                             <!-- shop-filter -->
                             <aside class="widget shop-filter box-shadow mb-30">
-                                <h6 class="widget-title border-left mb-20">PRICE</h6>
+                                <h6 class="widget-title border-left mb-20">Giá</h6>
                                 <form method="GET" action="{{ route('shop.index') }}">
                                     <div class="input-group mb-2">
                                         <input type="number" name="min_price" class="form-control" placeholder="Giá từ" value="{{ request('min_price') }}" min="0">
@@ -295,10 +294,6 @@
 
         </div>
         <!-- End page content -->
-
-        <div class="mt-3">
-            {{ $products->links() }}
-        </div>
 
 @endsection
 
