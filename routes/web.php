@@ -237,6 +237,14 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
     Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
 
+    // Thống kê
+    Route::prefix('thongke')->name('thongke.')->group(function () {
+        Route::get('/sanpham', [\App\Http\Controllers\Admin\StatisticController::class, 'sanpham'])->name('sanpham');
+        Route::get('/donhang', [\App\Http\Controllers\Admin\StatisticController::class, 'donhang'])->name('donhang');
+        Route::get('/nguoidung', [\App\Http\Controllers\Admin\StatisticController::class, 'nguoidung'])->name('nguoidung');
+        Route::get('/yeuthich', [\App\Http\Controllers\Admin\StatisticController::class, 'yeuthich'])->name('yeuthich');
+    });
+
 });
 
 // Route VNPAY
