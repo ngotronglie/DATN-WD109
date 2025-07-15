@@ -146,13 +146,22 @@
                               <div class="dropdown topbar-item">
                                    <a type="button" class="topbar-button" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <span class="d-flex align-items-center">
-                                             <img class="rounded-circle" width="32" src="{{ asset('dashboard/assets/images/users/avatar-1.jpg') }}" alt="avatar-3">
+                                             @if (Auth::check())
+                                             <img src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : asset('img/default-avatar.png') }}" class="rounded-circle" width="32">
+                                             @else
+                                             <img src="{{ asset('img/default-avatar.png') }}" class="rounded-circle" width="32">
+                                             @endif
+
                                         </span>
                                    </a>
+
                                    <div class="dropdown-menu dropdown-menu-end">
                                         <!-- item-->
-                                        <h6 class="dropdown-header">Welcome Gaston!</h6>
-
+                                        @auth
+                                        <h6 class="dropdown-header">Xin chào {{ Auth::user()->name }}!</h6>
+                                        @else
+                                        <h6 class="dropdown-header">Chào mừng!</h6>
+                                        @endauth
                                         <a class="dropdown-item" href="apps-chat.html">
                                              <i class="bx bx-message-dots text-muted fs-18 align-middle me-1"></i><span class="align-middle">Messages</span>
                                         </a>
@@ -163,15 +172,16 @@
                                         <a class="dropdown-item" href="pages-faqs.html">
                                              <i class="bx bx-help-circle text-muted fs-18 align-middle me-1"></i><span class="align-middle">Help</span>
                                         </a>
-                                        <a class="dropdown-item" href="auth-lock-screen.html">
-                                             <i class="bx bx-lock text-muted fs-18 align-middle me-1"></i><span class="align-middle">Lock screen</span>
-                                        </a>
-
                                         <div class="dropdown-divider my-1"></div>
 
-                                        <a class="dropdown-item text-danger" href="auth-signin.html">
-                                             <i class="bx bx-log-out fs-18 align-middle me-1"></i><span class="align-middle">Logout</span>
+                                        <a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                             <i class="bx bx-log-out fs-18 align-middle me-1"></i><span class="align-middle">Đăng xuất</span>
                                         </a>
+
+                                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                             @csrf
+                                        </form>
+
                                    </div>
                               </div>
                          </div>

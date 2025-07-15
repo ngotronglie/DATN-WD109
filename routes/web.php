@@ -21,8 +21,8 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\Auth\AccountController;
 use App\Http\Controllers\Client\ShopController;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -52,6 +52,7 @@ Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
     Route::get('/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('show');
     Route::get('/tag/{tagId}', [\App\Http\Controllers\Client\BlogDetailController::class, 'searchByTag'])->name('tag');
     Route::get('/search', [\App\Http\Controllers\Client\BlogDetailController::class, 'search'])->name('search');
+
     // Admin routes (cần đăng nhập và là admin)
 
     Route::middleware(['auth', 'is_admin'])->group(function () {
@@ -68,34 +69,45 @@ Route::get('/cart', function () {
     return view('layouts.user.cart');
 })->name('cart');
 
-Route::get('/wishlist', [FavoriteController::class, 'index'])->name('wishlist')->middleware('auth');
-Route::get('/account', function () {
-    return view('index.clientdashboard');
-})->name('account');
+Route::get('/wishlist', [App\Http\Controllers\FavoriteController::class, 'index'])->name('wishlist')->middleware('auth');
+
 Route::get('/productdetail', function () {
     return view('layouts.user.productDetail');
 })->name('productdetail');
-Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
+
+Route::get('/cart', function () {
+    return view('layouts.user.cart');
+})->name('cart');
+
+Route::get('/shop', function () {
+    return view('layouts.user.shop');
+})->name('shop');
+
+
+Route::get('/blog', function () {
+    return view('layouts.user.blog');
+})->name('blog');
+
 Route::get('/blogdetail', function () {
     return view('layouts.user.blogdetail');
 })->name('blogdetail');
 Route::get('/checkout', function () {
     return view('layouts.user.checkout');
-})->name('checkout');
+});
 
-// API routes for cart, voucher, etc.
-Route::get('/api/product-variant', [ClientController::class, 'getVariant']);
-Route::get('/api/voucher', [ClientController::class, 'getVoucher']);
-Route::post('/api/add-to-cart', [ClientController::class, 'apiAddToCart']);
-Route::get('/api/cart', [ClientController::class, 'apiGetCart']);
-Route::get('/api/user', [ClientController::class, 'apiGetUser']);
-Route::post('/api/cart/update-qty', [ClientController::class, 'apiUpdateCartQty']);
-Route::post('/api/cart/remove', [ClientController::class, 'apiRemoveCartItem']);
-Route::post('/api/checkout', [ClientController::class, 'apiCheckout']);
+Route::get('/api/product-variant', [\App\Http\Controllers\Client\ClientController::class, 'getVariant']);
+Route::get('/api/voucher', [\App\Http\Controllers\Client\ClientController::class, 'getVoucher']);
+Route::post('/api/add-to-cart', [\App\Http\Controllers\Client\ClientController::class, 'apiAddToCart']);
+Route::get('/api/cart', [\App\Http\Controllers\Client\ClientController::class, 'apiGetCart']);
+Route::get('/api/user', [\App\Http\Controllers\Client\ClientController::class, 'apiGetUser']);
+Route::post('/api/cart/update-qty', [\App\Http\Controllers\Client\ClientController::class, 'apiUpdateCartQty']);
+Route::post('/api/cart/remove', [\App\Http\Controllers\Client\ClientController::class, 'apiRemoveCartItem']);
+Route::post('/api/checkout', [\App\Http\Controllers\Client\ClientController::class, 'apiCheckout']);
 
-// Auth routes
+
 Route::get('/register', [RegisterController::class, 'create'])->name('auth.register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+
 Route::get('/login', [LoginController::class, 'create'])->name('auth.login');
 Route::post('/login', [LoginController::class, 'store'])->name('login.store');
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
@@ -107,8 +119,13 @@ Route::get('/verify-email/{email}/{token}', [VerifyEmailController::class, 'veri
 // Order routes
 Route::post('/order/place', [EmailOrderController::class, 'placeOrder'])->name('order.place');
 Route::post('/order/cancel/{id}', [EmailOrderController::class, 'cancelOrder'])->name('order.cancel');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
+    Route::put('/account', [AccountController::class, 'update'])->name('account.update');
+    Route::get('/account/password/change', [AccountController::class, 'changePassword'])->name('password.change');
+    Route::put('/account/password/update', [AccountController::class, 'updatePassword'])->name('password.update');
+});
 
-// Authenticated user routes
 Route::middleware('auth')->group(function () {
     Route::post('/favorites', [FavoriteController::class, 'store']);
     Route::delete('/favorites/{id}', [FavoriteController::class, 'destroy']);
@@ -194,9 +211,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Product Variants
     Route::resource('product_variants', ProductVariantController::class);
-
-    // Tag Blogs (snake_case for resource)
-    Route::resource('tag_blogs', \App\Http\Controllers\Admin\TagBlogController::class);
+    Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
+    Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
 });
 
 // Shop detail, VNPAY, Blog detail, Comments
