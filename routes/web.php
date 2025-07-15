@@ -221,6 +221,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Orders
     Route::resource('orders', OrderController::class);
+    Route::post('orders/{order}/update-status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
     // cac route
     Route::resource('products', App\Http\Controllers\Admin\ProductController::class);

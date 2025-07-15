@@ -26,10 +26,13 @@ class OrderController extends Controller
     // Cập nhật trạng thái đơn hàng (AJAX)
     public function updateStatus(Request $request, $id)
     {
-        $order = Order::findOrFail($id);
+        $order = Order::find($id);
+        if (!$order) {
+            return redirect()->back()->with('error', 'Không tìm thấy đơn hàng!');
+        }
         $order->status = (int) $request->input('status');
         $order->save();
-        return response()->json(['success' => true]);
+        return redirect()->route('admin.orders.index')->with('success', 'Cập nhật trạng thái thành công!');
     }
 }
 

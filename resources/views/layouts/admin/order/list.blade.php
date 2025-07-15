@@ -61,13 +61,12 @@
                                     <th class="text-center">ID</th>
                                     <th class="text-center">Mã đơn</th>
                                     <th class="text-center">Tên khách</th>
-                                    <th class="text-center">Email</th>
-                                    <th class="text-center">SĐT</th>
                                     <th class="text-center">Tổng tiền</th>
                                     <th class="text-center">Trạng thái</th>
                                     <th class="text-center">Thanh toán</th>
                                     <th class="text-center">Ngày tạo</th>
                                     <th class="text-center">Voucher</th>
+                                    <th class="text-center">Xem chi tiết</th>
                                     <th class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
@@ -77,8 +76,6 @@
                                     <td class="text-center">{{ $order->id }}</td>
                                     <td class="text-center">{{ $order->order_code }}</td>
                                     <td>{{ $order->name }}</td>
-                                    <td>{{ $order->email }}</td>
-                                    <td>{{ $order->phone }}</td>
                                     <td class="text-end">{{ number_format($order->total_amount, 0, ',', '.') }} đ</td>
                                     <td class="text-center">
                                         @php $stt = (int) $order->status; @endphp
@@ -114,8 +111,49 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <a href="#" class="btn btn-sm btn-primary">Xem</a>
-                                        <a href="#" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa đơn này?')">Xóa</a>
+                                        <a href="#" class="btn btn-sm btn-primary">Xem chi tiết</a>
+                                    </td>
+                                    <td class="text-center">
+                                        @php $stt = (int) $order->status; @endphp
+                                        @if($stt === 0)
+                                            <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="1">
+                                                <button class="btn btn-success btn-sm" onclick="return confirm('Xác nhận đơn này?')">Xác nhận đơn</button>
+                                            </form>
+                                        @elseif($stt === 1)
+                                            <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="2">
+                                                <button class="btn btn-info btn-sm" onclick="return confirm('Chuyển sang đóng gói?')">Đóng gói</button>
+                                            </form>
+                                        @elseif($stt === 2)
+                                            <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="3">
+                                                <button class="btn btn-secondary btn-sm" onclick="return confirm('Giao cho vận chuyển?')">Giao cho vận chuyển</button>
+                                            </form>
+                                        @elseif($stt === 3)
+                                            <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="4">
+                                                <button class="btn btn-dark btn-sm" onclick="return confirm('Đang vận chuyển?')">Đang vận chuyển</button>
+                                            </form>
+                                        @elseif($stt === 4)
+                                            <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="6">
+                                                <button class="btn btn-danger btn-sm" onclick="return confirm('Hủy đơn này?')">Hủy đơn</button>
+                                            </form>
+                                            <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="5">
+                                                <button class="btn btn-success btn-sm" onclick="return confirm('Hoàn thành đơn này?')">Hoàn thành đơn hàng</button>
+                                            </form>
+                                            @elseif($stt === 5)
+                                            -
+
+                                        @endif
                                     </td>
                                 </tr>
                                 <tr class="order-detail-row" id="order-detail-{{ $order->id }}" style="display:none; background:#f9f9f9;">
@@ -181,6 +219,34 @@
                 detailRow.style.display = '';
             } else {
                 detailRow.style.display = 'none';
+            }
+        });
+    });
+
+    document.querySelectorAll('.update-status-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var orderId = this.getAttribute('data-order-id');
+            var status = this.getAttribute('data-status');
+            if(confirm('Bạn có chắc muốn cập nhật trạng thái đơn hàng?')) {
+                fetch(`/admin/orders/${orderId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ status: status })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        alert(data.message || 'Cập nhật trạng thái thành công!');
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Cập nhật trạng thái thất bại!');
+                    }
+                })
+                .catch(() => alert('Có lỗi xảy ra!'));
             }
         });
     });
