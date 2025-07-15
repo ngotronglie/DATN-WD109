@@ -158,6 +158,7 @@ document.getElementById('confirm-order-btn').onclick = async function() {
     const cart = JSON.parse(localStorage.getItem('checkout_cart') || '[]');
     const user = JSON.parse(localStorage.getItem('checkout_user') || 'null');
     const voucher = JSON.parse(localStorage.getItem('checkout_voucher') || 'null');
+    const voucherCode = localStorage.getItem('checkout_voucher_code') || '';
     if (!cart.length || !user) {
         alert('Không có dữ liệu đơn hàng. Vui lòng quay lại giỏ hàng!');
         window.location.href = '/cart';
@@ -231,6 +232,7 @@ document.getElementById('confirm-order-btn').onclick = async function() {
             status: 'chờ xử lí',
             payment_method: user.payment || 'COD',
             voucher_id: voucher_id,
+            voucher_code: voucherCode,
             status_method: 'chưa thanh toán',
             items: cart.map(item => ({
                 variant_id: item.variant_id,

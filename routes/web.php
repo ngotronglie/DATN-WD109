@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Auth\AccountController;
+use App\Http\Controllers\Client\ShopController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -38,23 +39,22 @@ Route::get('/', [ClientController::class, 'index'])->name('home');
 Route::get('/products', [ClientController::class, 'products'])->name('products');
 Route::get('/about', [ClientController::class, 'about'])->name('about');
 Route::get('/contact', [ClientController::class, 'contact'])->name('contact');
-Route::post('/contact', [App\Http\Controllers\Client\ClientController::class, 'submitContact'])->name('contact.post');
+Route::post('/contact', [ClientController::class, 'submitContact'])->name('contact.post');
 Route::get('/blog', [ClientController::class, 'blog'])->name('blog');
 Route::get('/search', [ClientController::class, 'search'])->name('search');
 Route::get('/category/{slug}', [ClientController::class, 'category'])->name('category');
-Route::get('/product/{slug}', [ClientController::class, 'product'])->name('product');
-Route::get('/blog/{slug}', [ClientController::class, 'post'])->name('post');
 Route::get('/product/{slug}', [ClientController::class, 'productDetail'])->name('product.detail');
+Route::get('/blog/{slug}', [ClientController::class, 'post'])->name('post');
 
 // Blog Detail Routes
 Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('index');
-
     Route::get('/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('show');
     Route::get('/tag/{tagId}', [\App\Http\Controllers\Client\BlogDetailController::class, 'searchByTag'])->name('tag');
     Route::get('/search', [\App\Http\Controllers\Client\BlogDetailController::class, 'search'])->name('search');
 
     // Admin routes (cần đăng nhập và là admin)
+
     Route::middleware(['auth', 'is_admin'])->group(function () {
         Route::get('/create', [\App\Http\Controllers\Client\BlogDetailController::class, 'create'])->name('create');
         Route::post('/store', [\App\Http\Controllers\Client\BlogDetailController::class, 'store'])->name('store');
@@ -64,8 +64,9 @@ Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
     });
 });
 
+// Cart, Wishlist, Account, Shop, Checkout
 Route::get('/cart', function () {
-    return view('index.clientdashboard');
+    return view('layouts.user.cart');
 })->name('cart');
 
 Route::get('/wishlist', [App\Http\Controllers\FavoriteController::class, 'index'])->name('wishlist')->middleware('auth');
@@ -90,7 +91,6 @@ Route::get('/blog', function () {
 Route::get('/blogdetail', function () {
     return view('layouts.user.blogdetail');
 })->name('blogdetail');
-
 Route::get('/checkout', function () {
     return view('layouts.user.checkout');
 });
@@ -110,19 +110,15 @@ Route::post('/register', [RegisterController::class, 'store'])->name('register.s
 
 Route::get('/login', [LoginController::class, 'create'])->name('auth.login');
 Route::post('/login', [LoginController::class, 'store'])->name('login.store');
-
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
-
-// Form đặt lại mật khẩu (từ email gửi về)
 Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
-
 Route::get('/verify-email/{email}/{token}', [VerifyEmailController::class, 'verify'])->name('verify.email');
 
+// Order routes
 Route::post('/order/place', [EmailOrderController::class, 'placeOrder'])->name('order.place');
 Route::post('/order/cancel/{id}', [EmailOrderController::class, 'cancelOrder'])->name('order.cancel');
-
 Route::middleware(['auth'])->group(function () {
     Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/account', [AccountController::class, 'update'])->name('account.update');
@@ -131,21 +127,14 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    // Các route yêu cầu người dùng đã đăng nhập
-    Route::post('/favorites', [App\Http\Controllers\FavoriteController::class, 'store']);
-    Route::delete('/favorites/{id}', [App\Http\Controllers\FavoriteController::class, 'destroy']);
-    Route::get('/favorites/check/{productId}', [App\Http\Controllers\FavoriteController::class, 'checkFavorite'])->name('favorites.check');
+    Route::post('/favorites', [FavoriteController::class, 'store']);
+    Route::delete('/favorites/{id}', [FavoriteController::class, 'destroy']);
+    Route::get('/favorites/check/{productId}', [FavoriteController::class, 'checkFavorite'])->name('favorites.check');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
 
-Route::post('/contact', [App\Http\Controllers\Client\ClientController::class, 'submitContact'])->name('contact.post');
-
-//  route admin
-
-// Route cho dashboard và tất cả các route admin
+// Admin routes
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
-
-    // Dashboard admin
     Route::view('/', 'layouts.admin.index')->name('dashboard');
 
     // Categories
@@ -172,7 +161,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Tag Blogs
     Route::resource('tag-blogs', \App\Http\Controllers\Admin\TagBlogController::class)->except(['show']);
 
-    // Colors và Capacities
+    // Colors and Capacities
     Route::resource('colors', ColorController::class);
     Route::resource('capacities', CapacityController::class);
 
@@ -194,58 +183,42 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::get('/edit/{slug}', [ProductController::class, 'edit'])->name('edit');
         Route::put('/update/{slug}', [ProductController::class, 'update'])->name('update');
         Route::delete('/delete/{slug}', [ProductController::class, 'destroy'])->name('destroy');
-
-        // Quản lý ảnh biến thể
         Route::get('/{slug}/images', [ProductController::class, 'addfiledetail'])->name('addfiledetail');
         Route::put('/{slug}/images', [ProductController::class, 'updateImages'])->name('updateImages');
         Route::delete('/variants/{variantId}/images/{imageId}', [ProductController::class, 'deleteImage'])->name('deleteImage');
     });
 
     // Users
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-    Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-    Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::resource('users', UserController::class);
 
     // Test lỗi
     Route::get('/test-404', fn() => abort(404));
     Route::get('/test-403', fn() => abort(403));
 
     // Contact
-    Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
-    Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
-    Route::post('/contacts/{contact}/status', [ContactController::class, 'updateStatus'])->name('contacts.updateStatus');
-    Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
-    Route::post('/contacts/{contact}/mark-replied', [ContactController::class, 'markAsReplied'])->name('contacts.markReplied');
+    Route::resource('contacts', ContactController::class);
 
     // Orders
     Route::resource('orders', OrderController::class);
+    Route::post('orders/{order}/update-status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::get('orders/{order}/detail', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.detail');
 
-    // cac route
-    Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
-    Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
-    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
-    Route::resource('roles', App\Http\Controllers\Admin\RoleController::class);
-    Route::resource('comments', \App\Http\Controllers\Admin\CommentController::class)->only(['index', 'destroy']);
+    // Comments (admin)
+    Route::resource('comments', CommentController::class)->only(['index', 'destroy']);
+
+    // Favorites (admin)
     Route::resource('favorites', AdminFavoriteController::class);
-    Route::resource('vouchers', App\Http\Controllers\Admin\VoucherController::class);
-    Route::resource('contacts', App\Http\Controllers\Admin\ContactController::class);
-    Route::resource('colors', App\Http\Controllers\Admin\ColorController::class);
-    Route::resource('capacities', App\Http\Controllers\Admin\CapacityController::class);
+
+    // Product Variants
     Route::resource('product_variants', ProductVariantController::class);
     Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
     Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
 });
 
-// Route VNPAY
+// Shop detail, VNPAY, Blog detail, Comments
+Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.show');
 Route::get('/vnpay/payment', [ClientController::class, 'vnpayPayment'])->name('vnpay.payment');
 Route::get('/vnpay/return', [ClientController::class, 'vnpayReturn'])->name('vnpay.return');
-//route blogs
 Route::get('/blogs', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('client.blog.index');
-
 Route::get('/blog-detail/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('blog.detail.show');
-
 Route::post('/blogs/{blog}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');

@@ -45,13 +45,17 @@
                                     </ul>
                                     <!-- short-by -->
                                     <div class="short-by f-left text-center">
-                                        <span>Sort by :</span>
-                                        <select>
-                                            <option value="volvo">Newest items</option>
-                                            <option value="saab">Saab</option>
-                                            <option value="mercedes">Mercedes</option>
-                                            <option value="audi">Audi</option>
-                                        </select>
+                                        <form method="GET" action="{{ route('shop.index') }}" id="sortForm">
+                                            <span>Sort by :</span>
+                                            <select name="sort" onchange="document.getElementById('sortForm').submit()">
+                                                <option value="">Sắp xếp</option>
+                                                <option value="az" {{ request('sort') == 'az' ? 'selected' : '' }}>Tên A-Z</option>
+                                                <option value="za" {{ request('sort') == 'za' ? 'selected' : '' }}>Tên Z-A</option>
+                                            </select>
+                                            @foreach(request()->except('sort', 'page') as $key => $value)
+                                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                            @endforeach
+                                        </form>
                                     </div>
                                     <!-- showing -->
                                     <div class="showing f-right text-end">
@@ -64,726 +68,173 @@
                                     <!-- grid-view -->
                                     <div id="grid-view" class="tab-pane active show" role="tabpanel">
                                         <div class="row">
-                                            <!-- product-item start -->
-                                            <div class="col-lg-4 col-md-6">
-                                                <div class="product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/7.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <h6 class="product-title">
-                                                            <a href="single-product.html">Product Name </a>
-                                                        </h6>
-                                                        <div class="pro-rating">
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
+                                            @foreach($products as $product)
+                                                @php
+                                                    $variant = $product->mainVariant;
+                                                @endphp
+                                                <div class="col-lg-4 col-md-6">
+                                                    <div class="product-item">
+                                                        <div class="product-img">
+                                                            <a href="{{ route('shop.show', $product->id) }}">
+                                                                @if($variant && $variant->image)
+                                                                    <img src="{{ asset($variant->image) }}" alt="{{ $product->name }}" />
+                                                                @else
+                                                                    <span>Chưa có ảnh</span>
+                                                                @endif
+                                                            </a>
                                                         </div>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
+                                                        <div class="product-info">
+                                                            <h6 class="product-title">
+                                                                <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
+                                                            </h6>
+                                                            <div class="pro-rating">
+                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                <a href="#"><i class="zmdi zmdi-star-half"></i></a>
+                                                                <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
+                                                            </div>
+                                                            <h3 class="pro-price">
+                                                                @if($variant)
+                                                                    {{ number_format($variant->price) }} VNĐ
+                                                                @else
+                                                                    Chưa có giá
+                                                                @endif
+                                                            </h3>
+                                                            @if($variant && $variant->color)
+                                                                {{ $variant->color->name }}
+                                                            @endif
+                                                            <ul class="action-button">
+                                                                <li>
+                                                                    <a href="#" title="Wishlist"><i
+                                                                            class="zmdi zmdi-favorite"></i></a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
+                                                                        title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="#" title="Compare"><i
+                                                                            class="zmdi zmdi-refresh"></i></a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="#" title="Add to cart"><i
+                                                                            class="zmdi zmdi-shopping-cart-plus"></i></a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-4 col-md-6">
-                                                <div class="product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/2.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <h6 class="product-title">
-                                                            <a href="single-product.html">Product Name</a>
-                                                        </h6>
-                                                        <div class="pro-rating">
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                        </div>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-4 col-md-6">
-                                                <div class="product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/9.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <h6 class="product-title">
-                                                            <a href="single-product.html">Product Name</a>
-                                                        </h6>
-                                                        <div class="pro-rating">
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                        </div>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-4 col-md-6">
-                                                <div class="product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/4.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <h6 class="product-title">
-                                                            <a href="single-product.html">Product Name</a>
-                                                        </h6>
-                                                        <div class="pro-rating">
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                        </div>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-4 col-md-6">
-                                                <div class="product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/10.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <h6 class="product-title">
-                                                            <a href="single-product.html">Product Name</a>
-                                                        </h6>
-                                                        <div class="pro-rating">
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                        </div>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-4 col-md-6">
-                                                <div class="product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/11.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <h6 class="product-title">
-                                                            <a href="single-product.html">Product Name</a>
-                                                        </h6>
-                                                        <div class="pro-rating">
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                        </div>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-4 col-md-6">
-                                                <div class="product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/8.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <h6 class="product-title">
-                                                            <a href="single-product.html">Product Name</a>
-                                                        </h6>
-                                                        <div class="pro-rating">
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                        </div>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-4 col-md-6">
-                                                <div class="product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/12.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <h6 class="product-title">
-                                                            <a href="single-product.html">Product Name</a>
-                                                        </h6>
-                                                        <div class="pro-rating">
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                        </div>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-4 col-md-6">
-                                                <div class="product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/12.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <h6 class="product-title">
-                                                            <a href="single-product.html">Product Name</a>
-                                                        </h6>
-                                                        <div class="pro-rating">
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                            <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                        </div>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
+                                            @endforeach
                                         </div>
                                     </div>
                                     <!-- list-view -->
                                     <div id="list-view" class="tab-pane" role="tabpanel">
                                         <div class="row">
-                                            <!-- product-item start -->
-                                            <div class="col-lg-12">
-                                                <div class="shop-list product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/7.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <div class="clearfix">
-                                                            <h6 class="product-title f-left">
-                                                                <a href="single-product.html">Dummy Product Name </a>
-                                                            </h6>
-                                                            <div class="pro-rating f-right">
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                            </div>
+                                            @foreach($products as $product)
+                                                @php
+                                                    $variant = $product->mainVariant;
+                                                @endphp
+                                                <div class="col-lg-12">
+                                                    <div class="shop-list product-item">
+                                                        <div class="product-img">
+                                                            <a href="{{ route('shop.show', $product->id) }}">
+                                                                @if($variant && $variant->image)
+                                                                    <img src="{{ asset($variant->image) }}" alt="{{ $product->name }}" />
+                                                                @else
+                                                                    <span>Chưa có ảnh</span>
+                                                                @endif
+                                                            </a>
                                                         </div>
-                                                        <h6 class="brand-name mb-30">Brand Name</h6>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <p>There are many variations of passages of Lorem Ipsum available, but
-                                                            the majority have suffered alteration in some form, by injected
-                                                            humour, or randomised words which don't look even slightly
-                                                            believable.</p>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
+                                                        <div class="product-info">
+                                                            <div class="clearfix">
+                                                                <h6 class="product-title f-left">
+                                                                    <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
+                                                                </h6>
+                                                                <div class="pro-rating f-right">
+                                                                    <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                    <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                    <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                    <a href="#"><i class="zmdi zmdi-star-half"></i></a>
+                                                                    <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
+                                                                </div>
+                                                            </div>
+                                                            <h6 class="brand-name mb-30">Brand Name</h6>
+                                                            <h3 class="pro-price">
+                                                                @if($variant)
+                                                                    {{ number_format($variant->price) }} VNĐ
+                                                                @else
+                                                                    Chưa có giá
+                                                                @endif
+                                                            </h3>
+                                                            @if($variant && $variant->color)
+                                                                {{ $variant->color->name }}
+                                                            @endif
+                                                            <p>{{ $product->description ?? '' }}</p>
+                                                            <ul class="action-button">
+                                                                <li>
+                                                                    <a href="#" title="Wishlist"><i
+                                                                            class="zmdi zmdi-favorite"></i></a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
+                                                                        title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="#" title="Compare"><i
+                                                                            class="zmdi zmdi-refresh"></i></a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="#" title="Add to cart"><i
+                                                                            class="zmdi zmdi-shopping-cart-plus"></i></a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-12">
-                                                <div class="shop-list product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/10.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <div class="clearfix">
-                                                            <h6 class="product-title f-left">
-                                                                <a href="single-product.html">Dummy Product Name </a>
-                                                            </h6>
-                                                            <div class="pro-rating f-right">
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                            </div>
-                                                        </div>
-                                                        <h6 class="brand-name mb-30">Brand Name</h6>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <p>There are many variations of passages of Lorem Ipsum available, but
-                                                            the majority have suffered alteration in some form, by injected
-                                                            humour, or randomised words which don't look even slightly
-                                                            believable.</p>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-12">
-                                                <div class="shop-list product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/4.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <div class="clearfix">
-                                                            <h6 class="product-title f-left">
-                                                                <a href="single-product.html">Dummy Product Name </a>
-                                                            </h6>
-                                                            <div class="pro-rating f-right">
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                            </div>
-                                                        </div>
-                                                        <h6 class="brand-name mb-30">Brand Name</h6>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <p>There are many variations of passages of Lorem Ipsum available, but
-                                                            the majority have suffered alteration in some form, by injected
-                                                            humour, or randomised words which don't look even slightly
-                                                            believable.</p>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-12">
-                                                <div class="shop-list product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/8.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <div class="clearfix">
-                                                            <h6 class="product-title f-left">
-                                                                <a href="single-product.html">Dummy Product Name </a>
-                                                            </h6>
-                                                            <div class="pro-rating f-right">
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                            </div>
-                                                        </div>
-                                                        <h6 class="brand-name mb-30">Brand Name</h6>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <p>There are many variations of passages of Lorem Ipsum available, but
-                                                            the majority have suffered alteration in some form, by injected
-                                                            humour, or randomised words which don't look even slightly
-                                                            believable.</p>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="col-lg-12">
-                                                <div class="shop-list product-item">
-                                                    <div class="product-img">
-                                                        <a href="single-product.html">
-                                                          <img src="{{asset('frontend/img/product/2.jpg')}}" alt="" />
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <div class="clearfix">
-                                                            <h6 class="product-title f-left">
-                                                                <a href="single-product.html">Dummy Product Name </a>
-                                                            </h6>
-                                                            <div class="pro-rating f-right">
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                            </div>
-                                                        </div>
-                                                        <h6 class="brand-name mb-30">Brand Name</h6>
-                                                        <h3 class="pro-price">$ 869.00</h3>
-                                                        <p>There are many variations of passages of Lorem Ipsum available, but
-                                                            the majority have suffered alteration in some form, by injected
-                                                            humour, or randomised words which don't look even slightly
-                                                            believable.</p>
-                                                        <ul class="action-button">
-                                                            <li>
-                                                                <a href="#" title="Wishlist"><i
-                                                                        class="zmdi zmdi-favorite"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                    title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Compare"><i
-                                                                        class="zmdi zmdi-refresh"></i></a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="#" title="Add to cart"><i
-                                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
+                                            @endforeach
                                         </div>
                                     </div>
                                 </div>
                                 <!-- Tab Content end -->
                                 <!-- shop-pagination start -->
-                                <ul class="shop-pagination box-shadow text-center ptblr-10-30">
-                                    <li><a href="#"><i class="zmdi zmdi-chevron-left"></i></a></li>
-                                    <li><a href="#">01</a></li>
-                                    <li><a href="#">02</a></li>
-                                    <li><a href="#">03</a></li>
-                                    <li><a href="#">...</a></li>
-                                    <li><a href="#">05</a></li>
-                                    <li class="active"><a href="#"><i class="zmdi zmdi-chevron-right"></i></a></li>
-                                </ul>
+                                <div class="mt-3">
+                                    {{ $products->links('pagination::bootstrap-4') }}
+                                </div>
                                 <!-- shop-pagination end -->
                             </div>
                         </div>
                         <div class="col-lg-3 order-lg-1 order-2">
                             <!-- widget-categories -->
                             <aside class="widget widget-categories box-shadow mb-30">
-                                <h6 class="widget-title border-left mb-20">Categories</h6>
+                                <h6 class="widget-title border-left mb-20">Danh mục</h6>
                                 <div id="cat-treeview" class="product-cat">
                                     <ul>
-                                        <li class="closed"><a href="#">Brand One</a>
-                                            <ul>
-                                                <li><a href="#">Mobile</a></li>
-                                                <li><a href="#">Tab</a></li>
-                                                <li><a href="#">Watch</a></li>
-                                                <li><a href="#">Head Phone</a></li>
-                                                <li><a href="#">Memory</a></li>
-                                            </ul>
-                                        </li>
-                                        <li class="open"><a href="#">Brand Two</a>
-                                            <ul>
-                                                <li><a href="#">Mobile</a></li>
-                                                <li><a href="#">Tab</a></li>
-                                                <li><a href="#">Watch</a></li>
-                                                <li><a href="#">Head Phone</a></li>
-                                                <li><a href="#">Memory</a></li>
-                                            </ul>
-                                        </li>
-                                        <li class="closed"><a href="#">Accessories</a>
-                                            <ul>
-                                                <li><a href="#">Footwear</a></li>
-                                                <li><a href="#">Sunglasses</a></li>
-                                                <li><a href="#">Watches</a></li>
-                                                <li><a href="#">Utilities</a></li>
-                                            </ul>
-                                        </li>
-                                        <li class="closed"><a href="#">Top Brands</a>
-                                            <ul>
-                                                <li><a href="#">Mobile</a></li>
-                                                <li><a href="#">Tab</a></li>
-                                                <li><a href="#">Watch</a></li>
-                                                <li><a href="#">Head Phone</a></li>
-                                                <li><a href="#">Memory</a></li>
-                                            </ul>
-                                        </li>
-                                        <li class="closed"><a href="#">Jewelry</a>
-                                            <ul>
-                                                <li><a href="#">Footwear</a></li>
-                                                <li><a href="#">Sunglasses</a></li>
-                                                <li><a href="#">Watches</a></li>
-                                                <li><a href="#">Utilities</a></li>
-                                            </ul>
-                                        </li>
+                                        @foreach($allCategories as $cat)
+                                            <li>
+                                                <span>ID: {{ $cat->id }}</span>
+                                                <a href="{{ url('shop') . '?category=' . $cat->ID }}">
+                                                    {{ $cat->Name }}
+                                                </a>
+                                            </li>
+                                        @endforeach
                                     </ul>
                                 </div>
                             </aside>
                             <!-- shop-filter -->
                             <aside class="widget shop-filter box-shadow mb-30">
-                                <h6 class="widget-title border-left mb-20">Price</h6>
-                                <div class="price_filter">
-                                    <div class="price_slider_amount">
-                                        <input type="submit" value="You range :" />
-                                        <input type="text" id="amount" name="price" placeholder="Add Your Price" />
+                                <h6 class="widget-title border-left mb-20">Giá</h6>
+                                <form method="GET" action="{{ route('shop.index') }}">
+                                    <div class="input-group mb-2">
+                                        <input type="number" name="min_price" class="form-control" placeholder="Giá từ" value="{{ request('min_price') }}" min="0">
+                                        <span class="input-group-text">-</span>
+                                        <input type="number" name="max_price" class="form-control" placeholder="Giá đến" value="{{ request('max_price') }}" min="0">
                                     </div>
-                                    <div id="slider-range"></div>
-                                </div>
+                                    <button type="submit" class="btn btn-warning btn-block w-100">Lọc</button>
+                                </form>
                             </aside>
                             <!-- widget-color -->
-                            <aside class="widget widget-color box-shadow mb-30">
-                                <h6 class="widget-title border-left mb-20">color</h6>
-                                <ul>
-                                    <li class="color-1"><a href="#">LightSalmon</a></li>
-                                    <li class="color-2"><a href="#">Dark Salmon</a></li>
-                                    <li class="color-3"><a href="#">Tomato</a></li>
-                                    <li class="color-4"><a href="#">Deep Sky Blue</a></li>
-                                    <li class="color-5"><a href="#">Electric Purple</a></li>
-                                    <li class="color-6"><a href="#">Atlantis</a></li>
-                                </ul>
-                            </aside>
+                           
                             <!-- operating-system -->
                 
                             <!-- widget-product -->
@@ -845,3 +296,30 @@
         <!-- End page content -->
 
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script>
+$(document).ready(function() {
+    var min = {{ request('min_price', 0) }};
+    var max = {{ request('max_price', 1000) }};
+    $("#slider-range").slider({
+        range: true,
+        min: 0,
+        max: 1000,
+        values: [min, max],
+        slide: function(event, ui) {
+            $("#min_price").val(ui.values[0]);
+            $("#max_price").val(ui.values[1]);
+            $("#price-range-text").text('$' + ui.values[0] + ' - $' + ui.values[1]);
+        }
+    });
+    // Set initial values on page load
+    $("#min_price").val($("#slider-range").slider("values", 0));
+    $("#max_price").val($("#slider-range").slider("values", 1));
+    $("#price-range-text").text('$' + $("#slider-range").slider("values", 0) + ' - $' + $("#slider-range").slider("values", 1));
+});
+</script>
+@endpush
