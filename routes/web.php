@@ -184,6 +184,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Orders
     Route::resource('orders', OrderController::class);
     Route::post('orders/{order}/update-status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::get('orders/{order}/detail', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.detail');
 
     // Comments (admin)
     Route::resource('comments', CommentController::class)->only(['index', 'destroy']);

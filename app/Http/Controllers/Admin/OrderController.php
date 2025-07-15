@@ -34,5 +34,12 @@ class OrderController extends Controller
         $order->save();
         return redirect()->route('admin.orders.index')->with('success', 'Cập nhật trạng thái thành công!');
     }
+
+    public function show($id)
+    {
+        $order = \App\Models\Order::with(['voucher', 'orderDetails.productVariant.color', 'orderDetails.productVariant.capacity', 'orderDetails.productVariant.product'])
+            ->findOrFail($id);
+        return view('layouts.admin.order.detail', compact('order'));
+    }
 }
 
