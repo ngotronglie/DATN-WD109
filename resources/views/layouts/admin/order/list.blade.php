@@ -63,6 +63,7 @@
                                     <th class="text-center">Tên khách</th>
                                     <th class="text-center">Tổng tiền</th>
                                     <th class="text-center">Trạng thái</th>
+                                    <th class="text-center">Trạng thái thanh toán</th>
                                     <th class="text-center">Thanh toán</th>
                                     <th class="text-center">Ngày tạo</th>
                                     <th class="text-center">Voucher</th>
@@ -73,7 +74,7 @@
                             <tbody>
                             @forelse($orders as $order)
                                 <tr class="order-row" data-order-id="{{ $order->id }}">
-                                    <td class="text-center">{{ $order->id }}</td>
+                                    <td class="text-center">{{ $loop->iteration + ($orders->perPage() * ($orders->currentPage() - 1)) }}</td>
                                     <td class="text-center">{{ $order->order_code }}</td>
                                     <td>{{ $order->name }}</td>
                                     <td class="text-end">{{ number_format($order->total_amount, 0, ',', '.') }} đ</td>
@@ -101,6 +102,7 @@
                                             <span class="badge bg-secondary">Không xác định</span>
                                         @endif
                                     </td>
+                                    <td class="text-center">{{ $order->status_method ?? '-' }}</td>
                                     <td class="text-center">{{ $order->payment_method }}</td>
                                     <td class="text-center">{{ $order->created_at ? $order->created_at->format('d/m/Y H:i') : '-' }}</td>
                                     <td class="text-center">
@@ -111,7 +113,11 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <a href="#" class="btn btn-sm btn-primary">Xem chi tiết</a>
+                                        <a href="{{ route('admin.orders.detail', $order->id) }}" class="btn btn-sm btn-primary" title="Xem chi tiết">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM8 13c-4.418 0-8-5-8-5s3.582-5 8-5 8 5 8 5-3.582 5-8 5zm0-9a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+    </svg>
+</a>
                                     </td>
                                     <td class="text-center">
                                         @php $stt = (int) $order->status; @endphp
@@ -252,3 +258,26 @@
     });
 </script>
 @endsection
+
+<style>
+.btn-icon-eye {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: none;
+    width: 38px;
+    height: 38px;
+    transition: background 0.2s;
+    padding: 0;
+    margin: 0 auto;
+}
+.btn-icon-eye:hover {
+    background: #dbeafe;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+}
+.btn-icon-eye svg {
+    display: block;
+}
+</style>
