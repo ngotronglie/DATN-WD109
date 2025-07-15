@@ -60,7 +60,7 @@ class ClientController extends Controller
         $categories = Categories::with('children')->whereNull('parent_id')->get();
         $products = Product::where('is_active', 1)->paginate(12);
 
-        return view('client.products');
+        return view('layouts.user.shop', compact('categories', 'products'));
     }
 
     public function category($slug)
@@ -95,15 +95,15 @@ class ClientController extends Controller
             ->where('is_active', true)
             ->orderBy('created_at', 'desc')
             ->paginate(9);
-        
+
         $recentBlogs = \App\Models\Blog::with('user')
             ->where('is_active', true)
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
-            
+
         $tags = \App\Models\TagBlog::withCount('blogs')->get();
-        
+
         return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags'));
     }
 
@@ -113,10 +113,10 @@ class ClientController extends Controller
             ->where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
-            
+
         // Tăng lượt xem
         $blog->increment('view');
-        
+
         // Lấy blog liên quan
         $relatedBlogs = \App\Models\Blog::with('user')
             ->where('is_active', true)
@@ -127,7 +127,7 @@ class ClientController extends Controller
             ->orWhere('user_id', $blog->user_id)
             ->limit(3)
             ->get();
-            
+
         // Lấy blog gần đây
         $recentBlogs = \App\Models\Blog::with('user')
             ->where('is_active', true)
@@ -135,10 +135,10 @@ class ClientController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
-            
+
         // Lấy tất cả tags
         $tags = \App\Models\TagBlog::withCount('blogs')->get();
-        
+
         return view('layouts.user.blogDetail', compact('blog', 'relatedBlogs', 'recentBlogs', 'tags'));
     }
 
@@ -455,6 +455,23 @@ class ClientController extends Controller
         $userId = auth()->check() ? auth()->id() : 0;
         $orderCode = strtoupper(bin2hex(random_bytes(6)));
 
+        // Xử lý voucher theo code nếu có
+        $voucherId = $data['voucher_id'] ?? null;
+        if (empty($voucherId) && !empty($data['voucher_code'])) {
+            $voucher = \App\Models\Voucher::where('code', $data['voucher_code'])->first();
+            if ($voucher) {
+                $voucherId = $voucher->id;
+                if ($voucher->quantity > 0) {
+                    $voucher->decrement('quantity', 1);
+                }
+            }
+        } elseif (!empty($voucherId)) {
+            $voucher = \App\Models\Voucher::find($voucherId);
+            if ($voucher && $voucher->quantity > 0) {
+                $voucher->decrement('quantity', 1);
+            }
+        }
+
         $order = new \App\Models\Order();
         $order->user_id = $userId;
         $order->price = $data['price'] ?? 0;
@@ -467,7 +484,7 @@ class ClientController extends Controller
         $order->status = 0; // chờ xử lý
         $order->payment_method = $data['payment_method'] ?? 'COD';
         $order->order_code = $orderCode;
-        $order->voucher_id = $data['voucher_id'] ?? null;
+        $order->voucher_id = $voucherId;
         $order->status_method = 'chưa thanh toán';
         $order->save();
 
@@ -590,7 +607,7 @@ public function vnpayReturn(Request $request)
     $vnp_ResponseCode = $request->input('vnp_ResponseCode');
     $vnp_TxnRef = $request->input('vnp_TxnRef');
     $order = \App\Models\Order::where('order_code', $vnp_TxnRef)->first();
-    
+
     if ($order && $vnp_ResponseCode == '00') {
         $order->status_method = 'đã thanh toán';
         $order->status = true;

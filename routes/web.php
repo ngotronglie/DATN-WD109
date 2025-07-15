@@ -52,6 +52,8 @@ Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
     Route::get('/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('show');
     Route::get('/tag/{tagId}', [\App\Http\Controllers\Client\BlogDetailController::class, 'searchByTag'])->name('tag');
     Route::get('/search', [\App\Http\Controllers\Client\BlogDetailController::class, 'search'])->name('search');
+    // Admin routes (cần đăng nhập và là admin)
+
     Route::middleware(['auth', 'is_admin'])->group(function () {
         Route::get('/create', [\App\Http\Controllers\Client\BlogDetailController::class, 'create'])->name('create');
         Route::post('/store', [\App\Http\Controllers\Client\BlogDetailController::class, 'store'])->name('store');
@@ -181,6 +183,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Orders
     Route::resource('orders', OrderController::class);
+    Route::post('orders/{order}/update-status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
     // Comments (admin)
     Route::resource('comments', CommentController::class)->only(['index', 'destroy']);
