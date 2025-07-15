@@ -49,11 +49,11 @@ Route::get('/product/{slug}', [ClientController::class, 'productDetail'])->name(
 // Blog Detail Routes
 Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('index');
-   
+
     Route::get('/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('show');
     Route::get('/tag/{tagId}', [\App\Http\Controllers\Client\BlogDetailController::class, 'searchByTag'])->name('tag');
     Route::get('/search', [\App\Http\Controllers\Client\BlogDetailController::class, 'search'])->name('search');
-    
+
     // Admin routes (cần đăng nhập và là admin)
     Route::middleware(['auth', 'is_admin'])->group(function () {
         Route::get('/create', [\App\Http\Controllers\Client\BlogDetailController::class, 'create'])->name('create');
