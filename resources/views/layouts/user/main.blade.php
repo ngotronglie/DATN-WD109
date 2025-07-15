@@ -3,6 +3,8 @@
 @section('content')
     @include('components.client.banner')
 
+    @include('components.client.category-slider', ['categories' => $categories])
+
     <!-- START PAGE CONTENT -->
     <section id="page-content" class="page-wrapper section">
 
