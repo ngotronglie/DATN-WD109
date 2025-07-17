@@ -224,18 +224,7 @@
                                 <!-- Các product-item tĩnh phía dưới nếu muốn giữ lại thì để ngoài forelse, hoặc xóa đi nếu không cần -->
                             </aside>
                             <!-- operating-system -->
-                            <aside class="widget operating-system box-shadow">
-                                <h6 class="widget-title border-left mb-20">operating system</h6>
-                                <form action="">
-                                    <label><input type="checkbox" name="operating-1" value="phone-1">Windows Phone</label><br>
-                                    <label><input type="checkbox" name="operating-1" value="phone-1">Bleckgerry ios</label><br>
-                                    <label><input type="checkbox" name="operating-1" value="phone-1">Android</label><br>
-                                    <label><input type="checkbox" name="operating-1" value="phone-1">ios</label><br>
-                                    <label><input type="checkbox" name="operating-1" value="phone-1">Windows Phone</label><br>
-                                    <label><input type="checkbox" name="operating-1" value="phone-1">Symban</label><br>
-                                    <label class="mb-0"><input type="checkbox" name="operating-1" value="phone-1">Bleckgerry os</label><br>
-                                </form>
-                            </aside>
+                        
                         </div>
                     </div>
                 </div>
