@@ -84,9 +84,12 @@ Route::get('/shop', function () {
 })->name('shop');
 
 
-Route::get('/blog', function () {
-    return view('layouts.user.blog');
-})->name('blog');
+// Route::get('/blog', function () {
+//     return view('layouts.user.blog');
+// })->name('blog');
+// ✅ DÙNG CÁI NÀY
+Route::get('/blogs', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('client.blog.index');
+
 
 Route::get('/blogdetail', function () {
     return view('layouts.user.blogdetail');
