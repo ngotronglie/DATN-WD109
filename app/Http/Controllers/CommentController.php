@@ -27,12 +27,16 @@ class CommentController extends Controller
     public function reply(Request $request, $parentId)
     {
         $request->validate(['content' => 'required']);
+
+        $parentComment = Comment::findOrFail($parentId);
+
         Comment::create([
             'user_id' => auth()->id(),
-            'blog_id' => 1,
+            'blog_id' => $parentComment->blog_id, // Lấy blog_id từ comment cha
             'content' => $request->content,
             'parent_id' => $parentId,
         ]);
-        return back();
+
+        return back()->with('success', 'Phản hồi đã được gửi!');
     }
 }

@@ -49,7 +49,10 @@ class BlogDetailController extends Controller
         // Lấy tất cả tags
         $tags = TagBlog::withCount('blogs')->get();
 
-        return view('layouts.user.blogDetail', compact('blog', 'recentBlogs', 'tags'));
+        // Lấy các comment cha (parent_id = null) của blog này, kèm replies
+        $comments = $blog->comments->where('parent_id', null)->values();
+
+        return view('layouts.user.blogDetail', compact('blog', 'recentBlogs', 'tags', 'comments'));
     }
     /**
      * Hiển thị form tạo blog mới (chỉ admin)

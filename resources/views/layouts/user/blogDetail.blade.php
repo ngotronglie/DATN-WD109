@@ -138,26 +138,7 @@
                                 <!-- comments on t this post -->
                                 <div class="post-comments mb-60">
                                     <h4 class="blog-section-title border-left mb-30">comments on this product</h4>
-                                    <!-- Hiển thị danh sách bình luận -->
-                                    <div class="comments">
-                                        <h5>Bình luận</h5>
-                                        @foreach($blog->comments()->whereNull('parent_id')->latest()->get() as $comment)
-                                            <div class="comment mb-2">
-                                                <strong>{{ $comment->user->name ?? 'Khách' }}</strong>:
-                                                <span>{{ $comment->content }}</span>
-                                                <div class="text-muted small">{{ $comment->created_at->diffForHumans() }}</div>
-                                                <!-- Hiển thị trả lời nếu có -->
-                                                @foreach($comment->replies as $reply)
-                                                    <div class="reply ms-4">
-                                                        <strong>{{ $reply->user->name ?? 'Khách' }}</strong>:
-                                                        <span>{{ $reply->content }}</span>
-                                                        <div class="text-muted small">{{ $reply->created_at->diffForHumans() }}</div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                    <!-- Form bình luận -->
+                                    <!-- Form bình luận mới (chỉ 1 form) -->
                                     @if(Auth::check())
                                     <form action="{{ route('comments.store', $blog->id) }}" method="POST" class="mt-3">
                                         @csrf
@@ -169,6 +150,8 @@
                                     @else
                                         <div class="alert alert-info mt-3">Bạn cần <a href="{{ route('login') }}">đăng nhập</a> để bình luận.</div>
                                     @endif
+                                    <!-- Hiển thị danh sách bình luận lồng nhau -->
+                                    @include('components.client.comment_replies', ['comments' => $comments])
                                 </div>
                                 <!--  -->
                             </div>
@@ -233,5 +216,17 @@
 
         </section>
         <!-- End page content -->
+
+
+
+<script>
+document.querySelectorAll('.reply-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        let form = document.getElementById('reply-form-' + this.dataset.id);
+        form.style.display = (form.style.display === 'none') ? 'block' : 'none';
+    });
+});
+</script>
 
 @endsection
