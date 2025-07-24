@@ -13,15 +13,13 @@ return new class extends Migration
     {
         Schema::create('flash_sale', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('product_id');
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade')->onUpdate('cascade');
             $table->decimal('sale_price', 10, 2);
             $table->integer('sale_quantity');
             $table->datetime('start_time');
             $table->datetime('end_time');
             $table->enum('trang_thai', ['kích_hoạt', 'tạm_dừng'])->default('kích_hoạt');
-            $table->timestamps(); // Tự động thêm created_at và updated_at
-
-            $table->foreign('product_id')->references('id')->on('products');
+            $table->timestamps();
         });
     }
 
