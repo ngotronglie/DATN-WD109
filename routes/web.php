@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\admin\RevenueStatisticController;
 use App\Http\Controllers\Auth\AccountController;
 use App\Http\Controllers\Client\ShopController;
 /*
@@ -213,6 +214,9 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('product_variants', ProductVariantController::class);
     Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
     Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
+
+    Route::get('/revenue-statistics', [RevenueStatisticController::class, 'index'])->name('statistics.index');
+    Route::get('/admin/orders/{id}', [App\Http\Controllers\admin\OrderController::class, 'show'])->name('admin.orders.show');
 });
 
 // Shop detail, VNPAY, Blog detail, Comments
