@@ -21,6 +21,10 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\Admin\FlashSaleController as AdminFlashSaleController;
+use App\Http\Controllers\Client\FlashSaleController as ClientFlashSaleController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -49,11 +53,11 @@ Route::get('/product/{slug}', [ClientController::class, 'productDetail'])->name(
 // Blog Detail Routes
 Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('index');
-   
+
     Route::get('/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('show');
     Route::get('/tag/{tagId}', [\App\Http\Controllers\Client\BlogDetailController::class, 'searchByTag'])->name('tag');
     Route::get('/search', [\App\Http\Controllers\Client\BlogDetailController::class, 'search'])->name('search');
-    
+
     // Admin routes (cần đăng nhập và là admin)
     Route::middleware(['auth', 'is_admin'])->group(function () {
         Route::get('/create', [\App\Http\Controllers\Client\BlogDetailController::class, 'create'])->name('create');
@@ -255,3 +259,19 @@ Route::get('/blog-detail/{slug}', [\App\Http\Controllers\Client\BlogDetailContro
 Route::post('/blogs/{blog}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
 Route::get('/blog/author/{id}', [\App\Http\Controllers\Client\BlogDetailController::class, 'filterByAuthor'])->name('blog.author');
 Route::get('/blog/tag/{id}', [\App\Http\Controllers\Client\BlogDetailController::class, 'filterByTag'])->name('blog.tag');
+
+// Admin Flash Sale routes
+Route::middleware(['auth', 'check.admin'])->prefix('admin')->group(function () {
+    Route::get('/flash-sales', [AdminFlashSaleController::class, 'index'])->name('admin.flash-sales.index');
+    Route::get('/flash-sales/create', [AdminFlashSaleController::class, 'create'])->name('admin.flash-sales.create');
+    Route::post('/flash-sales', [AdminFlashSaleController::class, 'store'])->name('admin.flash-sales.store');
+    Route::get('/flash-sales/{flashSale}/edit', [AdminFlashSaleController::class, 'edit'])->name('admin.flash-sales.edit');
+    Route::put('/flash-sales/{flashSale}', [AdminFlashSaleController::class, 'update'])->name('admin.flash-sales.update');
+    Route::delete('/flash-sales/{flashSale}', [AdminFlashSaleController::class, 'destroy'])->name('admin.flash-sales.destroy');
+});
+
+// Client Flash Sale routes
+Route::prefix('flash-sales')->group(function () {
+    Route::get('/', [ClientFlashSaleController::class, 'index'])->name('client.flash-sales.index');
+    Route::get('/{id}', [ClientFlashSaleController::class, 'show'])->name('client.flash-sales.show');
+});
