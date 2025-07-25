@@ -13,15 +13,9 @@ class FlashSale extends Model
     protected $table = 'flash_sales'; // Sửa tên table cho đúng chuẩn số nhiều
 
     protected $fillable = [
-        'product_id',
-        'sale_price',
-        'sale_quantity',
-        'start_time',
-        'end_time',
-        'trang_thai',
-        'created_by',
-        'updated_by'
-    ];
+    'name',
+    // ... các trường khác
+];
 
     protected $casts = [
         'start_time' => 'datetime',
