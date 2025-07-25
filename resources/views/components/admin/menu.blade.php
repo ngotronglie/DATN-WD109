@@ -150,6 +150,13 @@
                                    <span class="nav-text">Liên hệ</span>
                               </a>
                          </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('home') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:home-2-bold"></iconify-icon></span>
+                                   <span class="nav-text">Trang chủ</span>
+                              </a>
+                         </li>
+
                     </ul>
                </div>
           </div>

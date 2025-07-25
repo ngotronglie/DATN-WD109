@@ -1,4 +1,4 @@
-    <footer id="footer" class="footer-area footer-2 section bg-light mt-auto">
+ <footer id="footer" class="footer-area footer-2 section bg-light mt-auto">
         <div class="footer-top footer-top-2 text-center ptb-60"></div>
         <div class="footer-bottom footer-bottom-2 text-center gray-bg py-3">
             <div class="container">
@@ -27,4 +27,3 @@
         </div>
     </footer>
 </body>
-</html>

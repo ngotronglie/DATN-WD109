@@ -3,24 +3,6 @@
 @section('content')
     @include('components.client.banner')
 
-<!-- CATEGORY SECTION START -->
-<div class="category-section py-4">
-    <div class="container">
-        <div class="row justify-content-center align-items-center flex-nowrap overflow-auto" style="gap: 0.5rem;">
-            @foreach($categories as $category)
-                <div class="col-6 col-md-3 d-flex justify-content-center p-0" style="max-width: 120px;">
-                    <div class="category-item text-center">
-                        <a href="#" style="display:inline-block;width:90px;height:70px;overflow:hidden;">
-                            <img src="{{ asset($category->Image) }}" alt="{{ $category->Name }}" style="width:90px;height:70px;object-fit:cover;border-radius:10px;">
-                        </a>
-                        <div class="fw-bold" style="font-size: 0.95rem;">{{ $category->Name }}</div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
-</div>
-<!-- CATEGORY SECTION END -->
 
     <!-- START PAGE CONTENT -->
     <section id="page-content" class="page-wrapper section">
