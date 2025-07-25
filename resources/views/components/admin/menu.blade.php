@@ -1,4 +1,4 @@
-          <!-- ========== App Menu Start ========== -->
+<!-- ========== App Menu Start ========== -->
           <div class="main-nav">
                <!-- Sidebar Logo -->
                <div class="logo-box">
@@ -50,12 +50,20 @@
                                    <span class="nav-text">Sản phẩm</span>
                               </a>
                          </li>
-                         <li class="nav-item">
-                              <a class="nav-link" href="{{ route('admin.categories.index') }}">
-                                   <span class="nav-icon"><iconify-icon icon="solar:category-broken"></iconify-icon></span>
-                                   <span class="nav-text">Danh mục</span>
-                              </a>
-                         </li>
+
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('admin.categories.index') }}">
+         <span class="nav-icon"><iconify-icon icon="solar:category-broken"></iconify-icon></span>
+         <span class="nav-text">Danh mục</span>
+    </a>
+</li>
+                        <!-- Thêm mục Flash Sale ở đây -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.flash-sales.index') }}">
+                                <span class="nav-icon"><iconify-icon icon="solar:flash-bold-duotone"></iconify-icon></span>
+                                <span class="nav-text">Flash Sale</span>
+                            </a>
+                        </li>
                          <li class="nav-item">
                               <a class="nav-link" href="{{ route('admin.product_variants.index') }}">
                                    <span class="nav-icon"><iconify-icon icon="solar:layers-minimalistic-broken"></iconify-icon></span>
