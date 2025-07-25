@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\FlashSaleController;
 use App\Http\Controllers\Auth\EmailOrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
@@ -246,6 +247,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
     Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
 
+    // Thêm route flash-sale vào đây
+    Route::resource('flash-sales', \App\Http\Controllers\Admin\FlashSaleController::class);
 });
 
 // Route VNPAY
@@ -260,15 +263,7 @@ Route::post('/blogs/{blog}/comments', [\App\Http\Controllers\CommentController::
 Route::get('/blog/author/{id}', [\App\Http\Controllers\Client\BlogDetailController::class, 'filterByAuthor'])->name('blog.author');
 Route::get('/blog/tag/{id}', [\App\Http\Controllers\Client\BlogDetailController::class, 'filterByTag'])->name('blog.tag');
 
-// Admin Flash Sale routes
-Route::middleware(['auth', 'check.admin'])->prefix('admin')->group(function () {
-    Route::get('/flash-sales', [AdminFlashSaleController::class, 'index'])->name('admin.flash-sales.index');
-    Route::get('/flash-sales/create', [AdminFlashSaleController::class, 'create'])->name('admin.flash-sales.create');
-    Route::post('/flash-sales', [AdminFlashSaleController::class, 'store'])->name('admin.flash-sales.store');
-    Route::get('/flash-sales/{flashSale}/edit', [AdminFlashSaleController::class, 'edit'])->name('admin.flash-sales.edit');
-    Route::put('/flash-sales/{flashSale}', [AdminFlashSaleController::class, 'update'])->name('admin.flash-sales.update');
-    Route::delete('/flash-sales/{flashSale}', [AdminFlashSaleController::class, 'destroy'])->name('admin.flash-sales.destroy');
-});
+
 
 // Client Flash Sale routes
 Route::prefix('flash-sales')->group(function () {

@@ -66,4 +66,8 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'is_admin' => \App\Http\Middleware\IsAdmin::class,
     ];
+    protected $routeMiddleware = [
+    // Các middleware khác...
+    'check.admin' => \App\Http\Middleware\CheckAdmin::class,
+];
 }
