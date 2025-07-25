@@ -1,7 +1,6 @@
 @extends('layouts.admin.index')
 @section('content')
     <div class="container-fluid">
-        <!-- start page title -->
         <div class="row">
             <div class="col-12">
                 <div class="page-title-box d-flex align-items-center justify-content-between">
@@ -9,7 +8,6 @@
                 </div>
             </div>
         </div>
-        <!-- end page title -->
 
         <div class="row">
             <div class="col-12">
@@ -28,32 +26,28 @@
                             <table class="table table-centered table-nowrap table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th scope="col">ID</th>
-                                        <th scope="col">Tên sản phẩm</th>
-                                        <th scope="col">Giá gốc</th>
-                                        <th scope="col">Giá Flash Sale</th>
-                                        <th scope="col">Số lượng</th>
-                                        <th scope="col">Thời gian bắt đầu</th>
-                                        <th scope="col">Thời gian kết thúc</th>
+                                        <th scope="col">Tên chiến dịch</th>
+                                        <th scope="col">Thời gian</th>
                                         <th scope="col">Trạng thái</th>
-                                        <th scope="col" style="width: 120px;">Thao tác</th>
+                                        <th scope="col">Số sản phẩm</th>
+                                        <th scope="col" style="width: 120px;">Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($flashSales as $flashSale)
                                         <tr>
-                                            <td>{{ $flashSale->id }}</td>
-                                            <td>{{ $flashSale->product->name }}</td>
-                                            <td>{{ number_format($flashSale->original_price) }}đ</td>
-                                            <td>{{ number_format($flashSale->sale_price) }}đ</td>
-                                            <td>{{ $flashSale->quantity }}</td>
-                                            <td>{{ $flashSale->start_date }}</td>
-                                            <td>{{ $flashSale->end_date }}</td>
+                                            <td>{{ $flashSale->name }}</td>
+                                            <td>
+                                                {{ \Carbon\Carbon::parse($flashSale->start_date)->format('d/m/Y H:i') }}
+                                                -
+                                                {{ \Carbon\Carbon::parse($flashSale->end_date)->format('d/m/Y H:i') }}
+                                            </td>
                                             <td>
                                                 <span class="badge @if($flashSale->is_active) bg-success @else bg-danger @endif">
                                                     {{ $flashSale->is_active ? 'Đang hoạt động' : 'Không hoạt động' }}
                                                 </span>
                                             </td>
+                                            <td>{{ $flashSale->quantity }}</td>
                                             <td>
                                                 <div class="d-flex gap-2">
                                                     <a href="{{ route('admin.flash-sales.edit', $flashSale->id) }}"
@@ -82,7 +76,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="9" class="text-center">Không có dữ liệu</td>
+                                            <td colspan="5" class="text-center">Không có dữ liệu</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

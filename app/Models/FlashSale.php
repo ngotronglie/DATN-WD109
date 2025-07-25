@@ -14,7 +14,7 @@ class FlashSale extends Model
 
     protected $fillable = [
     'name',
-    // ... các trường khác
+
 ];
 
     protected $casts = [
@@ -23,5 +23,4 @@ class FlashSale extends Model
         'sale_price' => 'decimal:0' // Sửa thành decimal:0 vì giá không cần 2 số thập phân
     ];
 
-    // Các relations và methods khác giữ nguyên
 }
