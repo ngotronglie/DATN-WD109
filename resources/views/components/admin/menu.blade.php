@@ -57,12 +57,7 @@
          <span class="nav-text">Danh mục</span>
     </a>
 </li>
-                        <!-- Thêm mục Flash Sale ở đây -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('admin.flash-sales.index') }}">
-                                <span class="nav-icon"><iconify-icon icon="solar:flash-bold-duotone"></iconify-icon></span>
-                                <span class="nav-text">Flash Sale</span>
-                            </a>
+                           
                         </li>
                          <li class="nav-item">
                               <a class="nav-link" href="{{ route('admin.product_variants.index') }}">
@@ -134,6 +129,14 @@
                                    <span class="nav-text">Liên hệ</span>
                               </a>
                          </li>
+                         <!-- Flash Sale -->
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.flash-sales.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="mdi:lightning-bolt"></iconify-icon></span>
+                                   <span class="nav-text">Flash Sale</span>
+                              </a>
+                         </li>
+                       
                     </ul>
                </div>
           </div>

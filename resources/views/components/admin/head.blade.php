@@ -30,4 +30,9 @@
      <!-- Theme Config js (Require in all Page) -->
      <script src="{{ asset('dashboard/assets/js/config.min.js') }}"></script>
 
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- Select2 JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 </head>
