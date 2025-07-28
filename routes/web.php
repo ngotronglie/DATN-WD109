@@ -213,6 +213,15 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('product_variants', ProductVariantController::class);
     Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
     Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
+
+    // Thống kê
+    Route::prefix('thongke')->name('thongke.')->group(function () {
+        Route::get('/sanpham', [\App\Http\Controllers\Admin\StatisticController::class, 'sanpham'])->name('sanpham');
+        Route::get('/donhang', [\App\Http\Controllers\Admin\StatisticController::class, 'donhang'])->name('donhang');
+        Route::get('/nguoidung', function() { return view('layouts.admin.thongke.nguoidung'); })->name('nguoidung');
+        Route::get('/yeuthich', function() { return view('layouts.admin.thongke.yeuthich'); })->name('yeuthich');
+        Route::get('/', function() { return view('layouts.admin.thongke.index'); })->name('index');
+    });
 });
 
 // Shop detail, VNPAY, Blog detail, Comments
