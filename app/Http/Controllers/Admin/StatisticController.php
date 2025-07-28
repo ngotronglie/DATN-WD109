@@ -16,8 +16,9 @@ use Carbon\Carbon;
 
 class StatisticController extends Controller
 {
-    public function sanpham()
+    public function sanpham(Request $request)
     {
+        $barFilter = $request->get('bar_filter', 'year');
         $totalProducts = Product::count();
         // Sản phẩm bán chạy nhất (theo tổng số lượng đã bán)
         $bestSeller = OrderDetail::select('product_variant_id', DB::raw('SUM(quantity) as total_sold'))
@@ -34,21 +35,35 @@ class StatisticController extends Controller
         $neverSoldCount = ProductVariant::whereNotIn('id', $soldVariantIds)->count();
         // Sản phẩm đang giảm giá
         $discountCount = ProductVariant::whereColumn('price_sale', '<', 'price')->count();
-        return view('layouts.admin.thongke.sanpham', compact(
-            'totalProducts', 'bestSellerName', 'lowStockCount', 'outOfStockCount', 'neverSoldCount', 'discountCount'
-        ));
-    }
 
-    public function donhang()
-    {
-        $totalOrders = Order::count();
-        $pendingOrders = Order::where('status', 0)->count();
-        $shippingOrders = Order::where('status', 1)->count();
-        $deliveredOrders = Order::where('status', 2)->count();
-        $cancelledOrders = Order::where('status', 3)->count();
-        $totalProductsSold = OrderDetail::sum('quantity');
-        return view('layouts.admin.thongke.donhang', compact(
-            'totalOrders', 'pendingOrders', 'shippingOrders', 'deliveredOrders', 'cancelledOrders', 'totalProductsSold'
+        // Dữ liệu cho biểu đồ cột: Top 5 sản phẩm bán chạy theo filter
+        $topProductsQuery = OrderDetail::select('product_variant_id', DB::raw('SUM(quantity) as total_sold'));
+        if ($barFilter === 'day') {
+            $topProductsQuery->whereDate('created_at', now()->toDateString());
+        } elseif ($barFilter === 'month') {
+            $topProductsQuery->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+        } else { // year
+            $topProductsQuery->whereYear('created_at', now()->year);
+        }
+        $topProducts = $topProductsQuery->groupBy('product_variant_id')
+            ->orderByDesc('total_sold')
+            ->take(5)
+            ->get();
+        $barLabels = $topProducts->map(function($item){
+            return optional(optional(ProductVariant::find($item->product_variant_id))->product)->name;
+        });
+        $barData = $topProducts->pluck('total_sold');
+
+        // Dữ liệu cho biểu đồ tròn: Tỷ lệ sản phẩm còn hàng/hết hàng
+        $stock = ProductVariant::select('product_id', DB::raw('SUM(quantity) as stock'))
+            ->groupBy('product_id')
+            ->get();
+        $inStock = $stock->where('stock', '>', 0)->count();
+        $outStock = $stock->where('stock', '=', 0)->count();
+
+        return view('layouts.admin.thongke.sanpham', compact(
+            'totalProducts', 'bestSellerName', 'lowStockCount', 'outOfStockCount', 'neverSoldCount', 'discountCount',
+            'barLabels', 'barData', 'inStock', 'outStock', 'barFilter'
         ));
     }
 
@@ -94,6 +109,17 @@ class StatisticController extends Controller
         $topRatedProductName = '-';
         return view('layouts.admin.thongke.yeuthich', compact(
             'mostLikedProductName', 'topRatedProductName', 'productStats'
+        ));
+    }
+
+    public function donhang()
+    {
+        $totalOrders = Order::count();
+        $pendingOrders = Order::where('status', 0)->count(); // Chưa xử lý
+        $processedOrders = Order::where('status', 1)->count(); // Đã xử lý
+        $totalProductsSold = OrderDetail::sum('quantity');
+        return view('layouts.admin.thongke.donhang', compact(
+            'totalOrders', 'pendingOrders', 'processedOrders', 'totalProductsSold'
         ));
     }
 } 
