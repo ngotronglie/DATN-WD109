@@ -19,6 +19,7 @@
                     <hr>
                     <ul class="list-unstyled text-start">
                         <li><a href="{{ route('account.edit') }}">⚙️ Thông tin cá nhân</a></li>
+                        <li><a href="{{ route('account.order') }}" class="fw-bold text-primary">🛒 Đơn hàng</a></li>
                         <li><a href="{{ route('password.change') }}">🔑 Đổi mật khẩu</a></li>
                         <li>
                             <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
