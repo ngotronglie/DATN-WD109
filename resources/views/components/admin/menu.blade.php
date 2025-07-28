@@ -87,6 +87,30 @@
                               </a>
                          </li>
 
+                         <li class="menu-title">Thống kê</li>
+                         <li class="nav-item">
+                             <a class="nav-link menu-arrow" href="#sidebarThongKe" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarThongKe">
+                                 <span class="nav-icon"><iconify-icon icon="solar:chart-square-broken"></iconify-icon></span>
+                                 <span class="nav-text">Thống kê</span>
+                             </a>
+                             <div class="collapse" id="sidebarThongKe">
+                                 <ul class="nav sub-navbar-nav">
+                                     <li class="sub-nav-item">
+                                         <a class="sub-nav-link" href="{{ route('admin.thongke.sanpham') }}">Sản phẩm</a>
+                                     </li>
+                                     <li class="sub-nav-item">
+                                         <a class="sub-nav-link" href="{{ route('admin.thongke.donhang') }}">Đơn hàng</a>
+                                     </li>
+                                     <li class="sub-nav-item">
+                                         <a class="sub-nav-link" href="{{ route('admin.thongke.nguoidung') }}">Người dùng</a>
+                                     </li>
+                                     <li class="sub-nav-item">
+                                         <a class="sub-nav-link" href="{{ route('admin.thongke.yeuthich') }}">Yêu thích & Đánh giá</a>
+                                     </li>
+                                 </ul>
+                             </div>
+                         </li>
+
                          <li class="menu-title">Quản lý blog</li>
                          <li class="nav-item">
                               <a class="nav-link" href="{{ route('admin.blogs.index') }}">
