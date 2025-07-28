@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\EmailOrderController;
+use App\Http\Controllers\Client\UserOrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VoucherController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Auth\AccountController;
 use App\Http\Controllers\Client\ShopController;
 /*
@@ -46,12 +48,20 @@ Route::get('/category/{slug}', [ClientController::class, 'category'])->name('cat
 Route::get('/product/{slug}', [ClientController::class, 'productDetail'])->name('product.detail');
 Route::get('/blog/{slug}', [ClientController::class, 'post'])->name('post');
 
+Route::get('/account/order', [UserOrderController::class, 'index'])->name(name: 'account.order');
+Route::get('/account/order/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
+Route::post('/order/{id}/return', [UserOrderController::class, 'returnOrder'])->name('order.return');
+Route::post('/refund', [UserOrderController::class, 'store'])->name('refund.store');
+
 // Blog Detail Routes
 Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('index');
     Route::get('/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('show');
     Route::get('/tag/{tagId}', [\App\Http\Controllers\Client\BlogDetailController::class, 'searchByTag'])->name('tag');
     Route::get('/search', [\App\Http\Controllers\Client\BlogDetailController::class, 'search'])->name('search');
+
+
+
 
     // Admin routes (cần đăng nhập và là admin)
 
@@ -119,6 +129,8 @@ Route::get('/verify-email/{email}/{token}', [VerifyEmailController::class, 'veri
 // Order routes
 Route::post('/order/place', [EmailOrderController::class, 'placeOrder'])->name('order.place');
 Route::post('/order/cancel/{id}', [EmailOrderController::class, 'cancelOrder'])->name('order.cancel');
+
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/account', [AccountController::class, 'update'])->name('account.update');
@@ -200,8 +212,28 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Orders
     Route::resource('orders', OrderController::class);
-    Route::post('orders/{order}/update-status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    Route::get('orders/{order}/detail', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.detail');
+    Route::post('/orders/{id}/cancel', [OrderController::class, 'cancelOrder'])->name('orders.cancel');
+    Route::post('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::get('orders/{order}/detail', [OrderController::class, 'show'])->name('orders.detail');
+
+    // Refund Requests
+    Route::get('orders/{order}/refund/create', [OrderController::class, 'showRefundForm'])->name('refunds.create');
+    Route::post('orders/{order}/refund', [OrderController::class, 'submitRefundForm'])->name('refunds.store');
+
+    // Admin Refund Management
+    Route::get('/refunds', [OrderController::class, 'refundRequests'])->name('refunds.list');
+    Route::get('/refunds/{id}', [OrderController::class, 'showRefundDetail'])->name('refunds.detail');
+    Route::post('/refunds/{id}/approve', [OrderController::class, 'approveRefund'])->name('refunds.approve');
+    Route::post('/refunds/{id}/upload-proof', [OrderController::class, 'uploadRefundProof'])->name('refunds.uploadProof');
+    Route::post('/admin/orders/{id}/confirm-receive', [RefundController::class, 'confirmReceiveBack'])
+        ->name('orders.confirmReceiveBack');
+
+
+
+
+
+
+
 
     // Comments (admin)
     Route::resource('comments', CommentController::class)->only(['index', 'destroy']);
