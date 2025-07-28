@@ -51,7 +51,8 @@ class ClientController extends Controller
         WHERE p.is_active = 1
         LIMIT 0, 8;');
         $banners = \App\Models\Banner::where('is_active', 1)->orderByDesc('id')->get();
-        return view('layouts.user.main', compact('products', 'banners'));
+        $categories = \App\Models\Categories::whereNull('Parent_id')->where('Is_active', 1)->get();
+        return view('layouts.user.main', compact('products', 'banners', 'categories'));
     }
 
     public function products()
