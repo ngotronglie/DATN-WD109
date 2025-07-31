@@ -201,6 +201,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::get('/{slug}/images', [ProductController::class, 'addfiledetail'])->name('addfiledetail');
         Route::put('/{slug}/images', [ProductController::class, 'updateImages'])->name('updateImages');
         Route::delete('/variants/{variantId}/images/{imageId}', [ProductController::class, 'deleteImage'])->name('deleteImage');
+        Route::get('/low-stock', [ProductController::class, 'lowStock'])->name('lowStock');
     });
 
     // Users
@@ -237,7 +238,6 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
 
 
-
     // Comments (admin)
     Route::resource('comments', CommentController::class)->only(['index', 'destroy']);
 
@@ -253,14 +253,16 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::prefix('thongke')->name('thongke.')->group(function () {
         Route::get('/sanpham', [\App\Http\Controllers\Admin\StatisticController::class, 'sanpham'])->name('sanpham');
         Route::get('/donhang', [\App\Http\Controllers\Admin\StatisticController::class, 'donhang'])->name('donhang');
-        Route::get('/nguoidung', function() { return view('layouts.admin.thongke.nguoidung'); })->name('nguoidung');
-        Route::get('/yeuthich', function() { return view('layouts.admin.thongke.yeuthich'); })->name('yeuthich');
+        Route::get('/nguoidung', [\App\Http\Controllers\Admin\StatisticController::class, 'nguoidung'])->name('nguoidung');
+      
         Route::get('/', function() { return view('layouts.admin.thongke.index'); })->name('index');
+    
     });
 });
 
 // Shop detail, VNPAY, Blog detail, Comments
 Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.show');
+
 Route::get('/vnpay/payment', [ClientController::class, 'vnpayPayment'])->name('vnpay.payment');
 Route::get('/vnpay/return', [ClientController::class, 'vnpayReturn'])->name('vnpay.return');
 Route::get('/blogs', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('client.blog.index');

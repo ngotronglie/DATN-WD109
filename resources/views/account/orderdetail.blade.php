@@ -61,7 +61,11 @@
             <tbody>
                 @foreach ($order->orderDetails as $detail)
                 <tr>
-                    <td>{{ $detail->product->name ?? 'Sản phẩm đã bị xóa' }}</td>
+                <td> @if ($detail->productVariant && $detail->productVariant->image)
+                    <img src="{{ $detail->productVariant->image }}" alt="Ảnh sản phẩm" width="100">
+                    @else
+                    <span>Không có ảnh</span>
+                    @endif</td>
                     <td class="text-center">{{ $detail->quantity }}</td>
                     <td class="text-end">{{ number_format($detail->price) }}₫</td>
                     <td class="text-end">{{ number_format($detail->price * $detail->quantity) }}₫</td>
