@@ -36,7 +36,11 @@
                         <iconify-icon icon="solar:box-minimalistic-broken" class="fs-32 text-danger avatar-title me-3"></iconify-icon>
                         <div>
                             <p class="text-muted mb-0">Sản phẩm sắp hết hàng</p>
-                            <h3 class="text-dark mb-0">{{ $lowStockCount ?? 0 }}</h3>
+                            <h3 class="text-dark mb-0">
+                                <a href="{{ route('admin.products.lowStock') }}" style="color: inherit; text-decoration: underline; cursor: pointer;" title="Xem chi tiết">
+                                    {{ $lowStockCount ?? 0 }}
+                                </a>
+                            </h3>
                         </div>
                     </div>
                 </div>
@@ -57,33 +61,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <iconify-icon icon="solar:box-minimalistic-broken" class="fs-32 text-info avatar-title me-3"></iconify-icon>
-                        <div>
-                            <p class="text-muted mb-0">Sản phẩm chưa được mua lần nào</p>
-                            <h3 class="text-dark mb-0">{{ $neverSoldCount ?? 0 }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <iconify-icon icon="solar:discount-bold-duotone" class="fs-32 text-primary avatar-title me-3"></iconify-icon>
-                        <div>
-                            <p class="text-muted mb-0">Sản phẩm đang giảm giá</p>
-                            <h3 class="text-dark mb-0">{{ $discountCount ?? 0 }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        
+        
     <div class="row mt-4">
         <div class="col-md-6">
             <div class="card">
