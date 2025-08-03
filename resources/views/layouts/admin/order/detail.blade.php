@@ -38,23 +38,23 @@
                             <tbody>
                                 @php $total = 0; @endphp
                                 @foreach($order->orderDetails as $item)
-                                    @php
-                                        $itemTotal = $item->price * $item->quantity;
-                                        $total += $itemTotal;
-                                    @endphp
-                                    <tr>
-                                        <td>
-                                            @if($item->productVariant->image)
-                                                <img src="{{ $item->productVariant->image }}" alt="{{ $item->productVariant->product->name ?? '' }}" style="width:40px;height:40px;object-fit:cover;margin-right:8px;">
-                                            @endif
-                                            {{ $item->productVariant->product->name ?? '' }}
-                                        </td>
-                                        <td>{{ $item->productVariant->color->name ?? '-' }}</td>
-                                        <td>{{ $item->productVariant->capacity->name ?? '-' }}</td>
-                                        <td>{{ number_format($item->price, 0, ',', '.') }}đ</td>
-                                        <td>{{ $item->quantity }}</td>
-                                        <td>{{ number_format($itemTotal, 0, ',', '.') }}đ</td>
-                                    </tr>
+                                @php
+                                $itemTotal = $item->price * $item->quantity;
+                                $total += $itemTotal;
+                                @endphp
+                                <tr>
+                                    <td>
+                                        @if($item->productVariant->image)
+                                        <img src="{{ $item->productVariant->image }}" alt="{{ $item->productVariant->product->name ?? '' }}" style="width:40px;height:40px;object-fit:cover;margin-right:8px;">
+                                        @endif
+                                        {{ $item->productVariant->product->name ?? '' }}
+                                    </td>
+                                    <td>{{ $item->productVariant->color->name ?? '-' }}</td>
+                                    <td>{{ $item->productVariant->capacity->name ?? '-' }}</td>
+                                    <td>{{ number_format($item->price, 0, ',', '.') }}đ</td>
+                                    <td>{{ $item->quantity }}</td>
+                                    <td>{{ number_format($itemTotal, 0, ',', '.') }}đ</td>
+                                </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -67,30 +67,30 @@
                         <strong>Phí ship: </strong>
                         <span style="color:#ff9800;font-weight:600;">
                             @php
-                                $shipping = $total > 2000000 ? 0 : ($total > 0 ? 50000 : 0);
+                            $shipping = $total > 2000000 ? 0 : ($total > 0 ? 50000 : 0);
                             @endphp
                             {{ $shipping === 0 ? 'Miễn phí' : number_format($shipping, 0, ',', '.') . 'đ' }}
                         </span>
                     </div>
                     @php
-                        $discountAmount = 0;
-                        if ($order->voucher) {
-                            $discountAmount = floor($total * ($order->voucher->discount / 100));
-                            if ($order->voucher->min_money && $discountAmount < $order->voucher->min_money) $discountAmount = $order->voucher->min_money;
-                            if ($order->voucher->max_money && $discountAmount > $order->voucher->max_money) $discountAmount = $order->voucher->max_money;
+                    $discountAmount = 0;
+                    if ($order->voucher) {
+                    $discountAmount = floor($total * ($order->voucher->discount / 100));
+                    if ($order->voucher->min_money && $discountAmount < $order->voucher->min_money) $discountAmount = $order->voucher->min_money;
+                        if ($order->voucher->max_money && $discountAmount > $order->voucher->max_money) $discountAmount = $order->voucher->max_money;
                         }
                         $finalTotal = $total - $discountAmount + $shipping;
-                    @endphp
-                    @if($discountAmount > 0)
-                    <div class="mt-2">
-                        <strong>Giảm giá: </strong>
-                        <span style="color:#28a745;font-weight:600;">-{{ number_format($discountAmount, 0, ',', '.') }}đ</span>
-                    </div>
-                    @endif
-                    <div class="mt-2">
-                        <strong>Thành tiền: </strong>
-                        <span style="font-size:1.2em;color:#007bff;font-weight:600;">{{ number_format($finalTotal, 0, ',', '.') }}đ</span>
-                    </div>
+                        @endphp
+                        @if($discountAmount > 0)
+                        <div class="mt-2">
+                            <strong>Giảm giá: </strong>
+                            <span style="color:#28a745;font-weight:600;">-{{ number_format($discountAmount, 0, ',', '.') }}đ</span>
+                        </div>
+                        @endif
+                        <div class="mt-2">
+                            <strong>Thành tiền: </strong>
+                            <span style="font-size:1.2em;color:#007bff;font-weight:600;">{{ number_format($finalTotal, 0, ',', '.') }}đ</span>
+                        </div>
                 </div>
             </div>
         </div>
@@ -102,25 +102,29 @@
                     <div><strong>Trạng thái:</strong>
                         @php $stt = (int) $order->status; @endphp
                         @if($stt === 0)
-                            <span class="badge bg-warning">Chờ xử lý</span>
+                        <span class="badge bg-warning">Chờ xử lý</span>
                         @elseif($stt === 1)
-                            <span class="badge bg-primary">Đã xác nhận</span>
+                        <span class="badge bg-primary">Đã xác nhận</span>
                         @elseif($stt === 2)
-                            <span class="badge bg-info">Đang xử lý</span>
+                        <span class="badge bg-info">Đang xử lý</span>
                         @elseif($stt === 3)
-                            <span class="badge bg-secondary">Đã giao cho đơn vị vận chuyển</span>
+                        <span class="badge bg-secondary">Đã giao cho đơn vị vận chuyển</span>
                         @elseif($stt === 4)
-                            <span class="badge bg-dark">Đang vận chuyển</span>
+                        <span class="badge bg-dark">Đang vận chuyển</span>
                         @elseif($stt === 5)
-                            <span class="badge bg-success">Đã giao hàng</span>
+                        <span class="badge bg-success">Đã giao hàng</span>
                         @elseif($stt === 6)
-                            <span class="badge bg-danger">Đã hủy</span>
+                        <span class="badge bg-danger">Đã hủy</span>
                         @elseif($stt === 7)
-                            <span class="badge bg-warning text-dark">Đã hoàn trả</span>
+                        <span class="badge bg-warning text-dark">Đã xác nhận yêu cầu hoàn hàng</span>
                         @elseif($stt === 8)
-                            <span class="badge bg-success text-dark">Đã hoàn tiền</span>
+                        <span class="badge bg-success text-dark">Đã nhận hàng hoàn</span>
+                        @elseif($stt === 9)
+                        <span class="badge bg-success text-dark">Đã hoàn tiền</span>
+                        @elseif($stt === 10)
+                        <span class="badge bg-success text-dark">Không xác nhận yêu cầu hoàn hàng</span>
                         @else
-                            <span class="badge bg-secondary">Không xác định</span>
+                        <span class="badge bg-secondary">Không xác định</span>
                         @endif
                     </div>
                     <div><strong>Ngày đặt:</strong> {{ $order->created_at ? $order->created_at->format('d/m/Y H:i') : '-' }}</div>
