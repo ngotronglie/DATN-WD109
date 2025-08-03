@@ -12,6 +12,10 @@
         <th>Số tài khoản</th>
         <td>{{ $refund->bank_number }}</td>
     </tr>
+        <tr>
+        <th>Tên tài khoản</th>
+        <td>{{ $refund->account_name }}</td>
+    </tr>
     <tr>
         <th>Lý do</th>
         <td>{{ $refund->reason }}</td>

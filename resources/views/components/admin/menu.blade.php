@@ -104,9 +104,8 @@
                                      <li class="sub-nav-item">
                                          <a class="sub-nav-link" href="{{ route('admin.thongke.nguoidung') }}">Người dùng</a>
                                      </li>
-                                     <li class="sub-nav-item">
-                                         <a class="sub-nav-link" href="{{ route('admin.thongke.yeuthich') }}">Yêu thích & Đánh giá</a>
-                                     </li>
+                                    
+                                     
                                  </ul>
                              </div>
                          </li>

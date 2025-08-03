@@ -3,7 +3,7 @@
 @section('content')
 <div class="container py-4">
     <div class="row">
-        <!-- Sidebar trái -->
+        <!-- Sidebar bên trái -->
         <div class="col-md-4">
             <div class="card mb-4 text-center shadow-sm border-0 rounded-4">
                 <div class="card-body">
@@ -18,16 +18,34 @@
                     <p class="fw-semibold">{{ Auth::user()->name }}</p>
                     <hr>
                     <ul class="list-unstyled text-start">
-                        <li><a href="{{ route('account.edit') }}">⚙️ Thông tin cá nhân</a></li>
-                        <li><a href="{{ route('account.order') }}" class="fw-bold text-primary">🛒 Đơn hàng</a></li>
-                        <li><a href="{{ route('password.change') }}">🔑 Đổi mật khẩu</a></li>
-                        <li>
-                            <a href="{{ route('logout') }}"
-                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                🔒 Đăng xuất
+                        <li class="mb-2">
+                            <a href="{{ route('account.edit') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.edit')) bg-light fw-bold @endif">
+                                ⚙️ Thông tin cá nhân
                             </a>
                         </li>
+                        <li class="mb-2">
+                            <a href="{{ route('account.address_list') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.address_list')) bg-light fw-bold text-primary @endif">
+                                <i class="fa-solid fa-location-dot me-2"></i> Địa chỉ
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ route('account.order') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.order')) bg-light fw-bold text-primary @endif">
+                                🛒 Đơn hàng
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ route('password.change') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('password.change')) bg-light fw-bold @endif">
+                                🔑 Đổi mật khẩu
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="d-block px-3 py-2 rounded text-decoration-none text-danger">
+                                🔒 Đăng xuất
+                            </a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+                        </li>
                     </ul>
+
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
                 </div>
             </div>
@@ -57,23 +75,26 @@
                                 1 => 'Đã xác nhận',
                                 2 => 'Đang chuẩn bị',
                                 3 => 'Đã đến tay shiper',
-                                4 => 'Đã giao',
+                                4 => 'đang giao đến',
                                 5 => 'Đã giao',
                                 6 => 'Đã hủy',
-                                7 => 'Hoàn hàng',
-                                8 => 'Hoàn tiền ',
+                                7 => 'xác nhận yêu cầu Hoàn hàng',
+                                8 => 'Hoàn hàng',
+                                9 => 'Hoàn tiền ',
+                                10 => 'không xác nhận yêu cầu hoàn hàng',
                                 ];
-
                                 $statusColors = [
                                 0 => 'bg-warning text-dark', // Chờ xác nhận
                                 1 => 'bg-info text-dark', // Đã xác nhận
                                 2 => 'bg-primary text-white', // Đang chuẩn bị
                                 3 => 'bg-primary text-white', // Đã đến tay shiper
-                                4 => 'bg-success text-white', // Đã giao
-                                5 => 'bg-success text-white', // Đã giao (trùng với 4)
+                                4 => 'bg-warning text-dark', // Đang giao đến
+                                5 => 'bg-success text-white', // Đã giao
                                 6 => 'bg-danger text-white', // Đã hủy
-                                7 => 'bg-secondary text-white', // Hoàn hàng
-                                8 => 'bg-info text-white',
+                                7 => 'bg-secondary text-white', // Xác nhận yêu cầu hoàn hàng
+                                8 => 'bg-info text-white', // Hoàn hàng
+                                9 => 'bg-success text-dark', // Hoàn tiền
+                                10 => 'bg-dark text-white', // Không xác nhận yêu cầu hoàn hàng
                                 ];
 
                                 $status = $order->status;
@@ -101,9 +122,10 @@
                                             @csrf
                                             <select name="reason_select" class="form-control reason-select" required>
                                                 <option value="">-- Chọn lý do --</option>
-                                                <option value="Sản phẩm bị lỗi">Sản phẩm bị lỗi</option>
-                                                <option value="Giao sai sản phẩm">Giao sai sản phẩm</option>
-                                                <option value="Thay đổi nhu cầu">Thay đổi nhu cầu</option>
+                                                <option value="Đổi địa chỉ nhận hàng">Đổi địa chỉ nhận hàng</option>
+                                                <option value="Thời gian giao hàng quá lâu">Thời gian giao hàng quá lâu</option>
+                                                <option value="Không còn nhu cầu sử dụng">Không còn nhu cầu sử dụng</option>
+                                                <option value="Tìm được giá tốt hơn">Tìm được giá tốt hơn</option>
                                                 <option value="Khác">Khác</option>
                                             </select>
 
