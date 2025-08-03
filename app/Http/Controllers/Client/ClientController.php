@@ -422,7 +422,8 @@ class ClientController extends Controller
         if (Auth::check()) {
             $user = Auth::user();
             $cart = Cart::where('user_id', $user->id)->first();
-            if (!$cart) return response()->json(['success' => false, 'message' => 'Không tìm thấy giỏ hàng']);
+            if (!$cart)
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy giỏ hàng']);
             $item = CartItem::where('cart_id', $cart->id)
                 ->where('product_variant_id', $variantId)
                 ->first();
@@ -457,7 +458,8 @@ class ClientController extends Controller
         if (Auth::check()) {
             $user = Auth::user();
             $cart = Cart::where('user_id', $user->id)->first();
-            if (!$cart) return response()->json(['success' => false, 'message' => 'Không tìm thấy giỏ hàng']);
+            if (!$cart)
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy giỏ hàng']);
             $item = CartItem::where('cart_id', $cart->id)
                 ->where('product_variant_id', $variantId)
                 ->first();
@@ -573,7 +575,7 @@ class ClientController extends Controller
         }
         // Cấu hình VNPAY sandbox
         $vnp_TmnCode = "6S2EDVG2"; // Mã website tại VNPAY
-        $vnp_HashSecret = "P0UF7KKIR9E1T9M3AKLW1QLYUW7O6HJO"; // Chuỗi bí mật
+        $vnp_HashSecret = "858FPSI9DG2CJM41ZLCYFV3PGNZ07RCA"; // Chuỗi bí mật
         $vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
         $vnp_Returnurl = route('vnpay.return');
 
@@ -621,7 +623,7 @@ class ClientController extends Controller
 
         $vnp_Url = $vnp_Url . "?" . $query;
         if (isset($vnp_HashSecret)) {
-            $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+            $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
             $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
         }
 
