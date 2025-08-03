@@ -10,18 +10,19 @@ class RefundRequest extends Model
     use HasFactory;
 
     public function order()
-{
-    return $this->belongsTo(Order::class, 'order_id');
-}
+    {
+        return $this->belongsTo(Order::class, 'order_id');
+    }
 
 
     protected $fillable = [
-    'user_id',
-    'order_id',        
-    'bank_name',
-    'bank_number',
-    'reason',
-    'image',
-    'refund_requested_at',
-];
+        'user_id',
+        'order_id',
+        'bank_name',
+        'account_name',
+        'bank_number',
+        'reason',
+        'image',
+        'refund_requested_at',
+    ];
 }

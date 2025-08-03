@@ -10,51 +10,54 @@
                     <div id="popular-product" class="tab-pane active show">
                         <div class="row">
                             @foreach ($products as $product)
-                                <!-- product-item start -->
-                                <div class="col-lg-3 col-md-4">
-                                    <div class="product-item">
-                                        <div class="product-img">
-                                            <a href="{{ url('product/' . $product->product_slug) }}">
-                                                <img src="{{ asset($product->product_image) }}"
-                                                    alt="{{ $product->product_name }}" />
-                                            </a>
+                            <!-- product-item start -->
+                            <div class="col-lg-3 col-md-4">
+                                <div class="product-item">
+                                    <div class="product-img">
+                                        <a href="{{ url('product/' . $product->product_slug) }}">
+                                            <img src="{{ asset($product->product_image) }}"
+                                                alt="{{ $product->product_name }}" />
+                                        </a>
+                                    </div>
+                                    <div class="product-info">
+                                        <h6 class="product-title">
+                                            <a
+                                                href="{{ url('product/' . $product->product_slug) }}">{{ $product->product_name }}</a>
+                                        </h6>
+                                        <div class="product-views mb-1 text-muted" style="font-size: 0.9em;">
+                                            <i class="zmdi zmdi-eye"></i> {{ $product->product_view }} lượt xem
                                         </div>
-                                        <div class="product-info">
-                                            <h6 class="product-title">
-                                                <a
-                                                    href="{{ url('product/' . $product->product_slug) }}">{{ $product->product_name }}</a>
-                                            </h6>
-                                            <div class="product-views mb-1 text-muted" style="font-size: 0.9em;">
-                                                <i class="zmdi zmdi-eye"></i> {{ $product->product_view }} lượt xem
-                                            </div>
-                                            @if ($product->product_price_discount)
-                                                <h3 class="pro-price-sale text-danger text-decoration-line-through">
-                                                    {{ number_format($product->product_price) }} đ</h3>
-                                                <h3 class="pro-price">
-                                                    {{ number_format($product->product_price_discount) }} đ</h3>
-                                            @else
-                                                <h3 class="pro-price">{{ number_format($product->product_price) }} đ
+                                        @if ($product->product_price_discount)
+                                        <h3 class="pro-price-sale text-danger text-decoration-line-through">
+                                            {{ number_format($product->product_price_discount) }} đ
+                                        </h3>
+                                        <h3 class="pro-price">
+                                            {{ number_format($product->product_price) }} đ
+                                        </h3>
 
-                                                </h3>
-                                            @endif
-                                            <ul class="action-button">
-                                                <li>
-                                                    <a href="#" class="add-to-favorite" data-product-id="{{ $product->product_id }}" title="Thêm vào yêu thích" onclick="addToFavorite(event, {{ $product->product_id }})">
-                                                        <i class="zmdi zmdi-favorite"></i>
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a href="#" title="Add to cart"><i
-                                                            class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                </li>
-                                                <li>
-                                                    <a href="#" title="Add to cart"><i
-                                                            class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                                </li>
-                                            </ul>
-                                        </div>
+                                        @else
+                                        <h3 class="pro-price">{{ number_format($product->product_price) }} đ
+
+                                        </h3>
+                                        @endif
+                                        <ul class="action-button">
+                                            <li>
+                                                <a href="#" class="add-to-favorite" data-product-id="{{ $product->product_id }}" title="Thêm vào yêu thích" onclick="addToFavorite(event, {{ $product->product_id }})">
+                                                    <i class="zmdi zmdi-favorite"></i>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="#" title="Add to cart"><i
+                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
+                                            </li>
+                                            <li>
+                                                <a href="#" title="Add to cart"><i
+                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
+                            </div>
                             @endforeach
                         </div>
                     </div>
@@ -307,10 +310,10 @@
                 console.error('Error:', error);
                 showModal('Có lỗi xảy ra khi thêm vào yêu thích!', 'error');
             });
-    @else
+        @else
         // Nếu chưa đăng nhập, chỉ hiển thị thông báo
         showModal('Vui lòng đăng nhập để thêm sản phẩm vào yêu thích!', 'warning');
-    @endauth
+        @endauth
     }
 
     // Hiển thị modal thông báo ở giữa màn hình

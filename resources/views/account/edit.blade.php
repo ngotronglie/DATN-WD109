@@ -18,15 +18,34 @@
                     <p class="fw-semibold">{{ Auth::user()->name }}</p>
                     <hr>
                     <ul class="list-unstyled text-start">
-                        <li><a href="{{ route('account.edit') }}">⚙️ Thông tin cá nhân</a></li>
-                        <li><a href="{{ route('account.order') }}" class="fw-bold text-primary">🛒 Đơn hàng</a></li>
-                        <li><a href="{{ route('password.change') }}">🔑 Đổi mật khẩu</a></li>
-                        <li>
-                            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                🔒 Đăng xuất
+                        <li class="mb-2">
+                            <a href="{{ route('account.edit') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.edit')) bg-light fw-bold @endif">
+                                ⚙️ Thông tin cá nhân
                             </a>
                         </li>
+                        <li class="mb-2">
+                            <a href="{{ route('account.address_list') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.address_list')) bg-light fw-bold text-primary @endif">
+                                <i class="fa-solid fa-location-dot me-2"></i>     Địa chỉ
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ route('account.order') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.order')) bg-light fw-bold text-primary @endif">
+                                🛒 Đơn hàng
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ route('password.change') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('password.change')) bg-light fw-bold @endif">
+                                🔑 Đổi mật khẩu
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="d-block px-3 py-2 rounded text-decoration-none text-danger">
+                                🔒 Đăng xuất
+                            </a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+                        </li>
                     </ul>
+
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
                 </div>
             </div>

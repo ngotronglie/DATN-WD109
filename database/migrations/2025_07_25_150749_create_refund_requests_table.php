@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('user_id');
-            $table->string('bank_name');
-            $table->string('bank_number');
+            $table->string('bank_name')->nullable();;
+            $table->string('bank_number')->nullable();;
             $table->text('reason');
             $table->string('image')->nullable();
             $table->timestamp('refund_requested_at')->nullable(); // Thời gian yêu cầu
