@@ -62,7 +62,7 @@
                                 <div class="form-group mb-3">
                                     <label for="content" class="form-label">Nội dung <span class="text-danger">*</span></label>
                                     <div id="snow-editor" style="height: 300px;">{!! old('content') !!}</div>
-                                    <input type="hidden" name="content" id="content-input">
+                                    <input type="hidden" name="content" id="content-input" value="{{ old('content') }}">
                                     @error('content')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
@@ -106,10 +106,15 @@
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 
 <script>
+console.log('Script đã chạy!');
+
 document.addEventListener("DOMContentLoaded", function() {
-    // Initialize Quill editor
+    var form = document.querySelector('#create-blog-form');
+    var quill = null;
+    var contentInput = document.querySelector('#content-input');
+
     if (document.querySelector("#snow-editor")) {
-        var quill = new Quill("#snow-editor", {
+        quill = new Quill("#snow-editor", {
             theme: "snow",
             modules: {
                 toolbar: [
@@ -122,12 +127,20 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        // Copy content from Quill editor to hidden input on form submission
-        var form = document.querySelector('#create-blog-form');
-        form.onsubmit = function() {
-            var content = document.querySelector('#snow-editor .ql-editor').innerHTML;
-            document.querySelector('#content-input').value = content;
-        };
+        // Nếu có dữ liệu cũ, set lại vào Quill
+        if (contentInput && contentInput.value) {
+            quill.root.innerHTML = contentInput.value;
+        }
+    }
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (quill && contentInput) {
+                var content = quill.root.innerHTML.trim();
+                contentInput.value = content;
+                console.log('Content gửi lên:', contentInput.value);
+            }
+        });
     }
 });
 </script>

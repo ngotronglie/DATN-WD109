@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
         'role_id',
         'is_active',
         'address',
@@ -68,4 +69,27 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+        // Quan hệ với Address
+    public function addresses()
+    {
+        return $this->hasMany(Address::class, 'user_id');   
+}
+    public function defaultAddress()
+{
+    return $this->hasOne(Address::class)->where('is_default', 1);
+}
+
+    // Phương thức để lấy địa chỉ mặc định của người dùng
+    public function getDefaultAddress()
+    {
+        return $this->addresses()->where('is_default', true)->first();
+    }
+
+    // Phương thức để lấy tất cả địa chỉ của người dùng
+    public function getAllAddresses()
+    {
+        return $this->addresses()->get();
+    }
+    
+
 }

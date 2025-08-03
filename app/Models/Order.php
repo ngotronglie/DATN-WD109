@@ -25,8 +25,13 @@ class Order extends Model
         'order_code',
         'voucher_id',
         'status_method',
+        'return_requested',
+        'return_reason',
     ];
-
+    public function refundRequest()
+{
+    return $this->hasOne(\App\Models\RefundRequest::class, 'order_id');
+}
     // Quan hệ: Một đơn hàng có nhiều chi tiết đơn hàng
     public function orderDetails()
     {
@@ -44,4 +49,5 @@ class Order extends Model
     {
         return $this->belongsTo(Voucher::class, 'voucher_id');
     }
+    
 }
