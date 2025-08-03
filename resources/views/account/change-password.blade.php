@@ -5,9 +5,9 @@
     <div class="row">
         <!-- Sidebar bên trái -->
         <div class="col-md-4">
-            <div class="card mb-4 text-center">
+            <div class="card mb-4 text-center shadow-sm border-0 rounded-4">
                 <div class="card-body">
-                    <h5 class="mb-3">Tài khoản của tôi</h5>
+                    <h5 class="mb-3 fw-bold">Tài khoản của tôi</h5>
                     <div class="mb-3">
                         @if(Auth::user()->avatar)
                         <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="rounded-circle img-thumbnail" width="150" height="150" alt="Avatar">
@@ -15,17 +15,37 @@
                         <img src="{{ asset('img/default-avatar.png') }}" class="rounded-circle img-thumbnail" width="150" height="150" alt="Avatar">
                         @endif
                     </div>
-                    <p><strong>{{ Auth::user()->name }}</strong></p>
+                    <p class="fw-semibold">{{ Auth::user()->name }}</p>
                     <hr>
                     <ul class="list-unstyled text-start">
-                        <li><a href="{{ route('account.edit') }}">⚙️ Thông tin cá nhân</a></li>
-                        <li><a href="{{ route('password.change') }}">🔑 Đổi mật khẩu</a></li>
-                        <li>
-                            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                🔒 Đăng xuất
+                        <li class="mb-2">
+                            <a href="{{ route('account.edit') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.edit')) bg-light fw-bold @endif">
+                                ⚙️ Thông tin cá nhân
                             </a>
                         </li>
+                        <li class="mb-2">
+                            <a href="{{ route('account.address_list') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.address_list')) bg-light fw-bold text-primary @endif">
+                                <i class="fa-solid fa-location-dot me-2"></i>     Địa chỉ
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ route('account.order') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.order')) bg-light fw-bold text-primary @endif">
+                                🛒 Đơn hàng
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ route('password.change') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('password.change')) bg-light fw-bold @endif">
+                                🔑 Đổi mật khẩu
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="d-block px-3 py-2 rounded text-decoration-none text-danger">
+                                🔒 Đăng xuất
+                            </a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+                        </li>
                     </ul>
+
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
                 </div>
             </div>

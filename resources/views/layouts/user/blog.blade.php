@@ -48,7 +48,7 @@
                         <div class="col-lg-12">
                             <div class="blog-option box-shadow mb-30  clearfix">
                                 <!-- categories -->
-                                <div class="dropdown f-left">
+                                <!-- <div class="dropdown f-left">
                                     <button class="option-btn">
                                         Categories
                                         <i class="zmdi zmdi-chevron-down"></i>
@@ -105,82 +105,11 @@
                                             </div>
                                         </aside>
                                     </div>
-                                </div>
+                                </div> -->
                                 <!-- recent-product -->
-                                <div class="dropdown f-left">
-                                    <button class="option-btn">
-                                        Recent Post
-                                        <i class="zmdi zmdi-chevron-down"></i>
-                                    </button>
-                                    <div class="dropdown-menu dropdown-width mt-30">
-                                        <aside class="widget widget-product box-shadow">
-                                            <h6 class="widget-title border-left mb-20">recent products</h6>
-                                            <!-- product-item start -->
-                                            <div class="product-item">
-                                                <div class="product-img">
-                                                    <a href="single-product.html">
-                                                        <img src="{{asset('frontend/img/cart/4.jpg')}}" alt=""/>
-                                                    </a>
-                                                </div>
-                                                <div class="product-info">
-                                                    <h6 class="product-title multi-line mt-10">
-                                                        <a href="single-product.html">Dummy Blog Name</a>
-                                                    </h6>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="product-item">
-                                                <div class="product-img">
-                                                    <a href="single-product.html">
-                                                        <img src="{{asset('frontend/img/cart/5.jpg')}}" alt=""/>
-                                                    </a>
-                                                </div>
-                                                <div class="product-info">
-                                                    <h6 class="product-title multi-line mt-10">
-                                                        <a href="single-product.html">Dummy Blog Name</a>
-                                                    </h6>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                            <!-- product-item start -->
-                                            <div class="product-item">
-                                                <div class="product-img">
-                                                    <a href="single-product.html">
-                                                        <img src="{{asset('frontend/img/cart/6.jpg')}}" alt=""/>
-                                                    </a>
-                                                </div>
-                                                <div class="product-info">
-                                                    <h6 class="product-title multi-line mt-10">
-                                                        <a href="single-product.html">Dummy Blog Name</a>
-                                                    </h6>
-                                                </div>
-                                            </div>
-                                            <!-- product-item end -->
-                                        </aside>
-                                    </div>
-                                </div>
+                               
                                 <!-- Tags -->
-                                <div class="dropdown f-left">
-                                    <button class="option-btn">
-                                        Tags
-                                        <i class="zmdi zmdi-chevron-down"></i>
-                                    </button>
-                                    <div class="dropdown-menu dropdown-width mt-30">
-                                        <aside class="widget widget-tags box-shadow">
-                                            <h6 class="widget-title border-left mb-20">Tags</h6>
-                                            <ul class="widget-tags-list">
-                                                <li><a href="#">Bleckgerry ios</a></li>
-                                                <li><a href="#">Symban</a></li>
-                                                <li><a href="#">IOS</a></li>
-                                                <li><a href="#">Bleckgerry</a></li>
-                                                <li><a href="#">Windows Phone</a></li>
-                                                <li><a href="#">Windows Phone</a></li>
-                                                <li><a href="#">Androids</a></li>
-                                            </ul>
-                                        </aside>
-                                    </div>
-                                </div>
+                              
                             </div>
                         </div>
                         <!-- blog-option end -->

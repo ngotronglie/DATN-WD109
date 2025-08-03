@@ -23,4 +23,16 @@ class CommentController extends Controller
 
         return back()->with('success', 'Bình luận đã được gửi!');
     }
+
+    public function reply(Request $request, $parentId)
+    {
+        $request->validate(['content' => 'required']);
+        Comment::create([
+            'user_id' => auth()->id(),
+            'blog_id' => 1,
+            'content' => $request->content,
+            'parent_id' => $parentId,
+        ]);
+        return back();
+    }
 }

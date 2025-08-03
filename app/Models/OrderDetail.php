@@ -18,6 +18,11 @@ class OrderDetail extends Model
         'price',
     ];
 
+    public function product()
+{
+    return $this->belongsTo(Product::class);
+}
+
     // Quan hệ: Chi tiết đơn hàng thuộc về một đơn hàng
     public function order()
     {

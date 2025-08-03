@@ -99,11 +99,31 @@
                                 <label for="email" class="form-label">Email nhận đơn hàng</label>
                                 <input type="text" class="form-control" id="email" required>
                             </div>
+                            <div class="mb-3">
+                                <label for="address_detail" class="form-label">Địa chỉ (số nhà, tên đường)</label>
+                                <input type="text" class="form-control" id="address_detail" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ward" class="form-label">Phường/Xã</label>
+                                <select id="ward" class="form-select" required>
+                                    <option value="">-- Chọn phường/xã --</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="district" class="form-label">Quận/Huyện</label>
+                                <input type="text" id="district" class="form-control" required placeholder="Nhập quận/huyện">
+                            </div>
 
                             <div class="mb-3">
-                                <label for="address" class="form-label">Địa chỉ nhận hàng</label>
-                                <input type="text" class="form-control" id="address" required>
+                                <label for="province" class="form-label">Tỉnh/Thành phố</label>
+                                <select id="province" class="form-select" required>
+                                    <option value="">-- Chọn tỉnh --</option>
+                                    @foreach($provinces as $province)
+                                    <option value="{{ $province->ten_tinh }}" data-id="{{ $province->id }}">{{ $province->ten_tinh }}</option>
+                                    @endforeach
+                                </select>
                             </div>
+
                             <div class="mb-3">
                                 <label for="note" class="form-label">Ghi chú</label>
                                 <input type="text" class="form-control" id="note">
@@ -138,6 +158,23 @@
 
 @section('script-client')
 <script>
+    const provinceSelect = document.getElementById('province');
+    const wardSelect = document.getElementById('ward');
+
+    provinceSelect?.addEventListener('change', function() {
+        const provinceId = this.options[this.selectedIndex]?.getAttribute('data-id');
+        if (!provinceId) return;
+        fetch(`/address/wards/${provinceId}`)
+            .then(res => res.json())
+            .then(data => {
+                wardSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
+                data.forEach(function(ward) {
+                    wardSelect.innerHTML += `<option value="${ward.ten_phuong_xa}">${ward.ten_phuong_xa}</option>`;
+                });
+            });
+    });
+
+
     let cartData = [];
 
     function formatCurrency(num) {
@@ -346,7 +383,13 @@
             if (userData.success && userData.user) {
                 document.getElementById('fullname').value = userData.user.name || '';
                 document.getElementById('phone').value = userData.user.phone || '';
-                document.getElementById('address').value = userData.user.address || '';
+                document.getElementById('fullname').value = userData.user.name || '';
+                document.getElementById('phone').value = userData.user.phone || '';
+                document.getElementById('email').value = userData.user.email || '';
+                document.getElementById('address_detail').value = userData.user.street || '';
+                document.getElementById('ward').value = userData.user.ward || '';
+                document.getElementById('district').value = userData.user.district || '';
+                document.getElementById('province').value = userData.user.city || '';
                 document.getElementById('email').value = userData.user.email || '';
             }
         } catch (e) {}
@@ -370,10 +413,14 @@
             fullname: document.getElementById('fullname').value,
             phone: document.getElementById('phone').value,
             email: document.getElementById('email').value,
-            address: document.getElementById('address').value,
+            street: document.getElementById('address_detail').value,
+            ward: document.getElementById('ward')?.value || '',
+            district: document.getElementById('district')?.value || '',
+            city: document.getElementById('province')?.value || '',
             note: document.getElementById('note').value,
             payment: document.querySelector('input[name="payment"]:checked')?.value || 'cod'
         };
+
 
         localStorage.setItem('checkout_cart', JSON.stringify(cartData));
         localStorage.setItem('checkout_user', JSON.stringify(userInfo));
@@ -392,7 +439,7 @@
     };
 </script>
 <style>
-      /* Làm chữ trong các input rõ ràng, to, đậm */
+    /* Làm chữ trong các input rõ ràng, to, đậm */
     #phone,
     #voucher-input,
     #cart-total,
@@ -404,6 +451,7 @@
         font-style: normal;
         font-family: 'Arial', sans-serif;
     }
+
     .qty-btn-cart {
         width: 28px;
         height: 28px;

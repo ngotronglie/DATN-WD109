@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\EmailOrderController;
+use App\Http\Controllers\Client\UserOrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VoucherController;
@@ -21,8 +22,13 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
+
 use App\Http\Controllers\admin\RevenueStatisticController;
+
+use App\Http\Controllers\Admin\RefundController;
+
 use App\Http\Controllers\Auth\AccountController;
+use App\Http\Controllers\Auth\AddressController;
 use App\Http\Controllers\Client\ShopController;
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +53,27 @@ Route::get('/category/{slug}', [ClientController::class, 'category'])->name('cat
 Route::get('/product/{slug}', [ClientController::class, 'productDetail'])->name('product.detail');
 Route::get('/blog/{slug}', [ClientController::class, 'post'])->name('post');
 
+Route::get('/account/order', [UserOrderController::class, 'index'])->name(name: 'account.order');
+Route::get('/account/order/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
+Route::post('/order/{id}/return', [UserOrderController::class, 'returnOrder'])->name('order.return');
+Route::post('/refund', [UserOrderController::class, 'store'])->name('refund.store');
+
+Route::get('/account/{id}/fillinfo', [UserOrderController::class, 'fillinfo'])->name('account.fillinfo');
+Route::put('/account/{id}/update-info', [UserOrderController::class, 'updateInfo'])->name('account.updateInfo');
+
+
+Route::get('list', [AddressController::class, 'index'])->name('account.address_list');
+Route::get('/create', [AddressController::class, 'create'])->name('account.address.create');
+Route::post('/store', [AddressController::class, 'store'])->name('account.address.store');
+Route::get('/{id}/edit', [AddressController::class, 'edit'])->name('account.address_edit');
+Route::put('/{id}/update', [AddressController::class, 'update'])->name('account.address.update');
+Route::delete('/{id}', [AddressController::class, 'delete'])->name('account.address.delete');
+Route::post('/{id}/set-default', [AddressController::class, 'setDefault'])->name('account.address.setDefault');
+
+Route::get('/address/wards/{province_id}', [AddressController::class, 'getWards']);
+
+Route::get('/address/districts/{provinceId}', [ClientController::class, 'getDistricts']);
+Route::get('/address/wards/{districtId}', [ClientController::class, 'getWards']);
 // Blog Detail Routes
 Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('index');
@@ -66,9 +93,9 @@ Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
 });
 
 // Cart, Wishlist, Account, Shop, Checkout
-Route::get('/cart', function () {
-    return view('layouts.user.cart');
-})->name('cart');
+
+Route::get('/cart', [ClientController::class, 'showCart'])->name('cart');
+
 
 Route::get('/wishlist', [App\Http\Controllers\FavoriteController::class, 'index'])->name('wishlist')->middleware('auth');
 
@@ -76,18 +103,17 @@ Route::get('/productdetail', function () {
     return view('layouts.user.productDetail');
 })->name('productdetail');
 
-Route::get('/cart', function () {
-    return view('layouts.user.cart');
-})->name('cart');
-
 Route::get('/shop', function () {
     return view('layouts.user.shop');
 })->name('shop');
 
 
-Route::get('/blog', function () {
-    return view('layouts.user.blog');
-})->name('blog');
+// Route::get('/blog', function () {
+//     return view('layouts.user.blog');
+// })->name('blog');
+// ✅ DÙNG CÁI NÀY
+Route::get('/blogs', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('client.blog.index');
+
 
 Route::get('/blogdetail', function () {
     return view('layouts.user.blogdetail');
@@ -120,6 +146,8 @@ Route::get('/verify-email/{email}/{token}', [VerifyEmailController::class, 'veri
 // Order routes
 Route::post('/order/place', [EmailOrderController::class, 'placeOrder'])->name('order.place');
 Route::post('/order/cancel/{id}', [EmailOrderController::class, 'cancelOrder'])->name('order.cancel');
+
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/account', [AccountController::class, 'update'])->name('account.update');
@@ -187,6 +215,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::get('/{slug}/images', [ProductController::class, 'addfiledetail'])->name('addfiledetail');
         Route::put('/{slug}/images', [ProductController::class, 'updateImages'])->name('updateImages');
         Route::delete('/variants/{variantId}/images/{imageId}', [ProductController::class, 'deleteImage'])->name('deleteImage');
+        Route::get('/low-stock', [ProductController::class, 'lowStock'])->name('lowStock');
     });
 
     // Users
@@ -201,8 +230,36 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Orders
     Route::resource('orders', OrderController::class);
-    Route::post('orders/{order}/update-status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    Route::get('orders/{order}/detail', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.detail');
+    Route::post('/orders/{id}/cancel', [OrderController::class, 'cancelOrder'])->name('orders.cancel');
+    Route::post('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::get('orders/{order}/detail', [OrderController::class, 'show'])->name('orders.detail');
+    Route::post('/admin/orders/{refund}/confirm-receive-back', [OrderController::class, 'confirmReceiveBack'])->name('orders.confirmReceiveBack');
+
+
+    // Refund Requests
+    Route::get('orders/{order}/refund/create', [OrderController::class, 'showRefundForm'])->name('refunds.create');
+    Route::post('orders/{order}/refund', [OrderController::class, 'submitRefundForm'])->name('refunds.store');
+
+    // Admin Refund Management
+    Route::get('/refunds', [OrderController::class, 'refundRequests'])->name('refunds.list');
+    Route::get('/refunds/{id}', [OrderController::class, 'showRefundDetail'])->name('refunds.detail');
+    Route::post('/refunds/{id}/approve', [OrderController::class, 'approveRefund'])->name('refunds.approve');
+    Route::post('/refunds/{id}/upload-proof', [OrderController::class, 'uploadRefundProof'])->name('refunds.uploadProof');
+
+
+    // routes/web.php
+    // Xác thực hoàn hàng
+    Route::post('/admin/orders/{id}/refund/verify', action: [OrderController::class, 'verify'])->name('admin.refunds.verify');
+
+    // Từ chối yêu cầu hoàn hàng
+    Route::post('/admin/orders/{id}/refund/reject', [OrderController::class, 'reject'])->name('admin.refunds.reject');
+
+
+
+
+
+
+
 
     // Comments (admin)
     Route::resource('comments', CommentController::class)->only(['index', 'destroy']);
@@ -215,12 +272,25 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
     Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
 
+
     Route::get('/revenue-statistics', [RevenueStatisticController::class, 'index'])->name('statistics.index');
     Route::get('/admin/orders/{id}', [App\Http\Controllers\admin\OrderController::class, 'show'])->name('admin.orders.show');
+
+    // Thống kê
+    Route::prefix('thongke')->name('thongke.')->group(function () {
+        Route::get('/sanpham', [\App\Http\Controllers\Admin\StatisticController::class, 'sanpham'])->name('sanpham');
+        Route::get('/donhang', [\App\Http\Controllers\Admin\StatisticController::class, 'donhang'])->name('donhang');
+        Route::get('/nguoidung', [\App\Http\Controllers\Admin\StatisticController::class, 'nguoidung'])->name('nguoidung');
+      
+        Route::get('/', function() { return view('layouts.admin.thongke.index'); })->name('index');
+    
+    });
+
 });
 
 // Shop detail, VNPAY, Blog detail, Comments
 Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.show');
+
 Route::get('/vnpay/payment', [ClientController::class, 'vnpayPayment'])->name('vnpay.payment');
 Route::get('/vnpay/return', [ClientController::class, 'vnpayReturn'])->name('vnpay.return');
 Route::get('/blogs', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('client.blog.index');

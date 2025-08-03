@@ -286,6 +286,18 @@ class ProductController extends Controller
         }
     }
 
+    public function lowStock()
+    {
+        // Sản phẩm sắp hết hàng: quantity <= 5 và > 0 ở các biến thể
+        $lowStockVariants = ProductVariant::with(['product', 'color', 'capacity'])
+            ->where('quantity', '>', 0)
+            ->where('quantity', '<=', 5)
+            ->orderBy('quantity', 'asc')
+            ->get();
+
+        return view('layouts.admin.thongke.low_stock', compact('lowStockVariants'));
+    }
+
 
 
 
@@ -335,6 +347,8 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
+        
     }
+    
 
 }

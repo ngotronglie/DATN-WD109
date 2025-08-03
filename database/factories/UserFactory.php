@@ -33,6 +33,7 @@ class UserFactory extends Factory
             'phone_number' => fake()->phoneNumber(),
             'avatar' => 'default-avatar.png',
             'date_of_birth' => fake()->date(),
+            'role_id' => \App\Models\Role::inRandomOrder()->first()?->id ?? 1,
         ];
     }
 
