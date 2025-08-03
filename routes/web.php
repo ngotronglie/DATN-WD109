@@ -22,7 +22,11 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
+
+use App\Http\Controllers\admin\RevenueStatisticController;
+
 use App\Http\Controllers\Admin\RefundController;
+
 use App\Http\Controllers\Auth\AccountController;
 use App\Http\Controllers\Auth\AddressController;
 use App\Http\Controllers\Client\ShopController;
@@ -268,6 +272,10 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('blogs', App\Http\Controllers\Admin\BlogController::class);
     Route::resource('tag_blogs', App\Http\Controllers\Admin\TagBlogController::class);
 
+
+    Route::get('/revenue-statistics', [RevenueStatisticController::class, 'index'])->name('statistics.index');
+    Route::get('/admin/orders/{id}', [App\Http\Controllers\admin\OrderController::class, 'show'])->name('admin.orders.show');
+
     // Thống kê
     Route::prefix('thongke')->name('thongke.')->group(function () {
         Route::get('/sanpham', [\App\Http\Controllers\Admin\StatisticController::class, 'sanpham'])->name('sanpham');
@@ -277,6 +285,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::get('/', function() { return view('layouts.admin.thongke.index'); })->name('index');
     
     });
+
 });
 
 // Shop detail, VNPAY, Blog detail, Comments

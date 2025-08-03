@@ -31,6 +31,7 @@
                                         <h3 class="pro-price-sale text-danger text-decoration-line-through">
                                             {{ number_format($product->product_price_discount) }} đ
                                         </h3>
+
                                         <h3 class="pro-price">
                                             {{ number_format($product->product_price) }} đ
                                         </h3>

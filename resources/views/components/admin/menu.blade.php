@@ -86,6 +86,12 @@
                                    <span class="nav-text">Yêu thích</span>
                               </a>
                          </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.statistics.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:heart-broken"></iconify-icon></span>
+                                   <span class="nav-text">Thống kê</span>
+                              </a>
+                         </li>
 
                          <li class="menu-title">Thống kê</li>
                          <li class="nav-item">
