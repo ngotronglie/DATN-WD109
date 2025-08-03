@@ -50,81 +50,50 @@
                 </div>
             </div>
         </div>
-
-        <!-- Nội dung đổi mật khẩu bên phải -->
+        
         <div class="col-md-8">
-            <div class="card p-4 shadow-sm">
-                <h4 class="mb-4 text-primary fw-bold">🔑 Đổi mật khẩu</h4>
+            <div class="card p-4 shadow-sm border-0 rounded-4">
+                <h4 class="fw-bold mb-4">✏️ Sửa địa chỉ</h4>
 
-                @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
-
-                <form method="POST" action="{{ route('password.update') }}">
+                <form action="{{ route('account.address.update', $address->id) }}" method="POST">
                     @csrf
                     @method('PUT')
 
                     <div class="mb-3">
-                        <label for="current_password" class="form-label fw-medium">Mật khẩu hiện tại</label>
-                        <input type="password" name="current_password" id="current_password"
-                            class="form-control @error('current_password') is-invalid @enderror" required>
-                        @error('current_password')
-                        <small class="text-danger">{{ $message }}</small>
-                        @enderror
+                        <label for="receiver_name" class="form-label">Tên người nhận</label>
+                        <input type="text" class="form-control" name="receiver_name" value="{{ old('receiver_name', $address->receiver_name) }}">
                     </div>
 
                     <div class="mb-3">
-                        <label for="new_password" class="form-label fw-medium">Mật khẩu mới</label>
-                        <input type="password" name="new_password" id="new_password"
-                            class="form-control @error('new_password') is-invalid @enderror" required>
-                        @error('new_password')
-                        <small class="text-danger">{{ $message }}</small>
-                        @enderror
+                        <label for="phone" class="form-label">Số điện thoại</label>
+                        <input type="text" class="form-control" name="phone" value="{{ old('phone', $address->phone) }}">
                     </div>
 
                     <div class="mb-3">
-                        <label for="new_password_confirmation" class="form-label fw-medium">Xác nhận mật khẩu mới</label>
-                        <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="form-control" required>
+                        <label for="street" class="form-label">Địa chỉ (số nhà, tên đường)</label>
+                        <input type="text" class="form-control" name="street" value="{{ old('street', $address->street) }}">
                     </div>
 
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary px-4 py-2 mx-auto d-block">Cập nhật mật khẩu</button>
+                    <div class="mb-3">
+                        <label for="ward" class="form-label">Phường/Xã</label>
+                        <input type="text" class="form-control" name="ward" value="{{ old('ward', $address->ward) }}">
                     </div>
 
+                    <div class="mb-3">
+                        <label for="city" class="form-label">Tỉnh/Thành phố</label>
+                        <input type="text" class="form-control" name="city" value="{{ old('city', $address->city) }}">
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" name="is_default" {{ $address->is_default ? 'checked' : '' }}>
+                        <label class="form-check-label">Đặt làm địa chỉ mặc định</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    <a href="{{ route('account.address_list') }}" class="btn btn-secondary ms-2">Quay lại</a>
                 </form>
             </div>
         </div>
-
     </div>
 </div>
-@section('styles')
-<style>
-    .card {
-        border: none;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        border-radius: 12px;
-    }
-
-    label {
-        font-weight: 500;
-    }
-
-    .form-control {
-        border-radius: 8px;
-        padding: 10px 14px;
-    }
-
-    .btn-primary {
-        border-radius: 8px;
-        padding: 10px 25px;
-        font-weight: 500;
-    }
-
-    .alert-success {
-        border-radius: 8px;
-    }
-</style>
-@endsection
-
-
 @endsection

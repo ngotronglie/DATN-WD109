@@ -15,7 +15,6 @@ class RefundController extends Controller
         $refund->received_back_at = now();
         $refund->save();
 
-        // Cập nhật trạng thái đơn hàng nếu cần (ví dụ status = 6 là hoàn hàng thành công)
         $order = Order::find($refund->order_id); // đảm bảo RefundRequest có order_id
         if ($order) {
             $order->status = 7; // hoặc status khác phù hợp với logic bạn đặt

@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Auth\AccountController;
+use App\Http\Controllers\Auth\AddressController;
 use App\Http\Controllers\Client\ShopController;
 /*
 |--------------------------------------------------------------------------
@@ -53,15 +54,28 @@ Route::get('/account/order/{id}', [UserOrderController::class, 'show'])->name('u
 Route::post('/order/{id}/return', [UserOrderController::class, 'returnOrder'])->name('order.return');
 Route::post('/refund', [UserOrderController::class, 'store'])->name('refund.store');
 
+Route::get('/account/{id}/fillinfo', [UserOrderController::class, 'fillinfo'])->name('account.fillinfo');
+Route::put('/account/{id}/update-info', [UserOrderController::class, 'updateInfo'])->name('account.updateInfo');
+
+
+Route::get('list', [AddressController::class, 'index'])->name('account.address_list');
+Route::get('/create', [AddressController::class, 'create'])->name('account.address.create');
+Route::post('/store', [AddressController::class, 'store'])->name('account.address.store');
+Route::get('/{id}/edit', [AddressController::class, 'edit'])->name('account.address_edit');
+Route::put('/{id}/update', [AddressController::class, 'update'])->name('account.address.update');
+Route::delete('/{id}', [AddressController::class, 'delete'])->name('account.address.delete');
+Route::post('/{id}/set-default', [AddressController::class, 'setDefault'])->name('account.address.setDefault');
+
+Route::get('/address/wards/{province_id}', [AddressController::class, 'getWards']);
+
+Route::get('/address/districts/{provinceId}', [ClientController::class, 'getDistricts']);
+Route::get('/address/wards/{districtId}', [ClientController::class, 'getWards']);
 // Blog Detail Routes
 Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('index');
     Route::get('/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('show');
     Route::get('/tag/{tagId}', [\App\Http\Controllers\Client\BlogDetailController::class, 'searchByTag'])->name('tag');
     Route::get('/search', [\App\Http\Controllers\Client\BlogDetailController::class, 'search'])->name('search');
-
-
-
 
     // Admin routes (cần đăng nhập và là admin)
 
@@ -75,19 +89,15 @@ Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
 });
 
 // Cart, Wishlist, Account, Shop, Checkout
-Route::get('/cart', function () {
-    return view('layouts.user.cart');
-})->name('cart');
+
+Route::get('/cart', [ClientController::class, 'showCart'])->name('cart');
+
 
 Route::get('/wishlist', [App\Http\Controllers\FavoriteController::class, 'index'])->name('wishlist')->middleware('auth');
 
 Route::get('/productdetail', function () {
     return view('layouts.user.productDetail');
 })->name('productdetail');
-
-Route::get('/cart', function () {
-    return view('layouts.user.cart');
-})->name('cart');
 
 Route::get('/shop', function () {
     return view('layouts.user.shop');
@@ -219,6 +229,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('/orders/{id}/cancel', [OrderController::class, 'cancelOrder'])->name('orders.cancel');
     Route::post('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::get('orders/{order}/detail', [OrderController::class, 'show'])->name('orders.detail');
+    Route::post('/admin/orders/{refund}/confirm-receive-back', [OrderController::class, 'confirmReceiveBack'])->name('orders.confirmReceiveBack');
+
 
     // Refund Requests
     Route::get('orders/{order}/refund/create', [OrderController::class, 'showRefundForm'])->name('refunds.create');
@@ -229,8 +241,15 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/refunds/{id}', [OrderController::class, 'showRefundDetail'])->name('refunds.detail');
     Route::post('/refunds/{id}/approve', [OrderController::class, 'approveRefund'])->name('refunds.approve');
     Route::post('/refunds/{id}/upload-proof', [OrderController::class, 'uploadRefundProof'])->name('refunds.uploadProof');
-    Route::post('/admin/orders/{id}/confirm-receive', [RefundController::class, 'confirmReceiveBack'])
-        ->name('orders.confirmReceiveBack');
+
+
+    // routes/web.php
+    // Xác thực hoàn hàng
+    Route::post('/admin/orders/{id}/refund/verify', action: [OrderController::class, 'verify'])->name('admin.refunds.verify');
+
+    // Từ chối yêu cầu hoàn hàng
+    Route::post('/admin/orders/{id}/refund/reject', [OrderController::class, 'reject'])->name('admin.refunds.reject');
+
 
 
 

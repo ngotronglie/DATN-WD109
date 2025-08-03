@@ -96,16 +96,27 @@
                                         @elseif($stt === 6)
                                         <span class="badge bg-danger">Đã hủy</span>
                                         @elseif($stt === 7)
-                                        <span class="badge bg-warning text-dark">Đã hoàn trả</span>
+                                        <span class="badge bg-warning text-dark">Đã xác nhận yêu cầu hoàn hàng</span>
                                         @elseif($stt === 8)
+                                        <span class="badge bg-success text-dark">Đã nhận hàng hoàn</span>
+                                        @elseif($stt === 9)
                                         <span class="badge bg-success text-dark">Đã hoàn tiền</span>
+                                        @elseif($stt === 10)
+                                        <span class="badge bg-success text-dark">Không xác nhận yêu cầu hoàn hàng</span>
                                         @else
                                         <span class="badge bg-secondary">Không xác định</span>
                                         @endif
                                     </td>
-
-                                    <td class="text-center">{{ $order->status_method ?? '-' }}</td>
-                                    <td class="text-center">{{ $order->payment_method }}</td>
+<td>
+                                    @if ((int)$order->status_method == 0)
+                                    <span class="badge bg-danger">Chưa thanh toán</span>
+                                    @elseif ((int)$order->status_method == 1)
+                                    <span class="badge bg-success">Đã thanh toán (COD)</span>
+                                    @elseif ((int)$order->status_method == 2)
+                                    <span class="badge bg-success">Đã thanh toán (CK)</span>
+                                    @endif
+</td>
+                                     <td class="text-center">{{ $order->payment_method }}</td>
                                     <td class="text-center">{{ $order->created_at ? $order->created_at->format('d/m/Y H:i') : '-' }}</td>
                                     <td class="text-center">
                                         @if($order->voucher)
@@ -168,42 +179,59 @@
                                     </td>
                                     <td class="text-center">
                                         @if ($order->refundRequest)
-                                        {{-- Nút xem chi tiết --}}
                                         <a href="{{ route('admin.refunds.detail', ['id' => $order->refundRequest->id]) }}"
                                             class="btn btn-info btn-xs mb-1 px-2 py-1" style="font-size: 12px;">
                                             Xem
                                         </a>
+                                        @if (!$order->refundRequest->refund_completed_at)
 
-                                        {{-- Nếu đã hoàn tiền --}}
-                                        @if ($order->refundRequest->refund_completed_at)
-                                        <span class="badge bg-success" style="font-size: 12px;">Đã hoàn</span>
-                                        @else
-                                        {{-- Nếu chưa xác nhận nhận hàng hoàn --}}
-                                        @if (!$order->refundRequest->received_back_at)
+                                        {{-- Nếu đang ở trạng thái yêu cầu hoàn (status = 6) --}}
+                                        @if ($order->status == 5 && !$order->refundRequest->is_verified)
+                                        <form action="{{ route('admin.admin.refunds.verify', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
+                                            @csrf
+                                            <button class="btn btn-primary btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Xác nhận yêu cầu hoàn?')">
+                                                Xác thực yêu cầu
+                                            </button>
+                                        </form>
+
+                                        <form action="{{ route('admin.admin.refunds.reject', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
+                                            @csrf
+                                            <button class="btn btn-danger btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Hủy yêu cầu hoàn?')">
+                                                Hủy yêu cầu
+                                            </button>
+                                        </form>
+
+                                        {{-- Nếu đã xác thực (status = 7) nhưng chưa nhận lại hàng --}}
+                                        @elseif (
+                                        $order->status == 7 &&
+                                        $order->refundRequest &&
+                                        $order->refundRequest->sent_back_at && // chỉ hiển thị khi user đã gửi trả hàng
+                                        !$order->refundRequest->received_back_at // admin chưa nhận
+                                        )
                                         <form action="{{ route('admin.orders.confirmReceiveBack', $order->refundRequest->id) }}" method="POST" style="display:inline-block;">
                                             @csrf
-                                            <button class="btn btn-success btn-xs px-2 py-1 mb-1" style="font-size: 12px;"
-                                                onclick="return confirm('Xác nhận đã nhận hàng hoàn?')">
+                                            <button class="btn btn-success btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Xác nhận đã nhận hàng hoàn?')">
                                                 Xác nhận đã nhận hàng
                                             </button>
                                         </form>
                                         @endif
+                                        @endif
 
-                                        {{-- Nút duyệt hoàn tiền nếu đã xác nhận nhận hàng --}}
-                                        @if ($order->refundRequest->received_back_at)
+                                        {{-- Duyệt hoàn tiền khi đã nhận hàng hoàn (status = 8) nhưng chưa hoàn tiền --}}
+                                        @if ($order->status == 8 && !$order->refundRequest->refund_completed_at)
                                         <form action="{{ route('admin.refunds.approve', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
                                             @csrf
-                                            <button class="btn btn-warning btn-xs px-2 py-1" style="font-size: 12px;"
-                                                onclick="return confirm('Xác nhận đã hoàn tiền?')">
+                                            <button class="btn btn-warning btn-xs px-2 py-1" style="font-size: 12px;" onclick="return confirm('Xác nhận đã hoàn tiền?')">
                                                 Duyệt
                                             </button>
                                         </form>
-                                        @endif
                                         @endif
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif
                                     </td>
+
+
 
 
                                 </tr>
