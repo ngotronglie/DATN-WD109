@@ -1,6 +1,12 @@
 @extends('index.clientdashboard')
 
 @section('content')
+    {{-- Debug: Kiểm tra biến trong view --}}
+    @if(isset($allCategories))
+        {{-- Biến tồn tại, tiếp tục --}}
+    @else
+        {{ dd('$allCategories is not set in view') }}
+    @endif
 
         <!-- BREADCRUMBS SETCTION START -->
         <div class="breadcrumbs-section plr-200 mb-80 section">
@@ -45,7 +51,7 @@
                                     </ul>
                                     <!-- short-by -->
                                     <div class="short-by f-left text-center">
-                                        <form method="GET" action="{{ route('shop.index') }}" id="sortForm">
+                                        <form method="GET" action="{{ route('shop') }}" id="sortForm">
                                             <span>Sort by :</span>
                                             <select name="sort" onchange="document.getElementById('sortForm').submit()">
                                                 <option value="">Sắp xếp</option>
@@ -224,7 +230,7 @@
                             <!-- shop-filter -->
                             <aside class="widget shop-filter box-shadow mb-30">
                                 <h6 class="widget-title border-left mb-20">Giá</h6>
-                                <form method="GET" action="{{ route('shop.index') }}">
+                                <form method="GET" action="{{ route('shop') }}">
                                     <div class="input-group mb-2">
                                         <input type="number" name="min_price" class="form-control" placeholder="Giá từ" value="{{ request('min_price') }}" min="0">
                                         <span class="input-group-text">-</span>
