@@ -34,14 +34,22 @@ class OrderController extends Controller
     // Cập nhật trạng thái đơn hàng (AJAX)
     public function updateStatus(Request $request, $id)
     {
-        $order = Order::find($id);
-        if (!$order) {
-            return redirect()->back()->with('error', 'Không tìm thấy đơn hàng!');
+        $order = Order::findOrFail($id);
+        $newStatus = $request->input('status');
+
+        $order->status = $newStatus;
+
+        // Nếu đơn hàng được đánh dấu là "Đã giao hàng" (status = 5)
+        if ((int)$newStatus === 5) {
+            $order->status_method = 1;
+            $order->payment_method = 'cod';
         }
-        $order->status = (int) $request->input('status');
+
         $order->save();
-        return redirect()->route('admin.orders.index')->with('success', 'Cập nhật trạng thái thành công!');
+
+        return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
     }
+
 
     public function show($id)
     {
@@ -70,7 +78,7 @@ class OrderController extends Controller
         // ✅ Cập nhật trạng thái đơn hàng thành 8 (Đã hoàn)
         $order = Order::find($refund->order_id);
         if ($order) {
-            $order->status = 8; // <-- Đã sửa
+            $order->status = 9; // <-- Đã sửa
             $order->save();
         }
 
@@ -78,37 +86,87 @@ class OrderController extends Controller
     }
 
 
-public function uploadRefundProof(Request $request, $id)
-{
-    $refund = RefundRequest::findOrFail($id);
+    public function uploadRefundProof(Request $request, $id)
+    {
+        $refund = RefundRequest::findOrFail($id);
 
-    $request->validate([
-        'proof_image' => 'required|image|max:2048',
-    ]);
+        $request->validate([
+            'proof_image' => 'required|image|max:2048',
+        ]);
 
-    if ($refund->proof_image) {
-        Storage::delete('public/' . $refund->proof_image);
+        if ($refund->proof_image) {
+            Storage::delete('public/' . $refund->proof_image);
+        }
+
+        $path = $request->file('proof_image')->store('refunds/proofs', 'public');
+        $refund->proof_image = $path;
+
+        // ✅ Cập nhật thông tin người hoàn và thời gian hoàn nếu chưa có
+        if (!$refund->refund_completed_at) {
+            $refund->refund_completed_at = now();
+            $refund->refunded_by = Auth::user()->name;
+        }
+
+        $refund->save();
+
+        // ✅ Cập nhật trạng thái đơn hàng
+        $order = Order::find($refund->order_id);
+        if ($order && $order->status == 8) {
+            $order->status = 9; // Trạng thái "Đã hoàn"
+            $order->save();
+        }
+
+        return back()->with('success', 'Đã cập nhật ảnh chuyển khoản và trạng thái đơn hàng.');
+    }
+    public function verify($id)
+    {
+        $refund = RefundRequest::findOrFail($id);
+        $refund->status = '1'; // Đã xác thực
+        $refund->save();
+
+        // Cập nhật trạng thái đơn hàng thành 7
+        $order = Order::find($refund->order_id);
+        if ($order) {
+            $order->status = 7; // Đã hoàn tiền
+            $order->save();
+        }
+
+        return redirect()->back()->with('success', 'Yêu cầu hoàn đã được xác thực.');
     }
 
-    $path = $request->file('proof_image')->store('refunds/proofs', 'public');
-    $refund->proof_image = $path;
+    public function reject($id)
+    {
+        $refund = RefundRequest::findOrFail($id);
+        $refund->status = '2'; // Đã từ chối
+        $refund->save();
 
-    // ✅ Cập nhật thông tin người hoàn và thời gian hoàn nếu chưa có
-    if (!$refund->refund_completed_at) {
-        $refund->refund_completed_at = now();
-        $refund->refunded_by = Auth::user()->name;
+        // Cập nhật trạng thái đơn hàng thành 10
+        $order = Order::find($refund->order_id);
+        if ($order) {
+            $order->status = 10; // Hoàn hàng bị từ chối
+            $order->save();
+        }
+
+        return redirect()->back()->with('success', 'Yêu cầu hoàn đã bị từ chối.');
     }
+    public function confirmReceiveBack($refundId)
+    {
+        $refund = RefundRequest::findOrFail($refundId);
+        $order = $refund->order;
 
-    $refund->save();
+        // Kiểm tra trạng thái hiện tại trước khi cập nhật
+        if ($order->status != 7) {
+            return back()->with('error', 'Đơn hàng không ở trạng thái chờ xác nhận hoàn hàng.');
+        }
 
-    // ✅ Cập nhật trạng thái đơn hàng
-    $order = Order::find($refund->order_id);
-    if ($order && $order->status != 8) {
-        $order->status = 8; // Trạng thái "Đã hoàn"
+        // Cập nhật thời gian đã nhận hàng hoàn
+        $refund->received_back_at = now();
+        $refund->save();
+
+        // Cập nhật trạng thái đơn hàng sang "Đã nhận hàng hoàn"
+        $order->status = 8;
         $order->save();
+
+        return back()->with('success', 'Xác nhận đã nhận hàng hoàn thành công.');
     }
-
-    return back()->with('success', 'Đã cập nhật ảnh chuyển khoản và trạng thái đơn hàng.');
-}
-
 }
