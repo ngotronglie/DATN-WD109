@@ -544,10 +544,9 @@ class ClientController extends Controller
         }
         // Cấu hình VNPAY sandbox
         $vnp_TmnCode = "6S2EDVG2"; // Mã website tại VNPAY
-        $vnp_HashSecret = "P0UF7KKIR9E1T9M3AKLW1QLYUW7O6HJO"; // Chuỗi bí mật
+        $vnp_HashSecret = "858FPSI9DG2CJM41ZLCYFV3PGNZ07RCA"; // Chuỗi bí mật
         $vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
         $vnp_Returnurl = route('vnpay.return');
-
         $vnp_TxnRef = $order->order_code;
         $vnp_OrderInfo = 'Thanh toan don hang ' . $order->order_code;
         $vnp_OrderType = 'billpayment';
