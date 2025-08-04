@@ -25,7 +25,7 @@
                         </li>
                         <li class="mb-2">
                             <a href="{{ route('account.address_list') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.address_list')) bg-light fw-bold text-primary @endif">
-                                <i class="fa-solid fa-location-dot me-2"></i>     Địa chỉ
+                                <i class="fa-solid fa-location-dot me-2"></i> Địa chỉ
                             </a>
                         </li>
                         <li class="mb-2">
@@ -51,80 +51,112 @@
             </div>
         </div>
 
-        <!-- Nội dung đổi mật khẩu bên phải -->
+        <!-- Nội dung bên phải -->
         <div class="col-md-8">
-            <div class="card p-4 shadow-sm">
-                <h4 class="mb-4 text-primary fw-bold">🔑 Đổi mật khẩu</h4>
+            <div class="card p-4 shadow-sm border-0 rounded-4">
+                <h4 class="mb-4 fw-bold"><i class="fa-solid fa-location-dot me-2"></i>Thêm địa chỉ mới</h4>
 
                 @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
 
-                <form method="POST" action="{{ route('password.update') }}">
+                <form method="POST" action="{{ route('account.address.store') }}">
                     @csrf
-                    @method('PUT')
 
                     <div class="mb-3">
-                        <label for="current_password" class="form-label fw-medium">Mật khẩu hiện tại</label>
-                        <input type="password" name="current_password" id="current_password"
-                            class="form-control @error('current_password') is-invalid @enderror" required>
-                        @error('current_password')
-                        <small class="text-danger">{{ $message }}</small>
-                        @enderror
+                        <label for="receiver_name">Tên người nhận:</label>
+                        <input type="text" name="receiver_name" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="new_password" class="form-label fw-medium">Mật khẩu mới</label>
-                        <input type="password" name="new_password" id="new_password"
-                            class="form-control @error('new_password') is-invalid @enderror" required>
-                        @error('new_password')
-                        <small class="text-danger">{{ $message }}</small>
-                        @enderror
+                        <label for="phone">Số điện thoại:</label>
+                        <input type="text" name="phone" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="new_password_confirmation" class="form-label fw-medium">Xác nhận mật khẩu mới</label>
-                        <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="form-control" required>
+                        <label for="street">Số nhà, tên đường:</label>
+                        <input type="text" name="street" class="form-control" required>
+                    </div>
+                    
+
+                    <div class="mb-3">
+                        <label for="ward">Phường/Xã:</label>
+                        <select name="ward" id="ward" class="form-select" required>
+                            <option value="">-- Chọn phường/xã --</option>
+                        </select>
+                    </div>
+                                        <div class="mb-3">
+                        <label for="district">Quận huyện:</label>
+                        <input type="text" name="district" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="city">Tỉnh/Thành phố:</label>
+                        <select name="city" id="province" class="form-select" required>
+                            <option value="">-- Chọn tỉnh --</option>
+                            @foreach($provinces as $province)
+                            <option value="{{ $province->ten_tinh }}" data-id="{{ $province->id }}">{{ $province->ten_tinh }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" name="is_default" value="1" id="is_default">
+                        <label class="form-check-label" for="is_default">
+                            Đặt làm địa chỉ mặc định
+                        </label>
                     </div>
 
                     <div class="text-center">
-                        <button type="submit" class="btn btn-primary px-4 py-2 mx-auto d-block">Cập nhật mật khẩu</button>
+                        <button type="submit" class="btn btn-primary px-4 py-2">💾 Lưu địa chỉ</button>
                     </div>
-
                 </form>
             </div>
         </div>
-
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const provinceSelect = document.getElementById('province');
+        const wardSelect = document.getElementById('ward');
+
+        provinceSelect.addEventListener('change', function () {
+            const provinceId = this.options[this.selectedIndex].getAttribute('data-id');
+
+            fetch(`/address/wards/${provinceId}`)
+                .then(res => res.json())
+                .then(data => {
+                    wardSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
+                    data.forEach(function (ward) {
+                        wardSelect.innerHTML += `<option value="${ward.ten_phuong_xa}">${ward.ten_phuong_xa}</option>`;
+                    });
+                });
+        });
+    });
+</script>
+
+
 @section('styles')
 <style>
     .card {
-        border: none;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
     label {
-        font-weight: 500;
-    }
-
-    .form-control {
-        border-radius: 8px;
-        padding: 10px 14px;
+        font-weight: 600;
     }
 
     .btn-primary {
         border-radius: 8px;
-        padding: 10px 25px;
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 16px;
     }
 
     .alert-success {
+        font-weight: 500;
         border-radius: 8px;
     }
 </style>
 @endsection
-
-
 @endsection

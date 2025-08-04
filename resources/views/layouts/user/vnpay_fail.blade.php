@@ -31,6 +31,7 @@
             flex-direction: column;
             min-height: 100vh;
         }
+
         main {
             flex: 1;
         }
@@ -58,7 +59,8 @@
                     <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
                     @auth
                         @if (Auth::user()->role_id == 2)
-                        <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản trị</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản
+                                    trị</a></li>
                         @endif
                     @endauth
                 </ul>
@@ -67,55 +69,72 @@
             <!-- Auth Links -->
             <div class="d-flex align-items-center gap-3">
                 @auth
+
                 <span>👤 {{ Auth::user()->name }}</span>
                 <a href="{{ route('account.edit') }}">⚙️ Tài khoản</a>
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🔒 Đăng xuất</a>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+
+                    <span>👤 {{ Auth::user()->name }}</span>
+                    <a href="{{ route('account.edit') }}">⚙️ Tài khoản</a>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🔒
+                        Đăng xuất</a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+
                 @else
-                <a href="{{ route('auth.login') }}">🔐 Đăng nhập</a>
-                <a href="{{ route('auth.register') }}">➕ Đăng ký</a>
+                    <a href="{{ route('auth.login') }}">🔐 Đăng nhập</a>
+                    <a href="{{ route('auth.register') }}">➕ Đăng ký</a>
                 @endauth
                 <a href="{{ route('wishlist') }}">❤️ Wishlist</a>
                 <a href="{{ route('cart') }}"><i class="zmdi zmdi-shopping-cart-plus"></i></a>
             </div>
         </div>
     </header>
-<main>
-    <div class="container py-5 d-flex justify-content-center align-items-center" style="min-height: 60vh;">
-    <div class="alert alert-danger text-center shadow-lg p-5 rounded" style="max-width: 600px; width: 100%;">
-        <h2 class="mb-3"><i class="zmdi zmdi-close-circle"></i> Thanh toán thất bại!</h2>
-        <p class="fs-5">Rất tiếc, giao dịch của bạn không thành công.</p>
-        <p>Mã đơn hàng: <strong>{{ $order ? $order->order_code : 'Không xác định' }}</strong></p>
-        <a href="/checkout" class="btn btn-warning px-4 mt-3">Thử lại</a>
-    </div>
-</div>
-    <footer id="footer" class="footer-area footer-2 section bg-light mt-auto">
-        <div class="footer-top footer-top-2 text-center ptb-60"></div>
-        <div class="footer-bottom footer-bottom-2 text-center gray-bg py-3">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-4 col-md-5 mb-2 mb-md-0">
-                        <p class="mb-0">WD_109 <strong>Web điện thoại</strong></p>
-                    </div>
-                    <div class="col-lg-4 col-md-4 mb-2 mb-md-0">
-                        <ul class="footer-social list-inline mb-0">
-                            <li class="list-inline-item"><a class="text-dark" href="#"><i class="zmdi zmdi-facebook"></i></a></li>
-                            <li class="list-inline-item"><a class="text-dark" href="#"><i class="zmdi zmdi-google-plus"></i></a></li>
-                            <li class="list-inline-item"><a class="text-dark" href="#"><i class="zmdi zmdi-twitter"></i></a></li>
-                            <li class="list-inline-item"><a class="text-dark" href="#"><i class="zmdi zmdi-rss"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="col-lg-4 col-md-3">
-                        <ul class="list-inline mb-0">
-                            <li class="list-inline-item"><img src="{{ asset('img/payment/1.jpg') }}" alt="" height="30"></li>
-                            <li class="list-inline-item"><img src="{{ asset('img/payment/2.jpg') }}" alt="" height="30"></li>
-                            <li class="list-inline-item"><img src="{{ asset('img/payment/3.jpg') }}" alt="" height="30"></li>
-                            <li class="list-inline-item"><img src="{{ asset('img/payment/4.jpg') }}" alt="" height="30"></li>
-                        </ul>
+    <main>
+        <div class="container py-5 d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+            <div class="alert alert-danger text-center shadow-lg p-5 rounded" style="max-width: 600px; width: 100%;">
+                <h2 class="mb-3"><i class="zmdi zmdi-close-circle"></i> Thanh toán thất bại!</h2>
+                <p class="fs-5">Rất tiếc, giao dịch của bạn không thành công.</p>
+                <p>Mã đơn hàng: <strong>{{ $order ? $order->order_code : 'Không xác định' }}</strong></p>
+                <a href="/checkout" class="btn btn-warning px-4 mt-3">Thử lại</a>
+            </div>
+        </div>
+        <footer id="footer" class="footer-area footer-2 section bg-light mt-auto">
+            <div class="footer-top footer-top-2 text-center ptb-60"></div>
+            <div class="footer-bottom footer-bottom-2 text-center gray-bg py-3">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-lg-4 col-md-5 mb-2 mb-md-0">
+                            <p class="mb-0">WD_109 <strong>Web điện thoại</strong></p>
+                        </div>
+                        <div class="col-lg-4 col-md-4 mb-2 mb-md-0">
+                            <ul class="footer-social list-inline mb-0">
+                                <li class="list-inline-item"><a class="text-dark" href="#"><i
+                                            class="zmdi zmdi-facebook"></i></a></li>
+                                <li class="list-inline-item"><a class="text-dark" href="#"><i
+                                            class="zmdi zmdi-google-plus"></i></a></li>
+                                <li class="list-inline-item"><a class="text-dark" href="#"><i
+                                            class="zmdi zmdi-twitter"></i></a></li>
+                                <li class="list-inline-item"><a class="text-dark" href="#"><i
+                                            class="zmdi zmdi-rss"></i></a></li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-4 col-md-3">
+                            <ul class="list-inline mb-0">
+                                <li class="list-inline-item"><img src="{{ asset('img/payment/1.jpg') }}"
+                                        alt="" height="30"></li>
+                                <li class="list-inline-item"><img src="{{ asset('img/payment/2.jpg') }}"
+                                        alt="" height="30"></li>
+                                <li class="list-inline-item"><img src="{{ asset('img/payment/3.jpg') }}"
+                                        alt="" height="30"></li>
+                                <li class="list-inline-item"><img src="{{ asset('img/payment/4.jpg') }}"
+                                        alt="" height="30"></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </footer>
+        </footer>
 </body>
+
 </html>

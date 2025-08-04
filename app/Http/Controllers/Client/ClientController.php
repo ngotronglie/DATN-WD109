@@ -121,7 +121,7 @@ class ClientController extends Controller
         $relatedBlogs = \App\Models\Blog::with('user')
             ->where('is_active', true)
             ->where('id', '!=', $blog->id)
-            ->whereHas('tags', function($query) use ($blog) {
+            ->whereHas('tags', function ($query) use ($blog) {
                 $query->whereIn('tag_blog.id', $blog->tags->pluck('id'));
             })
             ->orWhere('user_id', $blog->user_id)
@@ -257,12 +257,15 @@ class ClientController extends Controller
         }
     }
 
+
     public function showCart()
     {
         $user = Auth::user();
         if ($user) {
             $cart = Cart::where('user_id', $user->id)->first();
-            $items = $cart ? $cart->items()->with('productVariant.product', 'productVariant.color', 'productVariant.capacity')->get() : collect();
+            $items = $cart
+                ? $cart->items()->with('productVariant.product', 'productVariant.color', 'productVariant.capacity')->get()
+                : collect();
         } else {
             $cart = Session::get('cart', []);
             $variantIds = array_column($cart, 'product_variant_id');
@@ -276,8 +279,13 @@ class ClientController extends Controller
                 }
             }
         }
-        return view('layouts.user.cart', compact('items', 'user'));
+
+        // 👉 Lấy danh sách tỉnh/thành để truyền qua view
+        $provinces = DB::table('tinhthanh')->get(['id', 'ten_tinh']);
+
+        return view('layouts.user.cart', compact('items', 'user', 'provinces'));
     }
+
 
     public function apiGetCart(Request $request)
     {
@@ -323,27 +331,48 @@ class ClientController extends Controller
         return response()->json(['success' => true, 'data' => $result]);
     }
 
+    public function getDistricts($provinceId)
+    {
+        $districts = DB::table('devvn_quanhuyen')->where('matp', $provinceId)->get(['maqh as id', 'name as ten_quan_huyen']);
+        return response()->json($districts);
+    }
+
+    public function getWards($districtId)
+    {
+        $wards = DB::table('devvn_xaphuongthitran')->where('maqh', $districtId)->get(['xaid as id', 'name as ten_phuong_xa']);
+        return response()->json($wards);
+    }
+
+
     public function apiGetUser(Request $request)
     {
         $user = auth()->user();
-        if ($user) {
-            return response()->json([
-                'success' => true,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'phone' => $user->phone ?? '',
-                    'address' => $user->address ?? '',
-                ]
-            ]);
-        } else {
-            return response()->json([
-                'success' => false,
-                'user' => null
-            ]);
-        }
+        $defaultAddress = $user->addresses()->where('is_default', 1)->first();
+
+        $street = $defaultAddress->street ?? '';
+        $ward = $defaultAddress->ward ?? '';
+        $district = $defaultAddress->district ?? '';
+        $city = $defaultAddress->city ?? '';
+        $fullAddress = trim("{$street}, {$ward}, {$district}, {$city}", ', ');
+
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $defaultAddress->phone ?? '',
+                'receiver_name' => $defaultAddress->receiver_name ?? $user->name,
+                'street' => $street,
+                'ward' => $ward,
+                'district' => $district,
+                'city' => $city,
+                'address' => $fullAddress,
+            ]
+        ]);
     }
+
+
 
     public function submitContact(ContactRequest $request)
     {
@@ -393,7 +422,8 @@ class ClientController extends Controller
         if (Auth::check()) {
             $user = Auth::user();
             $cart = Cart::where('user_id', $user->id)->first();
-            if (!$cart) return response()->json(['success' => false, 'message' => 'Không tìm thấy giỏ hàng']);
+            if (!$cart)
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy giỏ hàng']);
             $item = CartItem::where('cart_id', $cart->id)
                 ->where('product_variant_id', $variantId)
                 ->first();
@@ -428,7 +458,8 @@ class ClientController extends Controller
         if (Auth::check()) {
             $user = Auth::user();
             $cart = Cart::where('user_id', $user->id)->first();
-            if (!$cart) return response()->json(['success' => false, 'message' => 'Không tìm thấy giỏ hàng']);
+            if (!$cart)
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy giỏ hàng']);
             $item = CartItem::where('cart_id', $cart->id)
                 ->where('product_variant_id', $variantId)
                 ->first();
@@ -449,87 +480,87 @@ class ClientController extends Controller
     }
 
     public function apiCheckout(Request $request)
-{
-    try {
-        $data = $request->all();
-        $userId = auth()->check() ? auth()->id() : 0;
-        $orderCode = strtoupper(bin2hex(random_bytes(6)));
+    {
+        try {
+            $data = $request->all();
+            $userId = auth()->check() ? auth()->id() : 0;
+            $orderCode = strtoupper(bin2hex(random_bytes(6)));
 
-        // Xử lý voucher theo code nếu có
-        $voucherId = $data['voucher_id'] ?? null;
-        if (empty($voucherId) && !empty($data['voucher_code'])) {
-            $voucher = \App\Models\Voucher::where('code', $data['voucher_code'])->first();
-            if ($voucher) {
-                $voucherId = $voucher->id;
-                if ($voucher->quantity > 0) {
+            // Xử lý voucher theo code nếu có
+            $voucherId = $data['voucher_id'] ?? null;
+            if (empty($voucherId) && !empty($data['voucher_code'])) {
+                $voucher = \App\Models\Voucher::where('code', $data['voucher_code'])->first();
+                if ($voucher) {
+                    $voucherId = $voucher->id;
+                    if ($voucher->quantity > 0) {
+                        $voucher->decrement('quantity', 1);
+                    }
+                }
+            } elseif (!empty($voucherId)) {
+                $voucher = \App\Models\Voucher::find($voucherId);
+                if ($voucher && $voucher->quantity > 0) {
                     $voucher->decrement('quantity', 1);
                 }
             }
-        } elseif (!empty($voucherId)) {
-            $voucher = \App\Models\Voucher::find($voucherId);
-            if ($voucher && $voucher->quantity > 0) {
-                $voucher->decrement('quantity', 1);
+
+            $order = new \App\Models\Order();
+            $order->user_id = $userId;
+            $order->price = $data['price'] ?? 0;
+            $order->name = $data['name'] ?? '';
+            $order->address = $data['address'] ?? '';
+            $order->email = $data['email'] ?? '';
+            $order->phone = $data['phone'] ?? '';
+            $order->note = $data['note'] ?? '';
+            $order->total_amount = $data['total_amount'] ?? 0;
+            $order->status = 0; // chờ xử lý
+            $order->payment_method = $data['payment_method'] ?? 'COD';
+            $order->order_code = $orderCode;
+            $order->voucher_id = $voucherId;
+            $order->status_method = 'chưa thanh toán';
+            $order->save();
+
+            // Lưu chi tiết đơn hàng
+            if (!empty($data['items']) && is_array($data['items'])) {
+                foreach ($data['items'] as $item) {
+                    \App\Models\OrderDetail::create([
+                        'order_id' => $order->id,
+                        'product_variant_id' => $item['variant_id'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                    ]);
+                }
             }
-        }
 
-        $order = new \App\Models\Order();
-        $order->user_id = $userId;
-        $order->price = $data['price'] ?? 0;
-        $order->name = $data['name'] ?? '';
-        $order->address = $data['address'] ?? '';
-        $order->email = $data['email'] ?? '';
-        $order->phone = $data['phone'] ?? '';
-        $order->note = $data['note'] ?? '';
-        $order->total_amount = $data['total_amount'] ?? 0;
-        $order->status = 0; // chờ xử lý
-        $order->payment_method = $data['payment_method'] ?? 'COD';
-        $order->order_code = $orderCode;
-        $order->voucher_id = $voucherId;
-        $order->status_method = 'chưa thanh toán';
-        $order->save();
-
-        // Lưu chi tiết đơn hàng
-        if (!empty($data['items']) && is_array($data['items'])) {
-            foreach ($data['items'] as $item) {
-                \App\Models\OrderDetail::create([
-                    'order_id' => $order->id,
-                    'product_variant_id' => $item['variant_id'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                ]);
+            // ✅ Gửi mail nếu KHÔNG phải thanh toán qua VNPAY
+            if (strtolower($order->payment_method) !== 'vnpay' && !empty($order->email)) {
+                try {
+                    Mail::send('emails.order-success', compact('order'), function ($message) use ($order) {
+                        $message->to($order->email);
+                        $message->subject('Xác nhận đơn hàng #' . $order->order_code);
+                    });
+                } catch (\Exception $e) {
+                    \Log::error('Lỗi gửi mail đơn hàng #' . $order->order_code . ': ' . $e->getMessage());
+                }
+            } elseif (empty($order->email)) {
+                \Log::warning('Không gửi được mail vì email trống cho đơn hàng #' . $order->order_code);
             }
-        }
 
-        // ✅ Gửi mail nếu KHÔNG phải thanh toán qua VNPAY
-        if (strtolower($order->payment_method) !== 'vnpay' && !empty($order->email)) {
-            try {
-                Mail::send('emails.order-success', compact('order'), function ($message) use ($order) {
-                    $message->to($order->email);
-                    $message->subject('Xác nhận đơn hàng #' . $order->order_code);
-                });
-            } catch (\Exception $e) {
-                \Log::error('Lỗi gửi mail đơn hàng #' . $order->order_code . ': ' . $e->getMessage());
+            // Xóa cart
+            if ($userId) {
+                $cart = \App\Models\Cart::where('user_id', $userId)->first();
+                if ($cart) {
+                    $cart->items()->delete();
+                    $cart->delete();
+                }
+            } else {
+                \Session::forget('cart');
             }
-        } elseif (empty($order->email)) {
-            \Log::warning('Không gửi được mail vì email trống cho đơn hàng #' . $order->order_code);
-        }
 
-        // Xóa cart
-        if ($userId) {
-            $cart = \App\Models\Cart::where('user_id', $userId)->first();
-            if ($cart) {
-                $cart->items()->delete();
-                $cart->delete();
-            }
-        } else {
-            \Session::forget('cart');
+            return response()->json(['success' => true, 'order_id' => $order->id, 'order_code' => $orderCode]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
-
-        return response()->json(['success' => true, 'order_id' => $order->id, 'order_code' => $orderCode]);
-    } catch (\Throwable $e) {
-        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
     }
-}
 
 
     /**
@@ -591,7 +622,7 @@ class ClientController extends Controller
 
         $vnp_Url = $vnp_Url . "?" . $query;
         if (isset($vnp_HashSecret)) {
-            $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+            $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
             $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
         }
 
@@ -601,35 +632,34 @@ class ClientController extends Controller
     /**
      * Nhận callback từ VNPAY
      */
-public function vnpayReturn(Request $request)
-{
-    $vnp_ResponseCode = $request->input('vnp_ResponseCode');
-    $vnp_TxnRef = $request->input('vnp_TxnRef');
-    $order = \App\Models\Order::where('order_code', $vnp_TxnRef)->first();
+    public function vnpayReturn(Request $request)
+    {
+        $vnp_ResponseCode = $request->input('vnp_ResponseCode');
+        $vnp_TxnRef = $request->input('vnp_TxnRef');
+        $order = \App\Models\Order::where('order_code', $vnp_TxnRef)->first();
 
-    if ($order && $vnp_ResponseCode == '00') {
-        $order->status_method = 'đã thanh toán';
-        $order->status = true;
-        $order->save();
+        if ($order && $vnp_ResponseCode == '00') {
+            $order->status_method = 'đã thanh toán';
+            $order->status = true;
+            $order->save();
 
-        // Gửi mail xác nhận
-        if (!empty($order->email)) {
-            try {
-                Mail::send('emails.order-success', compact('order'), function ($message) use ($order) {
-                    $message->to($order->email);
-                    $message->subject('Xác nhận đơn hàng #' . $order->order_code);
-                });
-            } catch (\Exception $e) {
-                \Log::error('Lỗi gửi mail đơn hàng #' . $order->order_code . ': ' . $e->getMessage());
+            // Gửi mail xác nhận
+            if (!empty($order->email)) {
+                try {
+                    Mail::send('emails.order-success', compact('order'), function ($message) use ($order) {
+                        $message->to($order->email);
+                        $message->subject('Xác nhận đơn hàng #' . $order->order_code);
+                    });
+                } catch (\Exception $e) {
+                    \Log::error('Lỗi gửi mail đơn hàng #' . $order->order_code . ': ' . $e->getMessage());
+                }
+            } else {
+                \Log::warning('Không gửi được mail vì email trống cho đơn hàng #' . $order->order_code);
             }
+
+            return view('layouts.user.vnpay_success', ['order' => $order]);
         } else {
-            \Log::warning('Không gửi được mail vì email trống cho đơn hàng #' . $order->order_code);
+            return view('layouts.user.vnpay_fail', ['order' => $order]);
         }
-
-        return view('layouts.user.vnpay_success', ['order' => $order]);
-    } else {
-        return view('layouts.user.vnpay_fail', ['order' => $order]);
     }
-}
-
 }
