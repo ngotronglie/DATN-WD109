@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\FlashSale;
 use App\Models\FlashSaleProduct;
-use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 
 class FlashSaleProductController extends Controller
@@ -15,9 +14,10 @@ class FlashSaleProductController extends Controller
      */
     public function index()
     {
-        $flashSaleProducts = FlashSaleProduct::with(['flashSale', 'productVariant'])->get();
+        $flashSaleProducts = FlashSaleProduct::with(['flashSale'])->get();
 
-        return view('admin.flash_sale_products.index', compact('flashSaleProducts'));
+        // Sửa lại đường dẫn view để khớp với vị trí thực tế của file
+        return view('layouts.admin.flash_sale_products.index', compact('flashSaleProducts'));
     }
 
     /**
@@ -26,9 +26,8 @@ class FlashSaleProductController extends Controller
     public function create()
     {
         $flashSales = FlashSale::all();
-        $productVariants = ProductVariant::with(['product', 'color', 'capacity'])->get();
 
-        return view('admin.flash_sale_products.create', compact('flashSales', 'productVariants'));
+        return view('layouts.admin.flash_sale_products.create', compact('flashSales'));
     }
 
     /**
@@ -58,9 +57,8 @@ class FlashSaleProductController extends Controller
     {
         $flashSaleProduct = FlashSaleProduct::findOrFail($id);
         $flashSales = FlashSale::all();
-        $productVariants = ProductVariant::with(['product', 'color', 'capacity'])->get();
 
-        return view('admin.flash_sale_products.edit', compact('flashSaleProduct', 'flashSales', 'productVariants'));
+        return view('flash_sale_products.edit', compact('flashSaleProduct', 'flashSales'));
     }
 
     /**
