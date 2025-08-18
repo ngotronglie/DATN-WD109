@@ -26,6 +26,8 @@ use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Auth\AccountController;
 use App\Http\Controllers\Auth\AddressController;
 use App\Http\Controllers\Client\ShopController;
+use App\Http\Controllers\Admin\FlashSaleProductController;
+use App\Http\Controllers\Admin\FlashSalesController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -273,10 +275,18 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::get('/sanpham', [\App\Http\Controllers\Admin\StatisticController::class, 'sanpham'])->name('sanpham');
         Route::get('/donhang', [\App\Http\Controllers\Admin\StatisticController::class, 'donhang'])->name('donhang');
         Route::get('/nguoidung', [\App\Http\Controllers\Admin\StatisticController::class, 'nguoidung'])->name('nguoidung');
-      
+
         Route::get('/', function() { return view('layouts.admin.thongke.index'); })->name('index');
-    
+
     });
+});
+
+Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(function () {
+    // Route quản lý Flash Sales
+    Route::resource('flash_sales', FlashSalesController::class);
+
+    // Route quản lý sản phẩm Flash Sale (FlashSaleProduct)
+    Route::resource('flash_sale_products', FlashSaleProductController::class);
 });
 
 // Shop detail, VNPAY, Blog detail, Comments
