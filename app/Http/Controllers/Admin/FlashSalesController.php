@@ -22,7 +22,7 @@ class FlashSalesController extends Controller
      */
     public function create()
     {
-        return view('admin.flash_sales.create'); // Trả về view tạo mới
+        return view('layouts.admin.flash_sales.create'); // Đường dẫn tới view "create"
     }
 
     /**
@@ -30,7 +30,6 @@ class FlashSalesController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate dữ liệu
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -39,11 +38,9 @@ class FlashSalesController extends Controller
             'status' => 'required|in:scheduled,active,inactive',
         ]);
 
-        // Tạo mới Flash Sale
         FlashSale::create($request->all());
 
-        return redirect()->route('admin.flash_sales.index')
-            ->with('success', 'Tạo Flash Sale thành công.');
+        return redirect()->route('admin.flash_sales.index')->with('success', 'Tạo Flash Sale thành công.');
     }
 
     /**

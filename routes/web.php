@@ -282,7 +282,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 });
 
 Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(function () {
-    Route::resource('flash_sales', FlashSalesController::class);
+    Route::resource('flash_sales', FlashSalesController::class); // Đã bao gồm route 'create'
 });
 
 // Shop detail, VNPAY, Blog detail, Comments

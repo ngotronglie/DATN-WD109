@@ -1,4 +1,4 @@
-          <!-- ========== App Menu Start ========== -->
+<!-- ========== App Menu Start ========== -->
           <div class="main-nav">
                <!-- Sidebar Logo -->
                <div class="logo-box">
@@ -36,10 +36,19 @@
                                    <span class="nav-text">Đơn hàng</span>
                               </a>
                          </li>
+
                          <li class="nav-item">
                               <a class="nav-link" href="{{ route('admin.vouchers.index') }}">
                                    <span class="nav-icon"><iconify-icon icon="solar:ticket-broken"></iconify-icon></span>
                                    <span class="nav-text">Mã giảm giá</span>
+                              </a>
+                         </li>
+
+                         <!-- Thêm mục Flash Sale -->
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.flash_sales.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:lightning-broken"></iconify-icon></span>
+                                   <span class="nav-text">Flash Sale</span>
                               </a>
                          </li>
 
@@ -104,8 +113,8 @@
                                      <li class="sub-nav-item">
                                          <a class="sub-nav-link" href="{{ route('admin.thongke.nguoidung') }}">Người dùng</a>
                                      </li>
-                                    
-                                     
+
+
                                  </ul>
                              </div>
                          </li>

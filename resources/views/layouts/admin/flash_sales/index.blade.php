@@ -20,7 +20,6 @@
                     <tr>
                         <th>ID</th>
                         <th>Tiêu đề</th>
-                        <th>Mô tả</th>
                         <th>Thời gian bắt đầu</th>
                         <th>Thời gian kết thúc</th>
                         <th>Trạng thái</th>
@@ -32,7 +31,6 @@
                         <tr>
                             <td>{{ $flashSale->id }}</td>
                             <td>{{ $flashSale->title }}</td>
-                            <td>{{ $flashSale->description ?? 'Không có mô tả' }}</td>
                             <td>{{ $flashSale->start_time }}</td>
                             <td>{{ $flashSale->end_time }}</td>
                             <td>
