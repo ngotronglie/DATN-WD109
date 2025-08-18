@@ -9,17 +9,11 @@ class FlashSaleProduct extends Model
 {
     use HasFactory;
 
-    /**
-     * Tên bảng tương ứng với model.
-     */
     protected $table = 'flash_sale_products';
 
-    /**
-     * Những cột có thể được gán giá trị hàng loạt.
-     */
     protected $fillable = [
         'flash_sale_id',
-        'product_id',
+        'product_variant_id',
         'original_price',
         'sale_price',
         'initial_stock',
@@ -28,7 +22,7 @@ class FlashSaleProduct extends Model
     ];
 
     /**
-     * Định nghĩa quan hệ với model FlashSale.
+     * Relationship to FlashSale.
      */
     public function flashSale()
     {
@@ -36,16 +30,16 @@ class FlashSaleProduct extends Model
     }
 
     /**
-     * Định nghĩa quan hệ với model Product.
+     * Relationship to ProductVariant.
      */
-    public function product()
+    public function productVariant()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id')
+            ->with(['product', 'color', 'capacity']);
     }
 
     /**
-     * Định nghĩa accessor cho `discount_percent`.
-     * Tính toán dựa trên giá gốc `original_price` và giá giảm `sale_price`.
+     * Calculate Discount Percent Attribute.
      */
     public function getDiscountPercentAttribute()
     {

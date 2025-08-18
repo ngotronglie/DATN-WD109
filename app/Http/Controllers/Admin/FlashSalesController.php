@@ -14,7 +14,7 @@ class FlashSalesController extends Controller
     public function index()
     {
         $flashSales = FlashSale::all();
-        return view('admin.flash_sales.index', compact('flashSales')); // Trả về view danh sách
+        return view('layouts.admin.flash_sales.index', compact('flashSales')); // Đường dẫn đã được sửa đúng
     }
 
     /**

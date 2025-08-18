@@ -3,19 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\FlashSaleProduct;
 use App\Models\FlashSale;
-use App\Models\Product;
+use App\Models\FlashSaleProduct;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 
 class FlashSaleProductController extends Controller
 {
     /**
-     * Hiển thị danh sách sản phẩm của Flash Sale.
+     * Hiển thị danh sách sản phẩm trong Flash Sale.
      */
     public function index()
     {
-        $flashSaleProducts = FlashSaleProduct::with(['flashSale', 'product'])->get();
+        $flashSaleProducts = FlashSaleProduct::with(['flashSale', 'productVariant'])->get();
+
         return view('admin.flash_sale_products.index', compact('flashSaleProducts'));
     }
 
@@ -25,18 +26,19 @@ class FlashSaleProductController extends Controller
     public function create()
     {
         $flashSales = FlashSale::all();
-        $products = Product::all();
-        return view('admin.flash_sale_products.create', compact('flashSales', 'products'));
+        $productVariants = ProductVariant::with(['product', 'color', 'capacity'])->get();
+
+        return view('admin.flash_sale_products.create', compact('flashSales', 'productVariants'));
     }
 
     /**
-     * Lưu sản phẩm mới vào Flash Sale.
+     * Thêm sản phẩm vào Flash Sale.
      */
     public function store(Request $request)
     {
         $request->validate([
             'flash_sale_id' => 'required|exists:flash_sales,id',
-            'product_id' => 'required|exists:products,id',
+            'product_variant_id' => 'required|exists:product_variants,id',
             'original_price' => 'required|numeric|min:0',
             'sale_price' => 'required|numeric|min:0|lt:original_price',
             'initial_stock' => 'required|integer|min:0',
@@ -46,16 +48,7 @@ class FlashSaleProductController extends Controller
         FlashSaleProduct::create($request->all());
 
         return redirect()->route('admin.flash_sale_products.index')
-            ->with('success', 'Thêm sản phẩm vào Flash Sale thành công.');
-    }
-
-    /**
-     * Hiển thị chi tiết một sản phẩm trong Flash Sale.
-     */
-    public function show($id)
-    {
-        $flashSaleProduct = FlashSaleProduct::with(['flashSale', 'product'])->findOrFail($id);
-        return view('admin.flash_sale_products.show', compact('flashSaleProduct'));
+            ->with('success', 'Sản phẩm được thêm vào Flash Sale thành công.');
     }
 
     /**
@@ -65,19 +58,19 @@ class FlashSaleProductController extends Controller
     {
         $flashSaleProduct = FlashSaleProduct::findOrFail($id);
         $flashSales = FlashSale::all();
-        $products = Product::all();
+        $productVariants = ProductVariant::with(['product', 'color', 'capacity'])->get();
 
-        return view('admin.flash_sale_products.edit', compact('flashSaleProduct', 'flashSales', 'products'));
+        return view('admin.flash_sale_products.edit', compact('flashSaleProduct', 'flashSales', 'productVariants'));
     }
 
     /**
-     * Cập nhật thông tin sản phẩm trong Flash Sale.
+     * Cập nhật sản phẩm trong Flash Sale.
      */
     public function update(Request $request, $id)
     {
         $request->validate([
             'flash_sale_id' => 'required|exists:flash_sales,id',
-            'product_id' => 'required|exists:products,id',
+            'product_variant_id' => 'required|exists:product_variants,id',
             'original_price' => 'required|numeric|min:0',
             'sale_price' => 'required|numeric|min:0|lt:original_price',
             'initial_stock' => 'required|integer|min:0',
@@ -88,11 +81,11 @@ class FlashSaleProductController extends Controller
         $flashSaleProduct->update($request->all());
 
         return redirect()->route('admin.flash_sale_products.index')
-            ->with('success', 'Cập nhật sản phẩm trong Flash Sale thành công.');
+            ->with('success', 'Sản phẩm trong Flash Sale đã được cập nhật.');
     }
 
     /**
-     * Xóa một sản phẩm khỏi Flash Sale.
+     * Xóa sản phẩm khỏi Flash Sale.
      */
     public function destroy($id)
     {
@@ -100,6 +93,6 @@ class FlashSaleProductController extends Controller
         $flashSaleProduct->delete();
 
         return redirect()->route('admin.flash_sale_products.index')
-            ->with('success', 'Xóa sản phẩm khỏi Flash Sale thành công.');
+            ->with('success', 'Sản phẩm đã được xóa khỏi Flash Sale.');
     }
 }

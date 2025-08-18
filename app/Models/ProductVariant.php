@@ -36,4 +36,9 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(Capacity::class);
     }
+
+    public function flashSaleProducts()
+    {
+        return $this->hasMany(FlashSaleProduct::class, 'product_variant_id');
+    }
 }
