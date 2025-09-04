@@ -46,14 +46,6 @@
                                                     <i class="zmdi zmdi-favorite"></i>
                                                 </a>
                                             </li>
-                                            <li>
-                                                <a href="#" title="Add to cart"><i
-                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                            </li>
-                                            <li>
-                                                <a href="#" title="Add to cart"><i
-                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                            </li>
                                         </ul>
                                     </div>
                                 </div>

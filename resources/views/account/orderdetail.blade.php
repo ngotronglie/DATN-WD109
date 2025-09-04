@@ -64,20 +64,15 @@
             <tbody>
                 @foreach ($order->orderDetails as $detail)
                 <tr>
-<<<<<<< HEAD
+
                 <td> @if ($detail->productVariant && $detail->productVariant->image)
                     <img src="{{ $detail->productVariant->image }}" alt="Ảnh sản phẩm" width="100">
                     @else
                     <span>Không có ảnh</span>
                     @endif</td>
-=======
-                    <td> @if ($detail->productVariant && $detail->productVariant->image)
-                        <img src="{{ $detail->productVariant->image }}" alt="Ảnh sản phẩm" width="100">
-                        @else
-                        <span>Không có ảnh</span>
-                        @endif
-                    </td>
->>>>>>> 8d6865d3c52e21186f8e9d710b5c349e0a69a041
+
+                    
+
                     <td class="text-center">{{ $detail->quantity }}</td>
                     <td class="text-end">{{ number_format($detail->price) }}₫</td>
                     <td class="text-end">{{ number_format($detail->price * $detail->quantity) }}₫</td>

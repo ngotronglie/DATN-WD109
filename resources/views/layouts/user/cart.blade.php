@@ -103,14 +103,9 @@
                                 <label for="address_detail" class="form-label">Địa chỉ (số nhà, tên đường)</label>
                                 <input type="text" class="form-control" id="address_detail" required>
                             </div>
+                            
                             <div class="mb-3">
-                                <label for="ward" class="form-label">Phường/Xã</label>
-                                <select id="ward" class="form-select" required>
-                                    <option value="">-- Chọn phường/xã --</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="district" class="form-label">Quận/Huyện</label>
+                                <label for="district" class="form-label">Phường/Xã</label>
                                 <input type="text" id="district" class="form-control" required placeholder="Nhập quận/huyện">
                             </div>
 

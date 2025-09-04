@@ -532,18 +532,7 @@ class ClientController extends Controller
             }
 
             // ✅ Gửi mail nếu KHÔNG phải thanh toán qua VNPAY
-            if (strtolower($order->payment_method) !== 'vnpay' && !empty($order->email)) {
-                try {
-                    Mail::send('emails.order-success', compact('order'), function ($message) use ($order) {
-                        $message->to($order->email);
-                        $message->subject('Xác nhận đơn hàng #' . $order->order_code);
-                    });
-                } catch (\Exception $e) {
-                    \Log::error('Lỗi gửi mail đơn hàng #' . $order->order_code . ': ' . $e->getMessage());
-                }
-            } elseif (empty($order->email)) {
-                \Log::warning('Không gửi được mail vì email trống cho đơn hàng #' . $order->order_code);
-            }
+
 
             // Xóa cart
             if ($userId) {
@@ -640,7 +629,7 @@ class ClientController extends Controller
         $order = \App\Models\Order::where('order_code', $vnp_TxnRef)->first();
 
         if ($order && $vnp_ResponseCode == '00') {
-            $order->status_method = 'đã thanh toán';
+            $order->status_method = '2';
             $order->status = true;
             $order->save();
 
