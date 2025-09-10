@@ -71,8 +71,7 @@
                 @auth
                     <span>👤 {{ Auth::user()->name }}</span>
                     <a href="{{ route('account.edit') }}">⚙️ Tài khoản</a>
-                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🔒
-                        Đăng xuất</a>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🔒 Đăng xuất</a>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
                 @else
                     <a href="{{ route('auth.login') }}">🔐 Đăng nhập</a>
@@ -100,7 +99,7 @@
                     <div class="row align-items-center">
                         <div class="col-lg-4 col-md-5 mb-2 mb-md-0">
                             <p class="mb-0">WD_109 <strong>Web điện thoại</strong></p>
-                        </div>
+                       </div>
                         <div class="col-lg-4 col-md-4 mb-2 mb-md-0">
                             <ul class="footer-social list-inline mb-0">
                                 <li class="list-inline-item"><a class="text-dark" href="#"><i
