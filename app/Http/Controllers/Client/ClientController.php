@@ -13,6 +13,7 @@ use App\Models\ProductVariant;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use App\Models\Cart;
@@ -25,31 +26,29 @@ class ClientController extends Controller
 {
     public function index()
     {
-        $products = DB::select('SELECT
-            p.id AS product_id,
-            p.name AS product_name,
-            p.view_count AS product_view,
-            p.slug as product_slug,
-            pv.image AS product_image,
-            pv.price AS product_price,
-            pv.price_sale AS product_price_discount
-        FROM products p
-        JOIN (
-            SELECT *
-            FROM product_variants
-            WHERE (product_id, id) IN (
-                SELECT product_id, MIN(id)
-                FROM (
-                    SELECT product_id, id
-                    FROM product_variants
-                    WHERE quantity > 0
-                    ORDER BY RAND()
-                ) AS random_variants
-                GROUP BY product_id
-            )
-        ) pv ON pv.product_id = p.id
-        WHERE p.is_active = 1
-        LIMIT 0, 8;');
+        // Get random products with their first available variant
+        $products = Product::where('is_active', 1)
+            ->with(['variants' => function($query) {
+                $query->where('quantity', '>', 0)
+                      ->orderBy('id')
+                      ->limit(1);
+            }])
+            ->inRandomOrder()
+            ->limit(8)
+            ->get()
+            ->map(function($product) {
+                $variant = $product->variants->first();
+                return (object) [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'product_view' => $product->view_count,
+                    'product_slug' => $product->slug,
+                    'product_image' => $variant ? $variant->image : null,
+                    'product_price' => $variant ? $variant->price : 0,
+                    'product_price_discount' => $variant ? $variant->price_sale : 0,
+                ];
+            });
+            
         $banners = \App\Models\Banner::where('is_active', 1)->orderByDesc('id')->get();
         $categories = \App\Models\Categories::whereNull('Parent_id')->where('Is_active', 1)->get();
         return view('layouts.user.main', compact('products', 'banners', 'categories'));
@@ -58,9 +57,10 @@ class ClientController extends Controller
     public function products()
     {
         $categories = Categories::with('children')->whereNull('parent_id')->get();
+        $allCategories = Categories::where('Is_active', 1)->get();
         $products = Product::where('is_active', 1)->paginate(12);
 
-        return view('layouts.user.shop', compact('categories', 'products'));
+        return view('layouts.user.shop', compact('categories', 'allCategories', 'products'));
     }
 
     public function category($slug)
@@ -280,8 +280,15 @@ class ClientController extends Controller
             }
         }
 
-        // 👉 Lấy danh sách tỉnh/thành để truyền qua view
-        $provinces = DB::table('tinhthanh')->get(['id', 'ten_tinh']);
+        // 👉 Lấy danh sách tỉnh/thành để truyền qua view (an toàn nếu bảng chưa tồn tại)
+        $provinces = collect();
+        try {
+            if (Schema::hasTable('tinhthanh')) {
+                $provinces = DB::table('tinhthanh')->get(['id', 'ten_tinh']);
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Không thể tải danh sách tỉnh/thành: ' . $e->getMessage());
+        }
 
         return view('layouts.user.cart', compact('items', 'user', 'provinces'));
     }
@@ -333,13 +340,23 @@ class ClientController extends Controller
 
     public function getDistricts($provinceId)
     {
-        $districts = DB::table('devvn_quanhuyen')->where('matp', $provinceId)->get(['maqh as id', 'name as ten_quan_huyen']);
+        if (!Schema::hasTable('devvn_quanhuyen')) {
+            return response()->json([]);
+        }
+        $districts = DB::table('devvn_quanhuyen')
+            ->where('matp', $provinceId)
+            ->get(['maqh as id', 'name as ten_quan_huyen']);
         return response()->json($districts);
     }
 
     public function getWards($districtId)
     {
-        $wards = DB::table('devvn_xaphuongthitran')->where('maqh', $districtId)->get(['xaid as id', 'name as ten_phuong_xa']);
+        if (!Schema::hasTable('devvn_xaphuongthitran')) {
+            return response()->json([]);
+        }
+        $wards = DB::table('devvn_xaphuongthitran')
+            ->where('maqh', $districtId)
+            ->get(['xaid as id', 'name as ten_phuong_xa']);
         return response()->json($wards);
     }
 

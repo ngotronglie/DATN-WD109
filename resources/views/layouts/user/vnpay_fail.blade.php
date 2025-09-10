@@ -69,18 +69,10 @@
             <!-- Auth Links -->
             <div class="d-flex align-items-center gap-3">
                 @auth
-
-                <span>👤 {{ Auth::user()->name }}</span>
-                <a href="{{ route('account.edit') }}">⚙️ Tài khoản</a>
-                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🔒 Đăng xuất</a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-
                     <span>👤 {{ Auth::user()->name }}</span>
                     <a href="{{ route('account.edit') }}">⚙️ Tài khoản</a>
-                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🔒
-                        Đăng xuất</a>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🔒 Đăng xuất</a>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-
                 @else
                     <a href="{{ route('auth.login') }}">🔐 Đăng nhập</a>
                     <a href="{{ route('auth.register') }}">➕ Đăng ký</a>

@@ -99,7 +99,7 @@
                     <div class="row align-items-center">
                         <div class="col-lg-4 col-md-5 mb-2 mb-md-0">
                             <p class="mb-0">WD_109 <strong>Web điện thoại</strong></p>
-                        </div>
+                       </div>
                         <div class="col-lg-4 col-md-4 mb-2 mb-md-0">
                             <ul class="footer-social list-inline mb-0">
                                 <li class="list-inline-item"><a class="text-dark" href="#"><i

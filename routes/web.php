@@ -99,9 +99,7 @@ Route::get('/productdetail', function () {
     return view('layouts.user.productDetail');
 })->name('productdetail');
 
-Route::get('/shop', function () {
-    return view('layouts.user.shop');
-})->name('shop');
+Route::get('/shop', [ClientController::class, 'products'])->name('shop.index');
 
 
 // Route::get('/blog', function () {
