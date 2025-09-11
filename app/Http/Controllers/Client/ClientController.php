@@ -727,8 +727,8 @@ class ClientController extends Controller
             return redirect('/checkout')->with('error', 'Không tìm thấy đơn hàng');
         }
         // Cấu hình VNPAY sandbox
-        $vnp_TmnCode = "6S2EDVG2"; // Mã website tại VNPAY
-        $vnp_HashSecret = "858FPSI9DG2CJM41ZLCYFV3PGNZ07RCA"; // Chuỗi bí mật
+        $vnp_TmnCode = " HRDYTL3E"; // Mã website tại VNPAY
+        $vnp_HashSecret = "MXSQ5VQKM5S176MJD4LHHU0B03Q9MCA8"; // Chuỗi bí mật
         $vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
         $vnp_Returnurl = route('vnpay.return');
         $vnp_TxnRef = $order->order_code;
