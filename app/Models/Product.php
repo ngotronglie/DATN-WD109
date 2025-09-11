@@ -54,6 +54,11 @@ class Product extends Model
         return $this->belongsToMany(User::class, 'favorites');
     }
 
+    public function comments()
+    {
+        return $this->hasMany(ProductComment::class);
+    }
+
     // Get all active products with pagination
     public function loadAll()
     {

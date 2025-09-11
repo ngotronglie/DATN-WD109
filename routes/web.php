@@ -125,6 +125,11 @@ Route::post('/api/cart/update-qty', [\App\Http\Controllers\Client\ClientControll
 Route::post('/api/cart/remove', [\App\Http\Controllers\Client\ClientController::class, 'apiRemoveCartItem']);
 Route::post('/api/checkout', [\App\Http\Controllers\Client\ClientController::class, 'apiCheckout']);
 
+// Product comments
+Route::post('/product/{product}/comments', [\App\Http\Controllers\Client\ClientController::class, 'storeProductComment'])
+    ->middleware('auth')
+    ->name('product.comments.store');
+
 
 Route::get('/register', [RegisterController::class, 'create'])->name('auth.register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');

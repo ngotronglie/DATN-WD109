@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\ProductComment;
 use App\Http\Requests\ContactRequest;
 use App\Models\Contact;
 use Illuminate\Support\Facades\Mail;
@@ -157,7 +158,27 @@ class ClientController extends Controller
         $colors = Color::all();
         $capacities = Capacity::all();
         $categories = \App\Models\Categories::with('children')->whereNull('Parent_id')->get();
-        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories'));
+        $comments = $product->comments()->with('user', 'replies.user')->whereNull('parent_id')->latest()->get();
+        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories', 'comments'));
+    }
+
+    public function storeProductComment(Request $request, $productId)
+    {
+        $request->validate([
+            'content' => 'required|string|max:1000',
+            'parent_id' => 'nullable|integer'
+        ]);
+
+        $product = Product::findOrFail($productId);
+
+        ProductComment::create([
+            'product_id' => $product->id,
+            'user_id' => auth()->id(),
+            'content' => $request->input('content'),
+            'parent_id' => $request->input('parent_id')
+        ]);
+
+        return back()->with('success', 'Đã gửi bình luận');
     }
 
     public function getVariant(Request $request)
@@ -218,6 +239,15 @@ class ClientController extends Controller
         $variantId = $request->input('variant_id');
         $quantity = $request->input('quantity', 1);
 
+        // Validate stock for the variant
+        $variant = ProductVariant::find($variantId);
+        if (!$variant) {
+            return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
+        }
+        if ($quantity < 1) {
+            return response()->json(['success' => false, 'message' => 'Số lượng không hợp lệ']);
+        }
+
         if (Auth::check()) {
             $user = Auth::user();
             $cart = Cart::firstOrCreate(['user_id' => $user->id]);
@@ -225,9 +255,16 @@ class ClientController extends Controller
                 ->where('product_variant_id', $variantId)
                 ->first();
             if ($item) {
-                $item->quantity += $quantity;
+                $newQty = $item->quantity + $quantity;
+                if ($newQty > $variant->quantity) {
+                    return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                }
+                $item->quantity = $newQty;
                 $item->save();
             } else {
+                if ($quantity > $variant->quantity) {
+                    return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                }
                 CartItem::create([
                     'cart_id' => $cart->id,
                     'product_variant_id' => $variantId,
@@ -240,13 +277,20 @@ class ClientController extends Controller
             $found = false;
             foreach ($cart as &$item) {
                 if ($item['product_variant_id'] == $variantId) {
-                    $item['quantity'] += $quantity;
+                    $newQty = $item['quantity'] + $quantity;
+                    if ($newQty > $variant->quantity) {
+                        return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                    }
+                    $item['quantity'] = $newQty;
                     $found = true;
                     break;
                 }
             }
             unset($item);
             if (!$found) {
+                if ($quantity > $variant->quantity) {
+                    return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                }
                 $cart[] = [
                     'product_variant_id' => $variantId,
                     'quantity' => $quantity,
@@ -436,6 +480,14 @@ class ClientController extends Controller
         if (!$variantId || !$quantity || $quantity < 1) {
             return response()->json(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
         }
+
+        $variant = ProductVariant::find($variantId);
+        if (!$variant) {
+            return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
+        }
+        if ($quantity > $variant->quantity) {
+            return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+        }
         if (Auth::check()) {
             $user = Auth::user();
             $cart = Cart::where('user_id', $user->id)->first();
@@ -503,6 +555,22 @@ class ClientController extends Controller
             $userId = auth()->check() ? auth()->id() : 0;
             $orderCode = strtoupper(bin2hex(random_bytes(6)));
 
+            // Validate stock for each item before creating order
+            if (!empty($data['items']) && is_array($data['items'])) {
+                foreach ($data['items'] as $item) {
+                    $variant = ProductVariant::find($item['variant_id'] ?? 0);
+                    if (!$variant) {
+                        return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
+                    }
+                    if (($item['quantity'] ?? 0) < 1) {
+                        return response()->json(['success' => false, 'message' => 'Số lượng không hợp lệ']);
+                    }
+                    if ($item['quantity'] > $variant->quantity) {
+                        return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                    }
+                }
+            }
+
             // Xử lý voucher theo code nếu có
             $voucherId = $data['voucher_id'] ?? null;
             if (empty($voucherId) && !empty($data['voucher_code'])) {
@@ -536,15 +604,26 @@ class ClientController extends Controller
             $order->status_method = 'chưa thanh toán';
             $order->save();
 
-            // Lưu chi tiết đơn hàng
+            // Lưu chi tiết đơn hàng và trừ tồn kho
             if (!empty($data['items']) && is_array($data['items'])) {
                 foreach ($data['items'] as $item) {
+                    $variant = ProductVariant::find($item['variant_id']);
+                    if (!$variant) {
+                        return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
+                    }
+                    if ($item['quantity'] > $variant->quantity) {
+                        return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                    }
+
                     \App\Models\OrderDetail::create([
                         'order_id' => $order->id,
                         'product_variant_id' => $item['variant_id'],
                         'quantity' => $item['quantity'],
                         'price' => $item['price'],
                     ]);
+
+                    // Trừ tồn kho
+                    $variant->decrement('quantity', (int) $item['quantity']);
                 }
             }
 
