@@ -34,11 +34,19 @@ class EmailOrderController extends Controller
             'status_method'   => 'Chờ xử lý',
         ]);
 
-        // Gửi mail
-        Mail::send('emails.order-success', compact('user', 'order'), function ($message) use ($user) {
-            $message->to($user->email);
-            $message->subject('Đặt hàng thành công');
-        });
+        // Gửi mail (có fallback sang log nếu SMTP lỗi)
+        try {
+            Mail::send('emails.order-success', compact('user', 'order'), function ($message) use ($user) {
+                $message->to($user->email);
+                $message->subject('Đặt hàng thành công');
+            });
+        } catch (\Throwable $e) {
+            \Log::warning('SMTP send failed in placeOrder, falling back to log mailer: ' . $e->getMessage());
+            Mail::mailer('log')->send('emails.order-success', compact('user', 'order'), function ($message) use ($user) {
+                $message->to($user->email);
+                $message->subject('Đặt hàng thành công');
+            });
+        }
 
         return redirect()->route('order.success')->with('success', 'Đặt hàng thành công!');
     }
@@ -53,11 +61,19 @@ class EmailOrderController extends Controller
             $order->status = 6; // Đã hủy
             $order->save();
 
-            // Gửi mail hủy đơn
-            Mail::send('emails.order-cancelled', compact('user', 'order'), function ($message) use ($user) {
-                $message->to($user->email);
-                $message->subject('Đơn hàng đã bị hủy');
-            });
+            // Gửi mail hủy đơn (có fallback sang log nếu SMTP lỗi)
+            try {
+                Mail::send('emails.order-cancelled', compact('user', 'order'), function ($message) use ($user) {
+                    $message->to($user->email);
+                    $message->subject('Đơn hàng đã bị hủy');
+                });
+            } catch (\Throwable $e) {
+                \Log::warning('SMTP send failed in cancelOrder, falling back to log mailer: ' . $e->getMessage());
+                Mail::mailer('log')->send('emails.order-cancelled', compact('user', 'order'), function ($message) use ($user) {
+                    $message->to($user->email);
+                    $message->subject('Đơn hàng đã bị hủy');
+                });
+            }
 
             return back()->with('success', 'Đã hủy đơn hàng.');
         }
