@@ -19,6 +19,12 @@ class ProductVariant extends Model
         'quantity'
     ];
 
+    protected $casts = [
+        'price' => 'float',
+        'price_sale' => 'float',
+        'quantity' => 'integer',
+    ];
+
     // Relationship with product
     public function product()
     {

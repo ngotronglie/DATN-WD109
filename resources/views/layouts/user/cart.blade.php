@@ -357,7 +357,7 @@
 
     document.addEventListener('DOMContentLoaded', async function() {
         try {
-            const res = await fetch('/api/cart');
+            const res = await fetch('/api/cart', { credentials: 'same-origin' });
             const data = await res.json();
             if (data.success) {
                 cartData = data.data;

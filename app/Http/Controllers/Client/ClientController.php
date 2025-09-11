@@ -24,20 +24,68 @@ use Illuminate\Support\Facades\Mail;
 
 class ClientController extends Controller
 {
+    /**
+     * Merge session-based cart items into the authenticated user's database cart.
+     */
+    private function mergeSessionCartToDatabase(): void
+    {
+        if (!Auth::check()) {
+            return;
+        }
+
+        $sessionCart = Session::get('cart', []);
+        if (empty($sessionCart)) {
+            return;
+        }
+
+        $user = Auth::user();
+        $cart = Cart::firstOrCreate(['user_id' => $user->id]);
+
+        foreach ($sessionCart as $sessionItem) {
+            $variantId = $sessionItem['product_variant_id'] ?? null;
+            $quantity = (int) ($sessionItem['quantity'] ?? 0);
+            if (!$variantId || $quantity < 1) {
+                continue;
+            }
+
+            $existingItem = CartItem::where('cart_id', $cart->id)
+                ->where('product_variant_id', $variantId)
+                ->first();
+
+            if ($existingItem) {
+                $existingItem->quantity += $quantity;
+                $existingItem->save();
+            } else {
+                CartItem::create([
+                    'cart_id' => $cart->id,
+                    'product_variant_id' => $variantId,
+                    'quantity' => $quantity,
+                ]);
+            }
+        }
+
+        // Clear session cart after merging
+        Session::forget('cart');
+    }
     public function index()
     {
-        // Get random products with their first available variant
-        $products = Product::where('is_active', 1)
+        // Get products split into discounted and popular (non-discounted)
+        $baseQuery = Product::where('is_active', 1)
             ->with(['variants' => function($query) {
-                $query->where('quantity', '>', 0)
-                      ->orderBy('id')
-                      ->limit(1);
-            }])
+                $query->orderBy('id');
+            }]);
+
+        // Discounted products: any variant with price_sale > 0
+        $discountedProducts = (clone $baseQuery)
+            ->whereHas('variants', function($q) {
+                $q->where('price_sale', '>', 0);
+            })
             ->inRandomOrder()
             ->limit(8)
             ->get()
             ->map(function($product) {
-                $variant = $product->variants->first();
+                // Prefer in-stock variant with sale > 0, else any sale > 0, else fallback
+                $variant = $product->variants->firstWhere('price_sale', '>', 0) ?? $product->variants->first();
                 return (object) [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
@@ -45,13 +93,39 @@ class ClientController extends Controller
                     'product_slug' => $product->slug,
                     'product_image' => $variant ? $variant->image : null,
                     'product_price' => $variant ? $variant->price : 0,
-                    'product_price_discount' => $variant ? $variant->price_sale : 0,
+                    'product_price_discount' => $variant && $variant->price_sale > 0 ? $variant->price_sale : 0,
+                ];
+            });
+
+        // Popular (non-discounted): products whose variants all have price_sale <= 0 or null
+        $popularProducts = (clone $baseQuery)
+            ->whereDoesntHave('variants', function($q) {
+                $q->where('price_sale', '>', 0);
+            })
+            ->inRandomOrder()
+            ->limit(8)
+            ->get()
+            ->map(function($product) {
+                $variant = $product->variants->firstWhere('quantity', '>', 0) ?? $product->variants->first();
+                return (object) [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'product_view' => $product->view_count,
+                    'product_slug' => $product->slug,
+                    'product_image' => $variant ? $variant->image : null,
+                    'product_price' => $variant ? $variant->price : 0,
+                    'product_price_discount' => 0,
                 ];
             });
             
         $banners = \App\Models\Banner::where('is_active', 1)->orderByDesc('id')->get();
         $categories = \App\Models\Categories::whereNull('Parent_id')->where('Is_active', 1)->get();
-        return view('layouts.user.main', compact('products', 'banners', 'categories'));
+        return view('layouts.user.main', [
+            'categories' => $categories,
+            'banners' => $banners,
+            'discountedProducts' => $discountedProducts,
+            'popularProducts' => $popularProducts,
+        ]);
     }
 
     public function products()
@@ -216,7 +290,36 @@ class ClientController extends Controller
     public function apiAddToCart(Request $request)
     {
         $variantId = $request->input('variant_id');
-        $quantity = $request->input('quantity', 1);
+        $quantity = (int) $request->input('quantity', 1);
+
+        // Basic validation
+        if ($quantity < 1) {
+            return response()->json(['success' => false, 'message' => 'Số lượng không hợp lệ']);
+        }
+
+        // Allow adding by product_id if variant_id is missing: pick the first available variant
+        if (empty($variantId)) {
+            $productId = $request->input('product_id');
+            if (!empty($productId)) {
+                $variant = ProductVariant::where('product_id', $productId)
+                    ->where('quantity', '>', 0)
+                    ->orderBy('id')
+                    ->first();
+                if ($variant) {
+                    $variantId = $variant->id;
+                } else {
+                    return response()->json(['success' => false, 'message' => 'Sản phẩm hiện không có biến thể khả dụng']);
+                }
+            } else {
+                return response()->json(['success' => false, 'message' => 'Thiếu thông tin biến thể sản phẩm']);
+            }
+        }
+
+        // Validate stock availability for the variant
+        $variantModel = ProductVariant::find($variantId);
+        if (!$variantModel) {
+            return response()->json(['success' => false, 'message' => 'Biến thể sản phẩm không tồn tại']);
+        }
 
         if (Auth::check()) {
             $user = Auth::user();
@@ -224,8 +327,19 @@ class ClientController extends Controller
             $item = CartItem::where('cart_id', $cart->id)
                 ->where('product_variant_id', $variantId)
                 ->first();
+            $currentQty = $item ? $item->quantity : 0;
+            if ($currentQty + $quantity > $variantModel->quantity) {
+                $maxAddable = max(0, $variantModel->quantity - $currentQty);
+                return response()->json([
+                    'success' => false,
+                    'message' => $maxAddable > 0
+                        ? 'Vượt quá số lượng tồn. Bạn chỉ có thể thêm tối đa ' . $maxAddable . ' sản phẩm.'
+                        : 'Sản phẩm đã đạt số lượng tối đa trong giỏ theo tồn kho.',
+                ]);
+            }
+
             if ($item) {
-                $item->quantity += $quantity;
+                $item->quantity = $currentQty + $quantity;
                 $item->save();
             } else {
                 CartItem::create([
@@ -238,15 +352,33 @@ class ClientController extends Controller
         } else {
             $cart = Session::get('cart', []);
             $found = false;
+            $currentQty = 0;
             foreach ($cart as &$item) {
                 if ($item['product_variant_id'] == $variantId) {
-                    $item['quantity'] += $quantity;
+                    $currentQty = (int) $item['quantity'];
+                    if ($currentQty + $quantity > $variantModel->quantity) {
+                        $maxAddable = max(0, $variantModel->quantity - $currentQty);
+                        unset($item);
+                        return response()->json([
+                            'success' => false,
+                            'message' => $maxAddable > 0
+                                ? 'Vượt quá số lượng tồn. Bạn chỉ có thể thêm tối đa ' . $maxAddable . ' sản phẩm.'
+                                : 'Sản phẩm đã đạt số lượng tối đa trong giỏ theo tồn kho.',
+                        ]);
+                    }
+                    $item['quantity'] = $currentQty + $quantity;
                     $found = true;
                     break;
                 }
             }
             unset($item);
             if (!$found) {
+                if ($quantity > $variantModel->quantity) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Vượt quá số lượng tồn. Tối đa có thể thêm ' . $variantModel->quantity . ' sản phẩm.',
+                    ]);
+                }
                 $cart[] = [
                     'product_variant_id' => $variantId,
                     'quantity' => $quantity,
@@ -260,6 +392,11 @@ class ClientController extends Controller
 
     public function showCart()
     {
+        // Ensure any guest cart is merged once the user is authenticated
+        if (Auth::check()) {
+            $this->mergeSessionCartToDatabase();
+        }
+
         $user = Auth::user();
         if ($user) {
             $cart = Cart::where('user_id', $user->id)->first();
@@ -297,6 +434,8 @@ class ClientController extends Controller
     public function apiGetCart(Request $request)
     {
         if (Auth::check()) {
+            // Merge any existing session cart into DB on first API call after login
+            $this->mergeSessionCartToDatabase();
             $user = Auth::user();
             $cart = Cart::where('user_id', $user->id)->first();
             $items = $cart
@@ -311,7 +450,7 @@ class ClientController extends Controller
                     'color' => $item->productVariant->color->name ?? '',
                     'capacity' => $item->productVariant->capacity->name ?? '',
                     'price' => $item->productVariant->price,
-                    'image' => $item->productVariant->image,
+                    'image' => asset($item->productVariant->image),
                 ];
             })->values();
         } else {
@@ -330,7 +469,7 @@ class ClientController extends Controller
                         'color' => $variant->color->name ?? '',
                         'capacity' => $variant->capacity->name ?? '',
                         'price' => $variant->price,
-                        'image' => $variant->image,
+                        'image' => asset($variant->image),
                     ];
                 }
             }
@@ -435,6 +574,14 @@ class ClientController extends Controller
         $quantity = $request->input('quantity');
         if (!$variantId || !$quantity || $quantity < 1) {
             return response()->json(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
+        }
+        // Check stock against variant
+        $variantModel = ProductVariant::find($variantId);
+        if (!$variantModel) {
+            return response()->json(['success' => false, 'message' => 'Biến thể không tồn tại']);
+        }
+        if ($quantity > $variantModel->quantity) {
+            return response()->json(['success' => false, 'message' => 'Số lượng vượt quá tồn kho hiện có']);
         }
         if (Auth::check()) {
             $user = Auth::user();

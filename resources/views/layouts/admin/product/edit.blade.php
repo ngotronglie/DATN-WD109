@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </td>
                     <td>
                         <input type="number" class="form-control" name="variants[${variantIndex}][price_sale]"
-                               value="${existingVariant ? (existingVariant.price_sale || '') : ''}" min="0">
+                               value="${existingVariant ? (existingVariant.price_sale ?? '') : ''}" min="0">
                     </td>
                     <td>
                         <input type="number" class="form-control" name="variants[${variantIndex}][quantity]"

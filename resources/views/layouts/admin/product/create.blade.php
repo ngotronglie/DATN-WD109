@@ -344,10 +344,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Cập nhật giá khuyến mãi cho tất cả biến thể hiện tại
+        // Cập nhật giá khuyến mãi cho tất cả biến thể hiện tại (chấp nhận 0)
         const priceSaleInputs = variantsTable.querySelectorAll('input[name*="[price_sale]"]');
         priceSaleInputs.forEach(input => {
-            if (defaultPriceSale) {
+            if (defaultPriceSale !== '') {
                 input.value = defaultPriceSale;
             }
         });

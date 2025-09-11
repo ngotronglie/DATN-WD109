@@ -11,7 +11,7 @@
           <nav class="d-none d-lg-block">
               <ul class="nav justify-content-center">
                   <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Trang chủ</a></li>
-<<<<<<< HEAD
+
                   <li class="nav-item"><a class="nav-link" href="{{ route('shop.index') }}">Sản phẩm</a></li>
                   <li class="nav-item"><a class="nav-link" href="{{ route('blog') }}">Bài viết</a></li>
                   <li class="nav-item"><a class="nav-link" href="{{ route('contact') }}">Liên hệ</a></li>

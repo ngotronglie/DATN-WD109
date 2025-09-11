@@ -130,7 +130,7 @@
                                         <hr>
                                         <!-- single-product-price -->
                                         <h3 id="product-price" class="pro-price">Giá: {{ isset($variants[0]) ? number_format($variants[0]->price).'đ' : ''}}</h3>
-                                        @if(isset($variants[0]) && $variants[0]->price_sale)
+                                        @if(isset($variants[0]) && $variants[0]->price_sale > 0)
                                         <h3 id="product-price-sale" class="pro-price-sale text-danger text-decoration-line-through">
                                             {{ number_format($variants[0]->price_sale).'đ' }} 
                                         </h3>
@@ -237,6 +237,10 @@
 @section('script-client')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    var availableQty = (function() {
+        var q = parseInt(document.getElementById('variant-quantity')?.innerText || '0');
+        return isNaN(q) ? 0 : q;
+    })();
     function updateVariant() {
         var productId = {{ $product->id }};
         var colorId = document.querySelector('input[name="color"]:checked').value;
@@ -266,6 +270,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (quantityElem) {
                         quantityElem.innerText = data.quantity ?? '';
                     }
+                    availableQty = parseInt(data.quantity || 0) || 0;
+                    // Reset qty to 1 if current qty exceeds new stock
+                    var qtyInputEl = document.getElementById('qty-input');
+                    var currentQty = parseInt(qtyInputEl.value) || 1;
+                    if (availableQty > 0 && currentQty > availableQty) {
+                        qtyInputEl.value = availableQty;
+                    }
 
                     if (data.product_name) {
                         document.getElementById('product-name').innerText = data.product_name;
@@ -285,6 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (quantityElem) {
                         quantityElem.innerText = '';
                     }
+                    availableQty = 0;
 
                     if (!document.getElementById('variant-error')) {
                         var error = document.createElement('div');
@@ -315,11 +327,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelector('.qty-btn-plus').addEventListener('click', function() {
         var val = parseInt(qtyInput.value) || 1;
-        qtyInput.value = val + 1;
+        var next = val + 1;
+        if (availableQty > 0 && next > availableQty) {
+            qtyInput.value = availableQty;
+            return;
+        }
+        qtyInput.value = next;
     });
 
     // Thêm vào giỏ hàng
-    document.querySelector('.button-outline').addEventListener('click', function() {
+    document.querySelector('.button-outline').addEventListener('click', async function() {
         var productId = {{ $product->id }};
         var productName = document.getElementById('product-name').innerText;
         var colorId = document.querySelector('input[name="color"]:checked').value;
@@ -327,6 +344,14 @@ document.addEventListener('DOMContentLoaded', function() {
         var capacityId = document.querySelector('input[name="capacity"]:checked').value;
         var capacityName = document.querySelector('input[name="capacity"]:checked').parentElement.innerText.trim();
         var qty = parseInt(document.getElementById('qty-input').value) || 1;
+        if (availableQty > 0 && qty > availableQty) {
+            alert('Số lượng vượt quá tồn kho. Vui lòng giảm số lượng trước khi thêm vào giỏ.');
+            return; // Không gọi API, ở lại trang để người dùng chỉnh lại
+        }
+        if (availableQty === 0) {
+            alert('Biến thể này hiện không có hàng.');
+            return;
+        }
         var price = document.getElementById('product-price').innerText;
         var priceSaleElem = document.getElementById('product-price-sale');
         var priceSale = priceSaleElem && priceSaleElem.style.display !== 'none' ? priceSaleElem.innerText : null;
@@ -351,13 +376,29 @@ document.addEventListener('DOMContentLoaded', function() {
             image: image
         };
 
+        // Kiểm tra số lượng hiện có trong giỏ của biến thể này để không vượt tồn kho tổng
+        try {
+            const cartRes = await fetch('/api/cart', { credentials: 'same-origin' });
+            const cartJson = await cartRes.json();
+            if (cartJson && cartJson.success && Array.isArray(cartJson.data)) {
+                const existingItem = cartJson.data.find(function(it){ return String(it.variant_id) === String(variantId); });
+                const existingQty = existingItem ? parseInt(existingItem.quantity) || 0 : 0;
+                if (availableQty > 0 && existingQty + qty > availableQty) {
+                    alert('Trong giỏ đã có ' + existingQty + ' sản phẩm. Bạn chỉ có thể thêm tối đa ' + (availableQty - existingQty) + ' nữa.');
+                    return;
+                }
+            }
+        } catch (e) {}
+
         fetch('/api/add-to-cart', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
+                product_id: data.product_id,
                 variant_id: data.variant_id,
                 quantity: data.quantity
             })

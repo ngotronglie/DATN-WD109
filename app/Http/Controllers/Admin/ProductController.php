@@ -72,7 +72,7 @@ class ProductController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255|unique:products,name',
                 'description' => 'nullable|string',
-                'categories_id' => 'required|exists:categories,id',
+                'categories_id' => 'required|exists:categories,ID',
                 'is_active' => 'required|boolean',
                 'variants' => 'required|array|min:1',
                 'variants.*.color_id' => 'required|exists:colors,id',
@@ -93,6 +93,7 @@ class ProductController extends Controller
 
             foreach ($request->variants as $index => $variantData) {
                 $imagePath = null; // Khởi tạo để tránh lỗi nếu không có file
+                $publicPath = null; // Khởi tạo đường dẫn public mặc định
 
                 if ($request->hasFile("variants.$index.image")) {
                     $imageFile = $request->file("variants.$index.image");
@@ -109,7 +110,10 @@ class ProductController extends Controller
                     'capacity_id' => $variantData['capacity_id'],
                     'image' => $publicPath,
                     'price' => $variantData['price'],
-                    'price_sale' => $variantData['price_sale'] ?? null,
+                    // Cho phép 0; nếu rỗng ('' hoặc null) thì lưu null
+                    'price_sale' => array_key_exists('price_sale', $variantData) && $variantData['price_sale'] !== ''
+                        ? $variantData['price_sale']
+                        : null,
                     'quantity' => $variantData['quantity'],
                 ]);
             }
@@ -153,7 +157,7 @@ class ProductController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255|unique:products,name,' . $product->id,
                 'description' => 'nullable|string',
-                'categories_id' => 'required|exists:categories,id',
+                'categories_id' => 'required|exists:categories,ID',
                 'is_active' => 'required|boolean',
                 'variants' => 'required|array|min:1',
                 'variants.*.color_id' => 'required|exists:colors,id',
@@ -200,7 +204,10 @@ class ProductController extends Controller
                             'color_id' => $variantData['color_id'],
                             'capacity_id' => $variantData['capacity_id'],
                             'price' => $variantData['price'],
-                            'price_sale' => $variantData['price_sale'] ?? null,
+                            // Cho phép 0; nếu rỗng ('' hoặc null) thì lưu null
+                            'price_sale' => array_key_exists('price_sale', $variantData) && $variantData['price_sale'] !== ''
+                                ? $variantData['price_sale']
+                                : null,
                             'quantity' => $variantData['quantity'],
                         ];
 

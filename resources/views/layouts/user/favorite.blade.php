@@ -213,8 +213,10 @@ $(document).ready(function() {
                 quantity: 1,
                 _token: '{{ csrf_token() }}'
             },
+            xhrFields: { withCredentials: true },
             success: function(response) {
-                showNotification('Đã thêm sản phẩm vào giỏ hàng', 'success');
+                // Điều hướng sang giỏ hàng để người dùng thấy ngay
+                window.location.href = '/cart';
             },
             error: function(xhr) {
                 showNotification('Có lỗi xảy ra khi thêm vào giỏ hàng', 'error');
