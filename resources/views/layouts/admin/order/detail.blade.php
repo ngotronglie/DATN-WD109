@@ -120,7 +120,7 @@
                         @elseif($stt === 8)
                         <span class="badge bg-success text-dark">Đã nhận hàng hoàn</span>
                         @elseif($stt === 9)
-                        <span class="badge bg-success text-dark">Đã hoàn tiền</span>
+                        <span class="badge bg-success text-dark">Hoàn tiền thành công</span>
                         @elseif($stt === 10)
                         <span class="badge bg-success text-dark">Không xác nhận yêu cầu hoàn hàng</span>
                         @else

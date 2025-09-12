@@ -95,9 +95,7 @@ Route::get('/cart', [ClientController::class, 'showCart'])->name('cart');
 
 Route::get('/wishlist', [App\Http\Controllers\FavoriteController::class, 'index'])->name('wishlist')->middleware('auth');
 
-Route::get('/productdetail', function () {
-    return view('layouts.user.productDetail');
-})->name('productdetail');
+// Route removed: product detail must be served via controller to provide required data
 
 Route::get('/shop', [ClientController::class, 'products'])->name('shop.index');
 

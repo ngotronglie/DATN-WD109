@@ -120,6 +120,11 @@ class OrderController extends Controller
     public function approveRefund($id)
     {
         $refund = RefundRequest::findOrFail($id);
+
+        // Không cho duyệt nếu thiếu thông tin ngân hàng của khách
+        if (empty($refund->bank_name) || empty($refund->bank_number) || empty($refund->account_name)) {
+            return redirect()->back()->with('error', 'Không thể hoàn tiền: thiếu thông tin ngân hàng của khách hàng.');
+        }
         $refund->refund_completed_at = now();
         $refund->refunded_by = Auth::user()->name;
         $refund->save();
@@ -138,6 +143,11 @@ class OrderController extends Controller
     public function uploadRefundProof(Request $request, $id)
     {
         $refund = RefundRequest::findOrFail($id);
+
+        // Không cho upload/hoàn nếu thiếu thông tin ngân hàng của khách
+        if (empty($refund->bank_name) || empty($refund->bank_number) || empty($refund->account_name)) {
+            return redirect()->back()->with('error', 'Thiếu thông tin ngân hàng của khách hàng. Vui lòng yêu cầu khách bổ sung trước khi hoàn tiền.');
+        }
 
         $request->validate([
             'proof_image' => 'required|image|max:2048',
@@ -158,10 +168,10 @@ class OrderController extends Controller
 
         $refund->save();
 
-        // ✅ Cập nhật trạng thái đơn hàng
+        // ✅ Cập nhật trạng thái đơn hàng sang Hoàn tiền thành công
         $order = Order::find($refund->order_id);
-        if ($order && $order->status == 8) {
-            $order->status = 9; // Trạng thái "Đã hoàn"
+        if ($order) {
+            $order->status = 9; // Hoàn tiền thành công
             $order->save();
         }
 

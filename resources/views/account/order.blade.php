@@ -80,7 +80,7 @@
                                 6 => 'Đã hủy',
                                 7 => 'xác nhận yêu cầu Hoàn hàng',
                                 8 => 'Hoàn hàng',
-                                9 => 'Hoàn tiền ',
+                                9 => 'Hoàn tiền thành công',
                                 10 => 'không xác nhận yêu cầu hoàn hàng',
                                 ];
                                 $statusColors = [

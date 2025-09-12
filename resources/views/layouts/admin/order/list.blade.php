@@ -96,13 +96,13 @@
                                         @elseif($stt === 6)
                                         <span class="badge bg-danger">Đã hủy</span>
                                         @elseif($stt === 7)
-                                        <span class="badge bg-warning text-dark">Đã xác nhận yêu cầu hoàn hàng</span>
+                                        <span class="badge bg-warning text-dark">Đã xác nhận yêu cầu hoàn tiền</span>
                                         @elseif($stt === 8)
-                                        <span class="badge bg-success text-dark">Đã nhận hàng hoàn</span>
+                                        <span class="badge bg-success text-dark">Đã nhận tiền hoàn</span>
                                         @elseif($stt === 9)
-                                        <span class="badge bg-success text-dark">Đã hoàn tiền</span>
+                                        <span class="badge bg-success text-dark">Hoàn tiền thành công</span>
                                         @elseif($stt === 10)
-                                        <span class="badge bg-success text-dark">Không xác nhận yêu cầu hoàn hàng</span>
+                                        <span class="badge bg-success text-dark">Không xác nhận yêu cầu hoàn tiền</span>
                                         @else
                                         <span class="badge bg-secondary">Không xác định</span>
                                         @endif
@@ -219,13 +219,11 @@
                                         @endif
                                         @endif
 
-                                        {{-- Duyệt hoàn tiền khi đã nhận hàng hoàn (status = 8) nhưng chưa hoàn tiền --}}
-                                        @if ($order->status == 8 && !$order->refundRequest->refund_completed_at)
+                                        {{-- Duyệt hoàn tiền: cho phép từ trạng thái 7 (admin khởi tạo) hoặc 8 (đã nhận tiền hoàn) --}}
+                                        @if (in_array($order->status, [7,8]) && !$order->refundRequest->refund_completed_at)
                                         <form action="{{ route('admin.refunds.approve', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
                                             @csrf
-                                            <button class="btn btn-warning btn-xs px-2 py-1" style="font-size: 12px;" onclick="return confirm('Xác nhận đã hoàn tiền?')">
-                                                Duyệt
-                                            </button>
+                                      
                                         </form>
                                         @endif
                                         @else

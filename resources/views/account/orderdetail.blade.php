@@ -14,10 +14,10 @@
         4 => 'đang giao đến',
         5 => 'Đã giao',
         6 => 'Đã hủy',
-        7 => 'xác nhận yêu cầu Hoàn hàng',
+        7 => 'xác nhận yêu cầu Hoàn tiền',
         8 => 'Hoàn hàng',
-        9 => 'Hoàn tiền ',
-        10 => 'không xác nhận yêu cầu hoàn hàng',
+        9 => 'Hoàn tiền thành công',
+        10 => 'không xác nhận yêu cầu hoàn tiền',
         ];
         $statusColors = [
         0 => 'bg-warning text-dark', // Chờ xác nhận
@@ -27,10 +27,10 @@
         4 => 'bg-warning text-dark', // Đang giao đến
         5 => 'bg-success text-white', // Đã giao
         6 => 'bg-danger text-white', // Đã hủy
-        7 => 'bg-secondary text-white', // Xác nhận yêu cầu hoàn hàng
+        7 => 'bg-secondary text-white', // Xác nhận yêu cầu hoàn tiền
         8 => 'bg-info text-white', // Hoàn hàng
         9 => 'bg-success text-dark', // Hoàn tiền
-        10 => 'bg-dark text-white', // Không xác nhận yêu cầu hoàn hàng
+        10 => 'bg-dark text-white', // Không xác nhận yêu cầu hoàn tiền
         ];
 
         $status = $order->status;

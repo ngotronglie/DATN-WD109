@@ -77,7 +77,8 @@ class ClientController extends Controller
 
     public function product($slug)
     {
-        return view('layouts.user.productDetail');
+        // Redirect to the real product detail route using slug
+        return redirect()->route('product.detail', ['slug' => $slug]);
     }
 
     public function about()

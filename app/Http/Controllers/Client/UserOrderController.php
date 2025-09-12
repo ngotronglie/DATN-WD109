@@ -103,11 +103,18 @@ class UserOrderController extends Controller
     {
         $order = Order::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
-        if ($order->status !== 0) {
-            return redirect()->back()->with('error', 'Chỉ có thể hủy đơn hàng đang chờ xác nhận.');
+        if (!in_array((int)$order->status, [0,1])) {
+            return redirect()->back()->with('error', 'Chỉ có thể hủy đơn ở trạng thái chờ xác nhận hoặc đã xác nhận.');
         }
 
-        $order->status = 6; // Giả sử 6 là trạng thái "Đã hủy"
+        // Khôi phục tồn kho cho các sản phẩm trong đơn
+        foreach ($order->orderDetails as $detail) {
+            if ($detail->productVariant) {
+                $detail->productVariant->increment('quantity', (int)$detail->quantity);
+            }
+        }
+
+        $order->status = 6; // Đã hủy
         $order->save();
 
         return redirect()->route('account.order')->with('success', 'Đơn hàng đã được hủy thành công.');
