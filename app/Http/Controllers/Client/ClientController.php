@@ -601,7 +601,8 @@ class ClientController extends Controller
             $order->payment_method = $data['payment_method'] ?? 'COD';
             $order->order_code = $orderCode;
             $order->voucher_id = $voucherId;
-            $order->status_method = 'chưa thanh toán';
+            // 0 = chưa thanh toán, 1 = đã thanh toán (COD khi giao), 2 = đã thanh toán (chuyển khoản)
+            $order->status_method = 0;
             $order->save();
 
             // Lưu chi tiết đơn hàng và trừ tồn kho
@@ -735,8 +736,9 @@ class ClientController extends Controller
         $order = \App\Models\Order::where('order_code', $vnp_TxnRef)->first();
 
         if ($order && $vnp_ResponseCode == '00') {
-            $order->status_method = 'đã thanh toán';
-            $order->status = true;
+            // Đánh dấu đã thanh toán online (2 = chuyển khoản)
+            $order->status_method = 2;
+            $order->payment_method = 'vnpay';
             $order->save();
 
             // Gửi mail xác nhận

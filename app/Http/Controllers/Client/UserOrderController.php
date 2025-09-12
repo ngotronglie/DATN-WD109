@@ -137,18 +137,12 @@ class UserOrderController extends Controller
             'bank_name' => 'required|string|max:255',
             'bank_number' => 'required|string|max:50',
             'account_name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('refund_images', 'public');
-            $validated['image'] = $imagePath;
-        }
+        // Không yêu cầu ảnh/sent_back cho hoàn tiền do admin
 
         // ✅ Cập nhật thời gian gửi hàng
-        if ($request->has('sent_back')) {
-            $refund->sent_back_at = now();
-        }
+        // giữ nguyên lịch sử nếu có nhưng không bắt buộc
 
         $refund->update($validated);
 

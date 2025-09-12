@@ -120,23 +120,19 @@
         @endif
         @endif
 
-        {{-- Nếu đơn đang xử lý hoàn trả (status = 7) và thiếu thông tin --}}
+        {{-- Nếu đơn đang xử lý hoàn tiền do admin (status = 7) và thiếu thông tin ngân hàng --}}
         @if ($order->status == 7 && $order->refundRequest)
         @php
         $refund = $order->refundRequest;
-        $missingInfo = !$refund->bank_name || !$refund->bank_number || !$refund->image;
+        $missingInfo = !$refund->bank_name || !$refund->bank_number || !$refund->account_name;
         @endphp
 
         @if ($missingInfo)
         <div class="alert alert-info mt-4 rounded-4 d-flex justify-content-between align-items-center">
-            <span>Bạn cần cung cấp thông tin chuyển khoản và ảnh trả hàng.</span>
+            <span>Bạn cần cung cấp thông tin tài khoản ngân hàng để nhận hoàn tiền.</span>
             <a href="{{ route('account.fillinfo', $refund->id) }}" class="btn btn-primary btn-sm rounded-pill">
-                Trả hàng ngay
+                Cung cấp thông tin ngân hàng
             </a>
-        </div>
-        @else
-        <div class="alert alert-warning mt-4 rounded-4">
-            Bạn đã gửi yêu cầu hoàn hàng. Vui lòng đợi quản trị viên xử lý.
         </div>
         @endif
         @endif

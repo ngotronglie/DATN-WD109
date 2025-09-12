@@ -41,13 +41,62 @@ class OrderController extends Controller
 
         // Nếu đơn hàng được đánh dấu là "Đã giao hàng" (status = 5)
         if ((int)$newStatus === 5) {
-            $order->status_method = 1;
-            $order->payment_method = 'cod';
+            // Nếu là COD thì đánh dấu đã thu tiền COD, nếu là VNPAY thì đã thanh toán trước đó (2)
+            if ((int)$order->status_method === 0) {
+                $order->status_method = 1; // thu COD khi giao
+            }
+            if (!$order->payment_method) {
+                $order->payment_method = 'cod';
+            }
         }
 
         $order->save();
 
         return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
+    }
+
+    // Admin thao tác hoàn tiền ngay tại bước đóng gói (status = 2)
+    public function initiateRefund(Request $request, $id)
+    {
+        $order = Order::with('refundRequest')->findOrFail($id);
+
+        if (!in_array((int)$order->status, [1, 2])) {
+            return back()->with('error', 'Chỉ có thể khởi tạo hoàn tiền khi đơn đang ở bước Đã xác nhận/Đang xử lý.');
+        }
+
+        $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        if ($order->refundRequest) {
+            return back()->with('error', 'Đơn hàng đã có yêu cầu hoàn.');
+        }
+
+        $refund = RefundRequest::create([
+            'order_id' => $order->id,
+            'user_id' => $order->user_id,
+            'reason' => $request->input('reason'),
+            'refund_requested_at' => now(),
+        ]);
+
+        // Chuyển trạng thái đơn sang 7: đã xác nhận yêu cầu hoàn hàng
+        $order->status = 7;
+        $order->save();
+
+        // Gửi thông báo email cho người dùng kèm link nhập thông tin ngân hàng
+        try {
+            $user = $order->user;
+            if ($user && $user->email) {
+                \Mail::send('emails.refund-init', ['order' => $order, 'refund' => $refund], function ($message) use ($user, $order) {
+                    $message->to($user->email);
+                    $message->subject('Yêu cầu hoàn tiền cho đơn #' . $order->order_code);
+                });
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Không thể gửi mail hoàn tiền: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Đã khởi tạo hoàn tiền và thông báo khách hàng nhập thông tin ngân hàng.');
     }
 
 

@@ -244,6 +244,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/refunds/{id}', [OrderController::class, 'showRefundDetail'])->name('refunds.detail');
     Route::post('/refunds/{id}/approve', [OrderController::class, 'approveRefund'])->name('refunds.approve');
     Route::post('/refunds/{id}/upload-proof', [OrderController::class, 'uploadRefundProof'])->name('refunds.uploadProof');
+    // Khởi tạo hoàn tiền khi đang đóng gói
+    Route::post('/orders/{id}/refund/initiate', [OrderController::class, 'initiateRefund'])->name('orders.refund.initiate');
 
 
     // routes/web.php

@@ -4,15 +4,8 @@
 <div class="container py-5">
     <h4 class="mb-4">Điền thông tin hoàn hàng</h4>
 
-    <!-- Địa chỉ shop -->
     <div class="alert alert-info rounded-4 shadow-sm">
-        <h5 class="mb-2"><i class="bi bi-geo-alt-fill"></i> Địa chỉ trả hàng của shop</h5>
-        <ul class="mb-0">
-            <li><strong>Tên shop:</strong> BeeHat Store</li>
-            <li><strong>Người nhận:</strong> Nguyễn Huy Năng</li>
-            <li><strong>Địa chỉ:</strong> Số 123 Đường trình văn bô, Phường Nam từ Liêm, Hà Nội</li>
-            <li><strong>Số điện thoại:</strong> 0909 123 456</li>
-        </ul>
+        Đây là yêu cầu hoàn tiền do cửa hàng khởi tạo (hết hàng hoặc lý do khác). Vui lòng nhập thông tin tài khoản để nhận hoàn tiền.
     </div>
 
     <form action="{{ route('account.updateInfo', $refund->id) }}" method="POST" enctype="multipart/form-data">
@@ -44,14 +37,7 @@
             <input type="text" name="account_name" class="form-control" value="{{ old('account_name', $refund->account_name) }}" required>
         </div>
 
-        <div class="mb-3">
-            <label for="image" class="form-label">Ảnh sản phẩm hoàn trả</label>
-            <input type="file" name="image" class="form-control" accept="image/*" required>
-        </div>
-        <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="sent_back" name="sent_back" value="1" {{ old('sent_back') ? 'checked' : '' }}>
-            <label class="form-check-label" for="sent_back">Tôi xác nhận đã gửi hàng hoàn trả</label>
-        </div>
+        <!-- Không yêu cầu gửi hàng/ảnh trong hoàn tiền do admin -->
 
         <button type="submit" class="btn btn-success">Gửi thông tin</button>
     </form>

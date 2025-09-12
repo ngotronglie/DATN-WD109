@@ -149,12 +149,14 @@
                                             <input type="hidden" name="status" value="2">
                                             <button class="btn btn-info btn-sm" onclick="return confirm('Chuyển sang đóng gói?')">Đóng gói</button>
                                         </form>
+                                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#initiateRefundModal-{{ $order->id }}">Hoàn tiền</button>
                                         @elseif($stt === 2)
                                         <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             <input type="hidden" name="status" value="3">
                                             <button class="btn btn-secondary btn-sm" onclick="return confirm('Giao cho vận chuyển?')">Giao cho vận chuyển</button>
                                         </form>
+
                                         @elseif($stt === 3)
                                         <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
                                             @csrf
@@ -165,7 +167,7 @@
                                         <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             <input type="hidden" name="status" value="6">
-                                            <button class="btn btn-danger btn-sm" onclick="return confirm('Hủy đơn này?')">Hủy đơn</button>
+                                            <!-- <button class="btn btn-danger btn-sm" onclick="return confirm('Hủy đơn này?')">Hủy đơn</button> -->
                                         </form>
                                         <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
                                             @csrf
@@ -286,6 +288,54 @@
         </div>
     </div>
 </div>
+@foreach($orders as $order)
+    @if (in_array((int)$order->status, [1,2]))
+    <div class="modal fade" id="initiateRefundModal-{{ $order->id }}" tabindex="-1" aria-labelledby="initiateRefundLabel-{{ $order->id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <form class="modal-content" method="POST" action="{{ route('admin.orders.refund.initiate', $order->id) }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="initiateRefundLabel-{{ $order->id }}">Khởi tạo hoàn tiền - Đơn #{{ $order->order_code }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Lý do hoàn tiền</label>
+                        <select class="form-select" id="refund-reason-select-{{ $order->id }}" name="reason" required>
+                            <option value="">-- Chọn lý do --</option>
+                            <option value="Hết hàng">Hết hàng</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                        <input type="text" class="form-control mt-2" id="refund-reason-input-{{ $order->id }}" name="reason_other" placeholder="Nhập lý do khác" style="display:none;">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning">Tạo yêu cầu hoàn</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var select = document.getElementById('refund-reason-select-{{ $order->id }}');
+            var input = document.getElementById('refund-reason-input-{{ $order->id }}');
+            if (select && input) {
+                select.addEventListener('change', function() {
+                    if (this.value === 'Khác') {
+                        input.style.display = '';
+                        input.setAttribute('name','reason');
+                    } else {
+                        input.style.display = 'none';
+                        input.removeAttribute('name');
+                        input.value = '';
+                    }
+                });
+            }
+        });
+    </script>
+    @endif
+@endforeach
 @endsection
 
 @section('script')
