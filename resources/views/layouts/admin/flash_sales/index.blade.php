@@ -155,7 +155,7 @@ function deleteFlashSale(flashSaleId) {
     if (confirm('Bạn có chắc chắn muốn xóa flash sale này?')) {
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `{{ route('admin.flash-sales.destroy', '') }}/${flashSaleId}`;
+        form.action = `/admin/flash-sales/${flashSaleId}/delete`;
         form.style.display = 'none';
         
         const csrfToken = document.createElement('input');
