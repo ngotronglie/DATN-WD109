@@ -101,15 +101,14 @@
                                     <table class="table table-bordered" id="products-table">
                                         <thead>
                                             <tr>
-                                                <th width="20%">Sản phẩm</th>
-                                                <th width="8%">Ảnh</th>
-                                                <th width="10%">Giá gốc</th>
-                                                <th width="12%">Giá Flash Sale <span class="text-danger">*</span></th>
-                                                <th width="15%">Số lượng <span class="text-danger">*</span></th>
-                                                <th width="8%">Ưu tiên</th>
-                                                <th width="10%">Trạng thái</th>
-                                                <th width="10%">Tiết kiệm</th>
-                                                <th width="10%">Thao tác</th>
+                                                <th width="22%">Sản phẩm</th>
+                                                <th width="10%">Ảnh</th>
+                                                <th width="12%">Giá gốc</th>
+                                                <th width="15%">Giá Flash Sale <span class="text-danger">*</span></th>
+                                                <th width="18%">Số lượng <span class="text-danger">*</span></th>
+                                                <th width="12%">Trạng thái</th>
+                                                <th width="12%">Tiết kiệm</th>
+                                                <th width="12%">Thao tác</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -265,12 +264,6 @@ document.addEventListener('DOMContentLoaded', function() {
                        data-max-quantity="${maxQuantity}"
                        data-index="${productIndex}"
                        placeholder="Max: ${maxQuantity}">
-            </td>
-            <td>
-                <input type="number" class="form-control" 
-                       name="products[${productIndex}][priority]" 
-                       value="0" min="0" max="999"
-                       placeholder="0">
             </td>
             <td>
                 <select class="form-control" name="products[${productIndex}][status]">

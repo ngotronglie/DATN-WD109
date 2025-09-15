@@ -108,16 +108,14 @@
                                     <table class="table table-bordered" id="products-table">
                                         <thead>
                                             <tr>
-                                                <th width="18%">Sản phẩm</th>
-                                                <th width="7%">Ảnh</th>
-                                                <th width="9%">Giá gốc</th>
-                                                <th width="11%">Giá Flash Sale <span class="text-danger">*</span></th>
-                                                <th width="15%">Số lượng <span class="text-danger">*</span></th>
-                                                <th width="7%">Ưu tiên</th>
-                                                <th width="9%">Trạng thái</th>
-                                                <th width="7%">Đã bán</th>
-                                                <th width="10%">Tiết kiệm</th>
-                                                <th width="10%">Thao tác</th>
+                                                <th width="22%">Sản phẩm</th>
+                                                <th width="10%">Ảnh</th>
+                                                <th width="12%">Giá gốc</th>
+                                                <th width="15%">Giá Flash Sale <span class="text-danger">*</span></th>
+                                                <th width="18%">Số lượng <span class="text-danger">*</span></th>
+                                                <th width="12%">Trạng thái</th>
+                                                <th width="12%">Tiết kiệm</th>
+                                                <th width="12%">Thao tác</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -166,22 +164,11 @@
                                                            placeholder="Max: {{ $flashSaleProduct->productVariant->quantity + $flashSaleProduct->sale_quantity }}">
                                                 </td>
                                                 <td>
-                                                    <input type="number" class="form-control" 
-                                                           name="products[{{ $index }}][priority]" 
-                                                           value="{{ $flashSaleProduct->priority ?? 0 }}"
-                                                           min="0" max="999" placeholder="0">
-                                                </td>
-                                                <td>
                                                     <select class="form-control" name="products[{{ $index }}][status]">
                                                         <option value="active" {{ ($flashSaleProduct->status ?? 'active') == 'active' ? 'selected' : '' }}>Hoạt động</option>
                                                         <option value="featured" {{ ($flashSaleProduct->status ?? 'active') == 'featured' ? 'selected' : '' }}>Nổi bật</option>
                                                         <option value="inactive" {{ ($flashSaleProduct->status ?? 'active') == 'inactive' ? 'selected' : '' }}>Tạm dừng</option>
                                                     </select>
-                                                </td>
-                                                <td class="text-center">
-                                                    <span class="badge bg-info">
-                                                        {{ $flashSaleProduct->initial_stock - $flashSaleProduct->remaining_stock }}
-                                                    </span>
                                                 </td>
                                                 <td class="text-center">
                                                     @php
@@ -196,7 +183,7 @@
                                                 <td class="text-center">
                                                     <button type="button" class="btn btn-danger btn-sm remove-product" 
                                                             data-product-id="{{ $flashSaleProduct->product_variant_id }}">
-                                                        <i class="fas fa-trash"></i>
+                                                        🗑️
                                                     </button>
                                                 </td>
                                             </tr>
@@ -310,13 +297,19 @@ document.addEventListener('DOMContentLoaded', function() {
                        data-index="${productIndex}">
             </td>
             <td>
-                <input type="number" class="form-control" 
+                <input type="number" class="form-control sale-quantity-input" 
                        name="products[${productIndex}][sale_quantity]" 
                        required min="1" max="${maxQuantity}"
+                       data-max-quantity="${maxQuantity}"
+                       data-index="${productIndex}"
                        placeholder="Max: ${maxQuantity}">
             </td>
-            <td class="text-center">
-                <span class="badge bg-info">0</span>
+            <td>
+                <select class="form-control" name="products[${productIndex}][status]">
+                    <option value="active">Hoạt động</option>
+                    <option value="featured">Nổi bật</option>
+                    <option value="inactive">Tạm dừng</option>
+                </select>
             </td>
             <td class="text-center">
                 <span class="saving-amount" data-index="${productIndex}">-</span>
@@ -324,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="text-center">
                 <button type="button" class="btn btn-danger btn-sm remove-product" 
                         data-product-id="${productId}">
-                    <i class="fas fa-trash"></i>
+                    🗑️
                 </button>
             </td>
         `;
