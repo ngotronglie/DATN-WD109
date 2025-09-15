@@ -211,16 +211,18 @@
 document.addEventListener('DOMContentLoaded', function() {
     const categorySelect = document.getElementById('category_select');
     const productSelect = document.getElementById('product_select');
+    const variantSelect = document.getElementById('variant_select');
     const addProductBtn = document.getElementById('add_product_btn');
     const productsTable = document.getElementById('products-table').getElementsByTagName('tbody')[0];
     const form = document.getElementById('flashSaleForm');
     
     let productIndex = {{ $flashSale->flashSaleProducts->count() }};
-    let selectedProducts = new Set();
+    let selectedVariants = new Set();
+    let productsData = [];
 
-    // Thêm các sản phẩm hiện có vào set
+    // Thêm các biến thể hiện có vào set (để tránh trùng)
     @foreach($flashSale->flashSaleProducts as $flashSaleProduct)
-        selectedProducts.add('{{ $flashSaleProduct->product_variant_id }}');
+        selectedVariants.add('{{ $flashSaleProduct->product_variant_id }}');
     @endforeach
 
     // Load sản phẩm theo danh mục
@@ -237,21 +239,18 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`{{ route('admin.flash-sales.products.byCategory') }}?category_id=${categoryId}`)
             .then(response => response.json())
             .then(data => {
+                productsData = data;
                 productSelect.innerHTML = '<option value="">-- Chọn sản phẩm --</option>';
-                
                 data.forEach(product => {
-                    if (!selectedProducts.has(product.id.toString())) {
-                        const option = document.createElement('option');
-                        option.value = product.id;
-                        option.textContent = product.name;
-                        option.dataset.price = product.price;
-                        option.dataset.quantity = product.quantity;
-                        option.dataset.image = product.image;
-                        productSelect.appendChild(option);
-                    }
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = product.name;
+                    productSelect.appendChild(option);
                 });
-                
                 productSelect.disabled = false;
+                variantSelect.innerHTML = '<option value="">-- Chọn sản phẩm trước --</option>';
+                variantSelect.disabled = true;
+                addProductBtn.disabled = true;
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -259,32 +258,67 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
+    // Load variants theo sản phẩm
     productSelect.addEventListener('change', function() {
+        const productId = this.value;
+        
+        if (!productId) {
+            variantSelect.innerHTML = '<option value="">-- Chọn sản phẩm trước --</option>';
+            variantSelect.disabled = true;
+            addProductBtn.disabled = true;
+            return;
+        }
+
+        const selectedProduct = productsData.find(p => p.id == productId);
+        if (selectedProduct) {
+            variantSelect.innerHTML = '<option value="">-- Chọn biến thể --</option>';
+            
+            selectedProduct.variants.forEach(variant => {
+                if (!selectedVariants.has(variant.id.toString())) {
+                    const option = document.createElement('option');
+                    option.value = variant.id;
+                    option.textContent = `${variant.color_name} - ${variant.capacity_name} (${formatPrice(variant.price_sale || variant.price)})`;
+                    option.dataset.variant = JSON.stringify(variant);
+                    option.dataset.productName = selectedProduct.name;
+                    variantSelect.appendChild(option);
+                }
+            });
+            
+            variantSelect.disabled = false;
+        }
+        
+        addProductBtn.disabled = true;
+    });
+
+    // Enable/disable add button
+    variantSelect.addEventListener('change', function() {
         addProductBtn.disabled = !this.value;
     });
 
-    // Thêm sản phẩm vào bảng
+    // Thêm biến thể vào bảng
     addProductBtn.addEventListener('click', function() {
-        const selectedOption = productSelect.options[productSelect.selectedIndex];
+        const selectedVariantOption = variantSelect.options[variantSelect.selectedIndex];
         
-        if (!selectedOption.value) return;
+        if (!selectedVariantOption.value) return;
 
-        const productId = selectedOption.value;
-        const productName = selectedOption.textContent;
-        const originalPrice = parseFloat(selectedOption.dataset.price);
-        const maxQuantity = parseInt(selectedOption.dataset.quantity);
-        const productImage = selectedOption.dataset.image;
+        const variantId = selectedVariantOption.value;
+        const variantData = JSON.parse(selectedVariantOption.dataset.variant);
+        const productName = selectedVariantOption.dataset.productName;
+        const originalPrice = variantData.price_sale || variantData.price;
+        const maxQuantity = variantData.quantity;
+        const variantImage = variantData.image;
 
-        selectedProducts.add(productId);
+        selectedVariants.add(variantId);
 
         const row = productsTable.insertRow();
         row.innerHTML = `
             <td>
-                ${productName}
-                <input type="hidden" name="products[${productIndex}][product_variant_id]" value="${productId}">
+                <strong>${productName}</strong><br>
+                <small class="text-muted">${variantData.color_name} - ${variantData.capacity_name}</small>
+                <input type="hidden" name="products[${productIndex}][product_variant_id]" value="${variantId}">
             </td>
             <td>
-                <img src="${productImage}" alt="${productName}" style="width: 50px; height: 50px; object-fit: cover;">
+                ${variantImage ? `<img src="${variantImage}" alt="${productName}" style="width: 40px; height: 40px; object-fit: cover;">` : '<div class="bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fas fa-image text-muted"></i></div>'}
             </td>
             <td class="text-center">
                 <strong>${formatPrice(originalPrice)}</strong>
@@ -316,31 +350,31 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
             <td class="text-center">
                 <button type="button" class="btn btn-danger btn-sm remove-product" 
-                        data-product-id="${productId}">
+                        data-variant-id="${variantId}" title="Xóa sản phẩm">
                     🗑️
                 </button>
             </td>
         `;
 
-        selectedOption.remove();
-        productSelect.value = '';
+        selectedVariantOption.remove();
+        variantSelect.value = '';
         addProductBtn.disabled = true;
 
         productIndex++;
     });
 
-    // Xóa sản phẩm
+    // Xóa biến thể khỏi bảng
     productsTable.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-product')) {
-            const button = e.target.closest('.remove-product');
-            const productId = button.dataset.productId;
-            const row = button.closest('tr');
+        const removeButton = e.target.closest('.remove-product');
+        if (removeButton) {
+            const variantId = removeButton.dataset.variantId;
+            const row = removeButton.closest('tr');
             
-            selectedProducts.delete(productId);
+            selectedVariants.delete(variantId);
             row.remove();
             
-            if (categorySelect.value) {
-                categorySelect.dispatchEvent(new Event('change'));
+            if (productSelect.value) {
+                productSelect.dispatchEvent(new Event('change'));
             }
         }
     });
