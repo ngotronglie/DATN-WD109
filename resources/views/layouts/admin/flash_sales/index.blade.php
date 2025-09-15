@@ -138,7 +138,7 @@
 function toggleStatus(flashSaleId) {
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = `{{ route('admin.flash-sales.toggle-status', '') }}/${flashSaleId}`;
+    form.action = `/admin/flash-sales/${flashSaleId}/toggle-status`;
     form.style.display = 'none';
     
     const csrfToken = document.createElement('input');
