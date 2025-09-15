@@ -9,6 +9,9 @@
                     <h3 class="card-title">Chỉnh sửa Flash Sale: {{ $flashSale->name }}</h3>
                 </div>
                 <div class="card-body">
+                    @if(session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
                     <form action="{{ route('admin.flash-sales.update', $flashSale->id) }}" method="POST" id="flashSaleForm">
                         @csrf
                         @method('PUT')
@@ -46,9 +49,12 @@
                                     <input type="datetime-local" class="form-control @error('start_time') is-invalid @enderror"
                                            id="start_time" name="start_time" 
                                            value="{{ old('start_time', $flashSale->start_time->format('Y-m-d\TH:i')) }}" 
-                                           required {{ $flashSale->isOngoing() ? 'readonly' : '' }}>
+                                           required {{ $flashSale->isOngoing() ? 'readonly' : '' }} step="60">
                                     @error('start_time')
                                         <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    @error('time')
+                                        <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                     @if($flashSale->isOngoing())
                                         <small class="text-muted">Flash sale đang diễn ra, không thể thay đổi thời gian bắt đầu</small>
@@ -61,7 +67,7 @@
                                     <label for="end_time">Thời gian kết thúc <span class="text-danger">*</span></label>
                                     <input type="datetime-local" class="form-control @error('end_time') is-invalid @enderror"
                                            id="end_time" name="end_time" 
-                                           value="{{ old('end_time', $flashSale->end_time->format('Y-m-d\TH:i')) }}" required>
+                                           value="{{ old('end_time', $flashSale->end_time->format('Y-m-d\TH:i')) }}" required step="60">
                                     @error('end_time')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -182,7 +188,7 @@
                                                 </td>
                                                 <td class="text-center">
                                                     <button type="button" class="btn btn-danger btn-sm remove-product" 
-                                                            data-product-id="{{ $flashSaleProduct->product_variant_id }}">
+                                                            data-variant-id="{{ $flashSaleProduct->product_variant_id }}" title="Xóa sản phẩm">
                                                         🗑️
                                                     </button>
                                                 </td>

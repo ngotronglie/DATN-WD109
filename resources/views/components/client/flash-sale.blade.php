@@ -28,19 +28,21 @@
             @foreach($flashSales as $flashSale)
                 @foreach($flashSale->flashSaleProductsByPriority->take($limit) as $flashProduct)
                     @if($flashProduct->hasStock() && $flashProduct->productVariant)
-                        <div class="col-lg-1 col-md-2 col-sm-2 col-3 mb-1">
+                        <div class="col-lg-1 col-md-2 col-sm-2 col-2 mb-1">
                             <div class="flash-product-card">
                                 <a href="{{ route('product.detail', $flashProduct->productVariant->product->id) }}" class="text-decoration-none">
                                     {{-- Product Image --}}
                                     <div class="product-image-container">
-                                        <img src="{{ $flashProduct->productVariant->image ? asset('storage/' . $flashProduct->productVariant->image) : asset('images/no-image.png') }}" 
+                                        <img src="{{ $flashProduct->productVariant->image ?: asset('images/no-image.png') }}" 
                                              alt="{{ $flashProduct->productVariant->product->name }}" 
-                                             class="product-img">
+                                             class="product-img"
+                                             onerror="this.src='{{ asset('images/no-image.png') }}'">
                                         <div class="discount-tag">-{{ $flashProduct->getDiscountPercentage() }}%</div>
                                     </div>
 
                                     {{-- Product Info --}}
                                     <div class="product-details">
+                                        <div class="product-name" title="{{ $flashProduct->productVariant->product->name }}">{{ $flashProduct->productVariant->product->name }}</div>
                                         <div class="product-price">
                                             <span class="sale-price">₫{{ number_format($flashProduct->sale_price, 0, ',', '.') }}</span>
                                             <span class="original-price">₫{{ number_format($flashProduct->original_price, 0, ',', '.') }}</span>
@@ -140,14 +142,20 @@
 .product-image-container {
     position: relative;
     width: 100%;
-    height: 52px;
+    /* square ratio */
+    aspect-ratio: 1 / 1;
     overflow: hidden;
 }
 
-.product-img {
+/* Force image to fill container and fit the tile */
+.flash-sale-section .product-image-container .product-img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
 }
 
 .discount-tag {
@@ -156,14 +164,27 @@
     right: 0;
     background: #ee4d2d;
     color: white;
-    padding: 1px 4px;
-    font-size: 9px;
+    padding: 0 3px;
+    font-size: 8px;
     font-weight: 600;
     border-bottom-left-radius: 4px;
 }
 
 .product-details {
     padding: 2px;
+}
+
+.product-name {
+    font-size: 9px;
+    line-height: 1.1;
+    height: 20px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin-bottom: 2px;
+    color: #333;
+    text-align: center;
 }
 
 .product-price {
@@ -213,7 +234,7 @@
         font-size: 14px;
     }
     
-    .product-image-container { height: 48px; }
+    .product-image-container { aspect-ratio: 1 / 1; }
     
     .countdown-compact {
         flex-direction: column;
@@ -222,7 +243,7 @@
 }
 
 @media (max-width: 576px) {
-    .product-image-container { height: 52px; }
+    .product-image-container { aspect-ratio: 1 / 1; }
     
     .sale-price { font-size: 8px; }
     
