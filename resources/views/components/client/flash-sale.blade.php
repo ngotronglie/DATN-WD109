@@ -24,11 +24,11 @@
         </div>
 
         {{-- Products Grid --}}
-        <div class="row">
+        <div class="row g-1">
             @foreach($flashSales as $flashSale)
                 @foreach($flashSale->flashSaleProductsByPriority->take($limit) as $flashProduct)
                     @if($flashProduct->hasStock() && $flashProduct->productVariant)
-                        <div class="col-lg-1 col-md-2 col-sm-3 col-4 mb-2">
+                        <div class="col-lg-1 col-md-2 col-sm-2 col-3 mb-1">
                             <div class="flash-product-card">
                                 <a href="{{ route('product.detail', $flashProduct->productVariant->product->id) }}" class="text-decoration-none">
                                     {{-- Product Image --}}
@@ -140,7 +140,7 @@
 .product-image-container {
     position: relative;
     width: 100%;
-    height: 60px;
+    height: 52px;
     overflow: hidden;
 }
 
@@ -156,8 +156,8 @@
     right: 0;
     background: #ee4d2d;
     color: white;
-    padding: 2px 6px;
-    font-size: 10px;
+    padding: 1px 4px;
+    font-size: 9px;
     font-weight: 600;
     border-bottom-left-radius: 4px;
 }
@@ -172,14 +172,14 @@
 
 .sale-price {
     color: #ee4d2d;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
     display: block;
 }
 
 .original-price {
     color: #929292;
-    font-size: 8px;
+    font-size: 7px;
     text-decoration: line-through;
 }
 
@@ -198,7 +198,7 @@
 }
 
 .stock-info {
-    font-size: 7px;
+    font-size: 6.5px;
     color: #757575;
     text-align: center;
 }
@@ -213,9 +213,7 @@
         font-size: 14px;
     }
     
-    .product-image-container {
-        height: 50px;
-    }
+    .product-image-container { height: 48px; }
     
     .countdown-compact {
         flex-direction: column;
@@ -224,17 +222,11 @@
 }
 
 @media (max-width: 576px) {
-    .product-image-container {
-        height: 60px;
-    }
+    .product-image-container { height: 52px; }
     
-    .sale-price {
-        font-size: 9px;
-    }
+    .sale-price { font-size: 8px; }
     
-    .original-price {
-        font-size: 8px;
-    }
+    .original-price { font-size: 7px; }
 }
 </style>
 
