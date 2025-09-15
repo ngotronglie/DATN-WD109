@@ -43,7 +43,7 @@ class FlashSalesController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'start_time' => 'required|date|after:now',
+            'start_time' => 'required|date|after_or_equal:now',
             'end_time' => 'required|date|after:start_time',
             'is_active' => 'required|boolean',
             'products' => 'required|array|min:1',

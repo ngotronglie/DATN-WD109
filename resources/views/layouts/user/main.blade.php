@@ -5,6 +5,11 @@
 
     @include('components.client.category-slider', ['categories' => $categories])
 
+    {{-- Flash Sale Section --}}
+    @if(isset($flashSales) && $flashSales->isNotEmpty())
+        @include('components.client.flash-sale', ['flashSales' => $flashSales, 'limit' => 8])
+    @endif
+
     <!-- START PAGE CONTENT -->
     <section id="page-content" class="page-wrapper section">
 

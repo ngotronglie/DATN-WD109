@@ -40,6 +40,7 @@ use App\Http\Controllers\Client\ShopController;
 // Client Routes
 Route::get('/', [ClientController::class, 'index'])->name('home');
 Route::get('/products', [ClientController::class, 'products'])->name('products');
+Route::get('/flash-sales', [ClientController::class, 'flashSales'])->name('flash-sales');
 Route::get('/about', [ClientController::class, 'about'])->name('about');
 Route::get('/contact', [ClientController::class, 'contact'])->name('contact');
 Route::post('/contact', [ClientController::class, 'submitContact'])->name('contact.post');

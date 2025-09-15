@@ -43,7 +43,7 @@
                                 <div class="form-group">
                                     <label for="start_time">Thời gian bắt đầu <span class="text-danger">*</span></label>
                                     <input type="datetime-local" class="form-control @error('start_time') is-invalid @enderror"
-                                           id="start_time" name="start_time" value="{{ old('start_time') }}" required>
+                                           id="start_time" name="start_time" value="{{ old('start_time') }}" required step="3600">
                                     @error('start_time')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -54,7 +54,7 @@
                                 <div class="form-group">
                                     <label for="end_time">Thời gian kết thúc <span class="text-danger">*</span></label>
                                     <input type="datetime-local" class="form-control @error('end_time') is-invalid @enderror"
-                                           id="end_time" name="end_time" value="{{ old('end_time') }}" required>
+                                           id="end_time" name="end_time" value="{{ old('end_time') }}" required step="3600">
                                     @error('end_time')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror

@@ -11,6 +11,7 @@ use App\Models\Color;
 use App\Models\Capacity;
 use App\Models\ProductVariant;
 use App\Models\Voucher;
+use App\Models\FlashSale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -50,9 +51,14 @@ class ClientController extends Controller
         ) pv ON pv.product_id = p.id
         WHERE p.is_active = 1
         LIMIT 0, 8;');
+        
         $banners = \App\Models\Banner::where('is_active', 1)->orderByDesc('id')->get();
         $categories = \App\Models\Categories::whereNull('Parent_id')->where('Is_active', 1)->get();
-        return view('layouts.user.main', compact('products', 'banners', 'categories'));
+        
+        // Lấy flash sales đang hoạt động
+        $flashSales = FlashSale::getActiveFlashSales();
+        
+        return view('layouts.user.main', compact('products', 'banners', 'categories', 'flashSales'));
     }
 
     public function products()
@@ -61,6 +67,17 @@ class ClientController extends Controller
         $products = Product::where('is_active', 1)->paginate(12);
 
         return view('layouts.user.shop', compact('categories', 'products'));
+    }
+
+    public function flashSales()
+    {
+        // Lấy tất cả flash sales đang hoạt động
+        $flashSales = FlashSale::getActiveFlashSales();
+        
+        // Lấy categories để hiển thị filter
+        $categories = Categories::whereNull('Parent_id')->where('Is_active', 1)->get();
+        
+        return view('layouts.user.flash-sales', compact('flashSales', 'categories'));
     }
 
     public function category($slug)
