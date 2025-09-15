@@ -9,6 +9,9 @@
                     <h3 class="card-title">Tạo Flash Sale mới</h3>
                 </div>
                 <div class="card-body">
+                    @if(session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
                     <form action="{{ route('admin.flash-sales.store') }}" method="POST" id="flashSaleForm">
                         @csrf
                         <div class="row">
@@ -46,6 +49,9 @@
                                            id="start_time" name="start_time" value="{{ old('start_time') }}" required step="60">
                                     @error('start_time')
                                         <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    @error('time')
+                                        <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>

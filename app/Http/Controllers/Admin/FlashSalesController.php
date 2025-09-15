@@ -54,6 +54,26 @@ class FlashSalesController extends Controller
             'products.*.status' => 'nullable|in:active,inactive,featured',
         ]);
 
+        // Cấm trùng thời gian toàn cục: tại bất kỳ thời điểm chỉ có 1 Flash Sale đang diễn ra
+        // Chỉ áp dụng kiểm tra khi tạo sale ở trạng thái hoạt động
+        if ((int) $request->is_active === 1) {
+            $start = Carbon::parse($request->start_time);
+            $end = Carbon::parse($request->end_time);
+
+            $overlap = FlashSale::where('is_active', 1)
+                ->where(function($q) use ($start, $end) {
+                    $q->where('start_time', '<', $end)
+                      ->where('end_time', '>', $start);
+                })
+                ->exists();
+
+            if ($overlap) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['time' => 'Đã có Flash Sale khác đang (hoặc sẽ) diễn ra trong khoảng thời gian này.']);
+            }
+        }
+
         DB::beginTransaction();
         try {
             // Tạo flash sale
@@ -160,6 +180,26 @@ class FlashSalesController extends Controller
             'products.*.priority' => 'nullable|integer|min:0|max:999',
             'products.*.status' => 'nullable|in:active,inactive,featured',
         ]);
+
+        // Cấm trùng thời gian toàn cục khi cập nhật (loại trừ chính bản ghi đang sửa)
+        if ((int) $request->is_active === 1) {
+            $start = Carbon::parse($request->start_time);
+            $end = Carbon::parse($request->end_time);
+
+            $overlap = FlashSale::where('id', '!=', $flashSale->id)
+                ->where('is_active', 1)
+                ->where(function($q) use ($start, $end) {
+                    $q->where('start_time', '<', $end)
+                      ->where('end_time', '>', $start);
+                })
+                ->exists();
+
+            if ($overlap) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['time' => 'Khoảng thời gian bị trùng với một Flash Sale khác đang hoạt động.']);
+            }
+        }
 
         DB::beginTransaction();
         try {
