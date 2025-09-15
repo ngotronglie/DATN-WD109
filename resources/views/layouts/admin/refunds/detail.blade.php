@@ -1,9 +1,10 @@
 @extends('index.admindashboard')
 
 @section('content')
-<h2>Chi tiết hoàn tiền cho đơn hàng #{{ $refund->order_id }}</h2>
+<h2>Chi tiết yêu cầu hoàn tiền/hoàn hàng - Đơn #{{ $refund->order_id }}</h2>
 
 <table class="table table-bordered">
+    @if($refund->bank_name || $refund->bank_number || $refund->account_name)
     <tr>
         <th>Ngân hàng</th>
         <td>{{ $refund->bank_name }}</td>
@@ -12,10 +13,11 @@
         <th>Số tài khoản</th>
         <td>{{ $refund->bank_number }}</td>
     </tr>
-        <tr>
+    <tr>
         <th>Tên tài khoản</th>
         <td>{{ $refund->account_name }}</td>
     </tr>
+    @endif
     <tr>
         <th>Lý do</th>
         <td>{{ $refund->reason }}</td>
@@ -40,22 +42,32 @@
             @endif
         </td>
     </tr>
+    @if($refund->proof_image)
     <tr>
         <th>Ảnh chuyển khoản đã hoàn (admin)</th>
         <td>
-            @if($refund->proof_image)
             <img src="{{ asset('storage/' . $refund->proof_image) }}" width="150">
-            @else
-            <form action="{{ route('admin.refunds.uploadProof', $refund->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <input type="file" name="proof_image" required>
-                <button class="btn btn-sm btn-primary mt-2">Xác nhận đã hoàn</button>
-            </form>
-
-            @endif
         </td>
     </tr>
+    @endif
 </table>
+
+@php
+    $order = $refund->order;
+@endphp
+
+@if($order && (int)$order->status === 11)
+<div class="d-flex gap-2">
+    <form action="{{ route('admin.orders.confirmReceiveBack', $refund->id) }}" method="POST" onsubmit="return confirm('Duyệt hoàn hàng và chuyển trạng thái sang Đã hoàn hàng?')">
+        @csrf
+        <button class="btn btn-success">Duyệt hoàn hàng</button>
+    </form>
+    <form action="{{ route('admin.admin.refunds.reject', ['id' => $refund->id]) }}" method="POST" onsubmit="return confirm('Từ chối yêu cầu hoàn hàng?')">
+        @csrf
+        <button class="btn btn-danger">Từ chối</button>
+    </form>
+</div>
+@endif
 
 <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary mt-3">← Quay lại danh sách</a>
 <style>

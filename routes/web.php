@@ -143,6 +143,10 @@ Route::get('/verify-email/{email}/{token}', [VerifyEmailController::class, 'veri
 // Order routes
 Route::post('/order/place', [EmailOrderController::class, 'placeOrder'])->name('order.place');
 Route::post('/order/cancel/{id}', [EmailOrderController::class, 'cancelOrder'])->name('order.cancel');
+// Cho phép người dùng tự hủy đơn ở trạng thái 0 hoặc 1
+Route::post('/account/order/{id}/cancel', [UserOrderController::class, 'cancelOrder'])->name('user.orders.cancel');
+// Người dùng xác nhận đã nhận hàng khi trạng thái đang vận chuyển (4)
+Route::post('/account/order/{id}/confirm-received', [UserOrderController::class, 'confirmReceived'])->name('user.orders.confirmReceived');
 
 
 Route::middleware(['auth'])->group(function () {

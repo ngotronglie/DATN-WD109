@@ -40,6 +40,9 @@
                     6 => \App\Models\Order::where('status', 6)->count(),
                     7 => \App\Models\Order::where('status', 7)->count(),
                     8 => \App\Models\Order::where('status', 8)->count(),
+                    9 => \App\Models\Order::where('status', 9)->count(),
+                    11 => \App\Models\Order::where('status', 11)->count(),
+                    12 => \App\Models\Order::where('status', 12)->count(),
                     ];
                     @endphp
                     <div class="mb-3">
@@ -52,7 +55,10 @@
                         <a href="{{ route('admin.orders.index', ['status' => 5]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 5 ? 'active' : '' }}">Đã giao hàng ({{ $counts[5] }})</a>
                         <a href="{{ route('admin.orders.index', ['status' => 6]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 6 ? 'active' : '' }}">Đã hủy ({{ $counts[6] }})</a>
                         <a href="{{ route('admin.orders.index', ['status' => 7]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 7 ? 'active' : '' }}">Đã hoàn trả ({{ $counts[7] }})</a>
-                        <a href="{{ route('admin.orders.index', ['status' => 8]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 8 ? 'active' : '' }}">Đã hoàn tiền ({{ $counts[8] }})</a>
+                        <a href="{{ route('admin.orders.index', ['status' => 11]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 11 ? 'active' : '' }}">Đang yêu cầu hoàn hàng ({{ $counts[11] }})</a>
+                        <a href="{{ route('admin.orders.index', ['status' => 8]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 8 ? 'active' : '' }}">Đã hoàn hàng ({{ $counts[8] }})</a>
+                        <a href="{{ route('admin.orders.index', ['status' => 9]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 9 ? 'active' : '' }}">Đã hoàn tiền ({{ $counts[9] }})</a>
+                        <a href="{{ route('admin.orders.index', ['status' => 12]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 12 ? 'active' : '' }}">Không hoàn hàng ({{ $counts[12] }})</a>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover table-striped table-bordered">
@@ -97,12 +103,16 @@
                                         <span class="badge bg-danger">Đã hủy</span>
                                         @elseif($stt === 7)
                                         <span class="badge bg-warning text-dark">Đã xác nhận yêu cầu hoàn tiền</span>
+                                        @elseif($stt === 11)
+                                        <span class="badge bg-warning text-dark">Đang yêu cầu hoàn hàng</span>
                                         @elseif($stt === 8)
-                                        <span class="badge bg-success text-dark">Đã nhận tiền hoàn</span>
+                                        <span class="badge bg-success text-dark">Đã hoàn hàng</span>
                                         @elseif($stt === 9)
                                         <span class="badge bg-success text-dark">Hoàn tiền thành công</span>
                                         @elseif($stt === 10)
                                         <span class="badge bg-success text-dark">Không xác nhận yêu cầu hoàn tiền</span>
+                                        @elseif($stt === 12)
+                                        <span class="badge bg-dark text-white">Không hoàn hàng</span>
                                         @else
                                         <span class="badge bg-secondary">Không xác định</span>
                                         @endif
@@ -149,7 +159,9 @@
                                             <input type="hidden" name="status" value="2">
                                             <button class="btn btn-info btn-sm" onclick="return confirm('Chuyển sang đóng gói?')">Đóng gói</button>
                                         </form>
+                                        @if (strtolower((string)$order->payment_method) === 'vnpay')
                                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#initiateRefundModal-{{ $order->id }}">Hoàn tiền</button>
+                                        @endif
                                         @elseif($stt === 2)
                                         <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
                                             @csrf
@@ -168,11 +180,6 @@
                                             @csrf
                                             <input type="hidden" name="status" value="6">
                                             <!-- <button class="btn btn-danger btn-sm" onclick="return confirm('Hủy đơn này?')">Hủy đơn</button> -->
-                                        </form>
-                                        <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <input type="hidden" name="status" value="5">
-                                            <button class="btn btn-success btn-sm" onclick="return confirm('Hoàn thành đơn này?')">Hoàn thành đơn hàng</button>
                                         </form>
                                         @elseif($stt === 5)
                                         -
@@ -203,17 +210,18 @@
                                             </button>
                                         </form>
 
-                                        {{-- Nếu đã xác thực (status = 7) nhưng chưa nhận lại hàng --}}
-                                        @elseif (
-                                        $order->status == 7 &&
-                                        $order->refundRequest &&
-                                        $order->refundRequest->sent_back_at && // chỉ hiển thị khi user đã gửi trả hàng
-                                        !$order->refundRequest->received_back_at // admin chưa nhận
-                                        )
+                                        {{-- Cho phép duyệt hoàn hàng khi đang yêu cầu hoàn hàng (11) --}}
+                                        @elseif ($order->status == 11 && $order->refundRequest)
                                         <form action="{{ route('admin.orders.confirmReceiveBack', $order->refundRequest->id) }}" method="POST" style="display:inline-block;">
                                             @csrf
-                                            <button class="btn btn-success btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Xác nhận đã nhận hàng hoàn?')">
-                                                Xác nhận đã nhận hàng
+                                            <button class="btn btn-success btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Duyệt hoàn hàng và chuyển trạng thái sang Đã hoàn hàng?')">
+                                                Duyệt hoàn hàng
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('admin.admin.refunds.reject', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
+                                            @csrf
+                                            <button class="btn btn-danger btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Từ chối yêu cầu hoàn hàng?')">
+                                                Không hoàn hàng
                                             </button>
                                         </form>
                                         @endif
@@ -287,7 +295,7 @@
     </div>
 </div>
 @foreach($orders as $order)
-    @if (in_array((int)$order->status, [1,2]))
+    @if (in_array((int)$order->status, [1,2]) && strtolower((string)$order->payment_method) === 'vnpay')
     <div class="modal fade" id="initiateRefundModal-{{ $order->id }}" tabindex="-1" aria-labelledby="initiateRefundLabel-{{ $order->id }}" aria-hidden="true">
         <div class="modal-dialog">
             <form class="modal-content" method="POST" action="{{ route('admin.orders.refund.initiate', $order->id) }}">
