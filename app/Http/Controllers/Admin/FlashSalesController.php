@@ -50,6 +50,8 @@ class FlashSalesController extends Controller
             'products.*.product_variant_id' => 'required|exists:product_variants,id',
             'products.*.sale_price' => 'required|numeric|min:0',
             'products.*.sale_quantity' => 'required|integer|min:1',
+            'products.*.priority' => 'nullable|integer|min:0|max:999',
+            'products.*.status' => 'nullable|in:active,inactive,featured',
         ]);
 
         DB::beginTransaction();
@@ -93,6 +95,8 @@ class FlashSalesController extends Controller
                         'initial_stock' => $productData['sale_quantity'],
                         'remaining_stock' => $productData['sale_quantity'],
                         'original_price' => $originalPrice,
+                        'priority' => $productData['priority'] ?? 0,
+                        'status' => $productData['status'] ?? 'active',
                     ]);
                 }
             }
@@ -153,6 +157,8 @@ class FlashSalesController extends Controller
             'products.*.product_variant_id' => 'required|exists:product_variants,id',
             'products.*.sale_price' => 'required|numeric|min:0',
             'products.*.sale_quantity' => 'required|integer|min:1',
+            'products.*.priority' => 'nullable|integer|min:0|max:999',
+            'products.*.status' => 'nullable|in:active,inactive,featured',
         ]);
 
         DB::beginTransaction();
@@ -189,6 +195,8 @@ class FlashSalesController extends Controller
                     'initial_stock' => $productData['sale_quantity'],
                     'remaining_stock' => $productData['sale_quantity'],
                     'original_price' => $originalPrice,
+                    'priority' => $productData['priority'] ?? 0,
+                    'status' => $productData['status'] ?? 'active',
                 ]);
             }
 
@@ -251,23 +259,39 @@ class FlashSalesController extends Controller
     {
         $categoryId = $request->input('category_id');
         
-        $products = Product::with(['variants.color', 'variants.capacity'])
+        $products = Product::with(['variants' => function($query) {
+                                $query->where('quantity', '>', 0);
+                            }, 'variants.color', 'variants.capacity'])
                           ->where('categories_id', $categoryId)
                           ->where('is_active', 1)
+                          ->whereHas('variants', function($query) {
+                              $query->where('quantity', '>', 0);
+                          })
                           ->get();
 
         $result = [];
         foreach ($products as $product) {
+            $variants = [];
             foreach ($product->variants as $variant) {
-                if ($variant->quantity > 0) {
-                    $result[] = [
-                        'id' => $variant->id,
-                        'name' => $product->name . ' - ' . ($variant->color->name ?? '') . ' - ' . ($variant->capacity->name ?? ''),
-                        'price' => $variant->price_sale ?? $variant->price,
-                        'quantity' => $variant->quantity,
-                        'image' => $variant->image,
-                    ];
-                }
+                $variants[] = [
+                    'id' => $variant->id,
+                    'color_id' => $variant->color_id,
+                    'color_name' => $variant->color->name ?? '',
+                    'capacity_id' => $variant->capacity_id,
+                    'capacity_name' => $variant->capacity->name ?? '',
+                    'price' => $variant->price,
+                    'price_sale' => $variant->price_sale,
+                    'quantity' => $variant->quantity,
+                    'image' => $variant->image,
+                ];
+            }
+            
+            if (!empty($variants)) {
+                $result[] = [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'variants' => $variants,
+                ];
             }
         }
 

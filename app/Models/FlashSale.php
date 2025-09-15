@@ -32,6 +32,28 @@ class FlashSale extends Model
     }
 
     /**
+     * Lấy sản phẩm Flash Sale theo priority (cao nhất trước)
+     */
+    public function flashSaleProductsByPriority()
+    {
+        return $this->hasMany(FlashSaleProduct::class)
+                    ->where('status', 'active')
+                    ->orderBy('priority', 'desc')
+                    ->orderBy('created_at', 'asc');
+    }
+
+    /**
+     * Lấy sản phẩm nổi bật (featured)
+     */
+    public function featuredProducts()
+    {
+        return $this->hasMany(FlashSaleProduct::class)
+                    ->where('status', 'featured')
+                    ->orderBy('priority', 'desc')
+                    ->orderBy('created_at', 'asc');
+    }
+
+    /**
      * Relationship với ProductVariant thông qua FlashSaleProduct
      */
     public function productVariants()
@@ -71,14 +93,54 @@ class FlashSale extends Model
     }
 
     /**
-     * Kiểm tra flash sale có đang diễn ra không
+     * Kiểm tra xem flash sale có đang hoạt động không
+     */
+    public function isActive()
+    {
+        return $this->is_active && 
+               $this->start_time <= now() && 
+               $this->end_time > now();
+    }
+
+    /**
+     * Kiểm tra xem flash sale có đang diễn ra không (alias cho isActive)
      */
     public function isOngoing()
     {
-        $now = Carbon::now();
-        return $this->is_active && 
-               $this->start_time <= $now && 
-               $this->end_time >= $now;
+        return $this->isActive();
+    }
+
+    /**
+     * Lấy Flash Sale đang hoạt động
+     */
+    public static function getActiveFlashSales()
+    {
+        return self::where('is_active', true)
+                   ->where('start_time', '<=', now())
+                   ->where('end_time', '>', now())
+                   ->with(['flashSaleProductsByPriority.productVariant.product', 
+                          'flashSaleProductsByPriority.productVariant.color',
+                          'flashSaleProductsByPriority.productVariant.capacity'])
+                   ->get();
+    }
+
+    /**
+     * Lấy sản phẩm nổi bật từ tất cả Flash Sale đang hoạt động
+     */
+    public static function getFeaturedProducts($limit = 8)
+    {
+        return FlashSaleProduct::whereHas('flashSale', function($query) {
+                    $query->where('is_active', true)
+                          ->where('start_time', '<=', now())
+                          ->where('end_time', '>', now());
+                })
+                ->where('status', 'featured')
+                ->where('remaining_stock', '>', 0)
+                ->with(['productVariant.product', 'productVariant.color', 'productVariant.capacity', 'flashSale'])
+                ->orderBy('priority', 'desc')
+                ->orderBy('created_at', 'asc')
+                ->limit($limit)
+                ->get();
     }
 
     /**

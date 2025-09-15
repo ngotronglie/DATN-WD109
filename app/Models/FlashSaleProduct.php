@@ -12,11 +12,13 @@ class FlashSaleProduct extends Model
     protected $fillable = [
         'flash_sale_id',
         'product_variant_id',
+        'original_price',
         'sale_price',
         'sale_quantity',
         'initial_stock',
         'remaining_stock',
-        'original_price'
+        'priority',
+        'status',
     ];
 
     protected $casts = [
@@ -24,7 +26,8 @@ class FlashSaleProduct extends Model
         'original_price' => 'decimal:2',
         'sale_quantity' => 'integer',
         'initial_stock' => 'integer',
-        'remaining_stock' => 'integer'
+        'remaining_stock' => 'integer',
+        'priority' => 'integer'
     ];
 
     /**

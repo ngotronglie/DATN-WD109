@@ -42,6 +42,12 @@
                                    <span class="nav-text">Mã giảm giá</span>
                               </a>
                          </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.flash-sales.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:fire-minimalistic-broken"></iconify-icon></span>
+                                   <span class="nav-text">Flash Sale</span>
+                              </a>
+                         </li>
 
                          <li class="menu-title">Quản lý sản phẩm</li>
                          <li class="nav-item">
