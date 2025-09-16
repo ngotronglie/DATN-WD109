@@ -541,15 +541,28 @@ class ClientController extends Controller
                 ? $cart->items()->with('productVariant.product', 'productVariant.color', 'productVariant.capacity')->get()
                 : collect();
             $result = $items->map(function ($item) {
+                $variant = $item->productVariant;
+                $isFlashSale = !is_null($item->flash_sale_id);
+                $effectivePrice = $item->price ?? ($variant->price_sale ?? $variant->price);
+                $originalPrice = $variant->price ?? $effectivePrice;
+                if ($isFlashSale) {
+                    $fsp = \App\Models\FlashSaleProduct::find($item->flash_sale_id);
+                    if ($fsp) {
+                        $effectivePrice = $item->price ?? (float) $fsp->sale_price;
+                        $originalPrice = (float) ($fsp->original_price ?? $originalPrice);
+                    }
+                }
                 return [
                     'id' => $item->id,
                     'variant_id' => $item->product_variant_id,
                     'quantity' => $item->quantity,
-                    'name' => $item->productVariant->product->name ?? '',
-                    'color' => $item->productVariant->color->name ?? '',
-                    'capacity' => $item->productVariant->capacity->name ?? '',
-                    'price' => $item->productVariant->price,
-                    'image' => $item->productVariant->image,
+                    'name' => $variant->product->name ?? '',
+                    'color' => $variant->color->name ?? '',
+                    'capacity' => $variant->capacity->name ?? '',
+                    'price' => (float) $effectivePrice,
+                    'original_price' => (float) $originalPrice,
+                    'is_flash_sale' => $isFlashSale,
+                    'image' => $variant->image,
                 ];
             })->values();
         } else {
@@ -560,6 +573,16 @@ class ClientController extends Controller
             foreach ($cart as $item) {
                 $variant = $variants->where('id', $item['product_variant_id'])->first();
                 if ($variant) {
+                    $isFlashSale = isset($item['flash_sale_id']);
+                    $effectivePrice = $item['price'] ?? ($variant->price_sale ?? $variant->price);
+                    $originalPrice = $variant->price ?? $effectivePrice;
+                    if ($isFlashSale) {
+                        $fsp = \App\Models\FlashSaleProduct::find($item['flash_sale_id']);
+                        if ($fsp) {
+                            $effectivePrice = $item['price'] ?? (float) $fsp->sale_price;
+                            $originalPrice = (float) ($fsp->original_price ?? $originalPrice);
+                        }
+                    }
                     $result[] = [
                         'id' => null,
                         'variant_id' => $variant->id,
@@ -567,7 +590,9 @@ class ClientController extends Controller
                         'name' => $variant->product->name ?? '',
                         'color' => $variant->color->name ?? '',
                         'capacity' => $variant->capacity->name ?? '',
-                        'price' => $variant->price,
+                        'price' => (float) $effectivePrice,
+                        'original_price' => (float) $originalPrice,
+                        'is_flash_sale' => $isFlashSale,
                         'image' => $variant->image,
                     ];
                 }

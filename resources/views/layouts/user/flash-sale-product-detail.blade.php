@@ -1021,13 +1021,51 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Add to cart function
-function addToCart() {
-    const quantity = document.getElementById('quantity').value;
-    const color = document.querySelector('input[name="color"]:checked').value;
-    const capacity = document.querySelector('input[name="capacity"]:checked').value;
-    
-    // Here you would typically send an AJAX request to add the item to cart
-    alert(`Đã thêm ${quantity} sản phẩm vào giỏ hàng!`);
+async function addToCart() {
+    const quantity = parseInt(document.getElementById('quantity').value || '1', 10);
+    const colorInput = document.querySelector('input[name="color"]:checked');
+    const capacityInput = document.querySelector('input[name="capacity"]:checked');
+    if (!colorInput || !capacityInput) {
+        showCenterNotice('Vui lòng chọn đầy đủ màu sắc và dung lượng.', 'error');
+        return;
+    }
+
+    const colorId = colorInput.value;
+    const capacityId = capacityInput.value;
+    const key = `${colorId}_${capacityId}`;
+    const variantId = variantIdMap[key];
+
+    try {
+        const res = await fetch('/api/add-to-cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                product_id: {{ $product->id }},
+                product_variant_id: variantId,
+                color_id: colorId,
+                capacity_id: capacityId,
+                quantity: quantity,
+                is_flash_sale: true,
+                flash_sale_id: {{ $flashSale->id }},
+                flash_sale_price: {{ $flashSaleProduct->sale_price }}
+            })
+        });
+        if (res.status === 401) {
+            showCenterNotice('Vui lòng đăng nhập để thêm vào giỏ hàng.', 'error');
+            return;
+        }
+        const data = await res.json();
+        if (data && data.success) {
+            showCenterNotice('Đã thêm vào giỏ hàng!', 'success');
+        } else {
+            showCenterNotice(data?.message || 'Không thể thêm vào giỏ hàng.', 'error');
+        }
+    } catch (e) {
+        showCenterNotice('Có lỗi xảy ra. Vui lòng thử lại.', 'error');
+    }
 }
 
 // Add to wishlist function

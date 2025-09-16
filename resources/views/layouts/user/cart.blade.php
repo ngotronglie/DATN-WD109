@@ -223,6 +223,10 @@
         tbody.innerHTML = '';
         cart.forEach((item, idx) => {
             const tr = document.createElement('tr');
+            const isFlash = !!item.is_flash_sale;
+            const priceHtml = isFlash
+                ? `<div><span class="text-danger fw-bold">${formatCurrency(item.price)}</span> <small class="text-muted text-decoration-line-through ms-1">${formatCurrency(item.original_price || item.price)}</small></div><span class="badge bg-warning text-dark">Flash Sale</span>`
+                : `<span class="fw-semibold">${formatCurrency(item.price)}</span>`;
             tr.innerHTML = `
             <td>
                 <img src="${item.image}" alt="${item.name}" style="width:40px;height:40px;object-fit:cover;margin-right:8px;">
@@ -230,7 +234,7 @@
             </td>
             <td>${item.color}</td>
             <td>${item.capacity}</td>
-            <td>${formatCurrency(item.price)}</td>
+            <td>${priceHtml}</td>
             <td>
                 <button class="btn btn-sm btn-light qty-btn-cart" onclick="decreaseQty(${idx})">-</button>
                 <span class="cart-qty-value" id="cart-qty-${idx}">${item.quantity}</span>
