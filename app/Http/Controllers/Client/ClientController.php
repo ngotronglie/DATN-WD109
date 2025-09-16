@@ -14,10 +14,12 @@ use App\Models\Voucher;
 use App\Models\FlashSale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\ProductComment;
 use App\Http\Requests\ContactRequest;
 use App\Models\Contact;
 use Illuminate\Support\Facades\Mail;
@@ -26,6 +28,7 @@ class ClientController extends Controller
 {
     public function index()
     {
+<<<<<<< HEAD
         $products = DB::select('SELECT
             p.id AS product_id,
             p.name AS product_name,
@@ -52,6 +55,31 @@ class ClientController extends Controller
         WHERE p.is_active = 1
         LIMIT 0, 8;');
         
+=======
+        // Get random products with their first available variant
+        $products = Product::where('is_active', 1)
+            ->with(['variants' => function($query) {
+                $query->where('quantity', '>', 0)
+                      ->orderBy('id')
+                      ->limit(1);
+            }])
+            ->inRandomOrder()
+            ->limit(8)
+            ->get()
+            ->map(function($product) {
+                $variant = $product->variants->first();
+                return (object) [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'product_view' => $product->view_count,
+                    'product_slug' => $product->slug,
+                    'product_image' => $variant ? $variant->image : null,
+                    'product_price' => $variant ? $variant->price : 0,
+                    'product_price_discount' => $variant ? $variant->price_sale : 0,
+                ];
+            });
+            
+>>>>>>> developer
         $banners = \App\Models\Banner::where('is_active', 1)->orderByDesc('id')->get();
         $categories = \App\Models\Categories::whereNull('Parent_id')->where('Is_active', 1)->get();
         
@@ -64,9 +92,10 @@ class ClientController extends Controller
     public function products()
     {
         $categories = Categories::with('children')->whereNull('parent_id')->get();
+        $allCategories = Categories::where('Is_active', 1)->get();
         $products = Product::where('is_active', 1)->paginate(12);
 
-        return view('layouts.user.shop', compact('categories', 'products'));
+        return view('layouts.user.shop', compact('categories', 'allCategories', 'products'));
     }
 
     public function flashSales()
@@ -93,7 +122,8 @@ class ClientController extends Controller
 
     public function product($slug)
     {
-        return view('layouts.user.productDetail');
+        // Redirect to the real product detail route using slug
+        return redirect()->route('product.detail', ['slug' => $slug]);
     }
 
     public function about()
@@ -174,7 +204,27 @@ class ClientController extends Controller
         $colors = Color::all();
         $capacities = Capacity::all();
         $categories = \App\Models\Categories::with('children')->whereNull('Parent_id')->get();
-        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories'));
+        $comments = $product->comments()->with('user', 'replies.user')->whereNull('parent_id')->latest()->get();
+        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories', 'comments'));
+    }
+
+    public function storeProductComment(Request $request, $productId)
+    {
+        $request->validate([
+            'content' => 'required|string|max:1000',
+            'parent_id' => 'nullable|integer'
+        ]);
+
+        $product = Product::findOrFail($productId);
+
+        ProductComment::create([
+            'product_id' => $product->id,
+            'user_id' => auth()->id(),
+            'content' => $request->input('content'),
+            'parent_id' => $request->input('parent_id')
+        ]);
+
+        return back()->with('success', 'Đã gửi bình luận');
     }
 
     public function getVariant(Request $request)
@@ -235,6 +285,15 @@ class ClientController extends Controller
         $variantId = $request->input('variant_id');
         $quantity = $request->input('quantity', 1);
 
+        // Validate stock for the variant
+        $variant = ProductVariant::find($variantId);
+        if (!$variant) {
+            return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
+        }
+        if ($quantity < 1) {
+            return response()->json(['success' => false, 'message' => 'Số lượng không hợp lệ']);
+        }
+
         if (Auth::check()) {
             $user = Auth::user();
             $cart = Cart::firstOrCreate(['user_id' => $user->id]);
@@ -242,9 +301,16 @@ class ClientController extends Controller
                 ->where('product_variant_id', $variantId)
                 ->first();
             if ($item) {
-                $item->quantity += $quantity;
+                $newQty = $item->quantity + $quantity;
+                if ($newQty > $variant->quantity) {
+                    return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                }
+                $item->quantity = $newQty;
                 $item->save();
             } else {
+                if ($quantity > $variant->quantity) {
+                    return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                }
                 CartItem::create([
                     'cart_id' => $cart->id,
                     'product_variant_id' => $variantId,
@@ -257,13 +323,20 @@ class ClientController extends Controller
             $found = false;
             foreach ($cart as &$item) {
                 if ($item['product_variant_id'] == $variantId) {
-                    $item['quantity'] += $quantity;
+                    $newQty = $item['quantity'] + $quantity;
+                    if ($newQty > $variant->quantity) {
+                        return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                    }
+                    $item['quantity'] = $newQty;
                     $found = true;
                     break;
                 }
             }
             unset($item);
             if (!$found) {
+                if ($quantity > $variant->quantity) {
+                    return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                }
                 $cart[] = [
                     'product_variant_id' => $variantId,
                     'quantity' => $quantity,
@@ -297,8 +370,15 @@ class ClientController extends Controller
             }
         }
 
-        // 👉 Lấy danh sách tỉnh/thành để truyền qua view
-        $provinces = DB::table('tinhthanh')->get(['id', 'ten_tinh']);
+        // 👉 Lấy danh sách tỉnh/thành để truyền qua view (an toàn nếu bảng chưa tồn tại)
+        $provinces = collect();
+        try {
+            if (Schema::hasTable('tinhthanh')) {
+                $provinces = DB::table('tinhthanh')->get(['id', 'ten_tinh']);
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Không thể tải danh sách tỉnh/thành: ' . $e->getMessage());
+        }
 
         return view('layouts.user.cart', compact('items', 'user', 'provinces'));
     }
@@ -350,13 +430,23 @@ class ClientController extends Controller
 
     public function getDistricts($provinceId)
     {
-        $districts = DB::table('devvn_quanhuyen')->where('matp', $provinceId)->get(['maqh as id', 'name as ten_quan_huyen']);
+        if (!Schema::hasTable('devvn_quanhuyen')) {
+            return response()->json([]);
+        }
+        $districts = DB::table('devvn_quanhuyen')
+            ->where('matp', $provinceId)
+            ->get(['maqh as id', 'name as ten_quan_huyen']);
         return response()->json($districts);
     }
 
     public function getWards($districtId)
     {
-        $wards = DB::table('devvn_xaphuongthitran')->where('maqh', $districtId)->get(['xaid as id', 'name as ten_phuong_xa']);
+        if (!Schema::hasTable('devvn_xaphuongthitran')) {
+            return response()->json([]);
+        }
+        $wards = DB::table('devvn_xaphuongthitran')
+            ->where('maqh', $districtId)
+            ->get(['xaid as id', 'name as ten_phuong_xa']);
         return response()->json($wards);
     }
 
@@ -436,6 +526,14 @@ class ClientController extends Controller
         if (!$variantId || !$quantity || $quantity < 1) {
             return response()->json(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
         }
+
+        $variant = ProductVariant::find($variantId);
+        if (!$variant) {
+            return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
+        }
+        if ($quantity > $variant->quantity) {
+            return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+        }
         if (Auth::check()) {
             $user = Auth::user();
             $cart = Cart::where('user_id', $user->id)->first();
@@ -503,6 +601,22 @@ class ClientController extends Controller
             $userId = auth()->check() ? auth()->id() : 0;
             $orderCode = strtoupper(bin2hex(random_bytes(6)));
 
+            // Validate stock for each item before creating order
+            if (!empty($data['items']) && is_array($data['items'])) {
+                foreach ($data['items'] as $item) {
+                    $variant = ProductVariant::find($item['variant_id'] ?? 0);
+                    if (!$variant) {
+                        return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
+                    }
+                    if (($item['quantity'] ?? 0) < 1) {
+                        return response()->json(['success' => false, 'message' => 'Số lượng không hợp lệ']);
+                    }
+                    if ($item['quantity'] > $variant->quantity) {
+                        return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                    }
+                }
+            }
+
             // Xử lý voucher theo code nếu có
             $voucherId = $data['voucher_id'] ?? null;
             if (empty($voucherId) && !empty($data['voucher_code'])) {
@@ -533,18 +647,30 @@ class ClientController extends Controller
             $order->payment_method = $data['payment_method'] ?? 'COD';
             $order->order_code = $orderCode;
             $order->voucher_id = $voucherId;
-            $order->status_method = 'chưa thanh toán';
+            // 0 = chưa thanh toán, 1 = đã thanh toán (COD khi giao), 2 = đã thanh toán (chuyển khoản)
+            $order->status_method = 0;
             $order->save();
 
-            // Lưu chi tiết đơn hàng
+            // Lưu chi tiết đơn hàng và trừ tồn kho
             if (!empty($data['items']) && is_array($data['items'])) {
                 foreach ($data['items'] as $item) {
+                    $variant = ProductVariant::find($item['variant_id']);
+                    if (!$variant) {
+                        return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
+                    }
+                    if ($item['quantity'] > $variant->quantity) {
+                        return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+                    }
+
                     \App\Models\OrderDetail::create([
                         'order_id' => $order->id,
                         'product_variant_id' => $item['variant_id'],
                         'quantity' => $item['quantity'],
                         'price' => $item['price'],
                     ]);
+
+                    // Trừ tồn kho
+                    $variant->decrement('quantity', (int) $item['quantity']);
                 }
             }
 
@@ -591,11 +717,10 @@ class ClientController extends Controller
             return redirect('/checkout')->with('error', 'Không tìm thấy đơn hàng');
         }
         // Cấu hình VNPAY sandbox
-        $vnp_TmnCode = "6S2EDVG2"; // Mã website tại VNPAY
-        $vnp_HashSecret = "858FPSI9DG2CJM41ZLCYFV3PGNZ07RCA"; // Chuỗi bí mật
+        $vnp_TmnCode = "HRDYTL3E"; // Mã website tại VNPAY
+        $vnp_HashSecret = "MXSQ5VQKM5S176MJD4LHHU0B03Q9MCA8"; // Chuỗi bí mật
         $vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
         $vnp_Returnurl = route('vnpay.return');
-
         $vnp_TxnRef = $order->order_code;
         $vnp_OrderInfo = 'Thanh toan don hang ' . $order->order_code;
         $vnp_OrderType = 'billpayment';
@@ -657,8 +782,9 @@ class ClientController extends Controller
         $order = \App\Models\Order::where('order_code', $vnp_TxnRef)->first();
 
         if ($order && $vnp_ResponseCode == '00') {
-            $order->status_method = 'đã thanh toán';
-            $order->status = true;
+            // Đánh dấu đã thanh toán online (2 = chuyển khoản)
+            $order->status_method = 2;
+            $order->payment_method = 'vnpay';
             $order->save();
 
             // Gửi mail xác nhận

@@ -68,7 +68,14 @@ class ShopController extends Controller
 
         $variants = $product->variants;
 
-        return view('layouts.user.productDetail', compact('product', 'colors', 'capacities', 'categories', 'variants'));
+        // Lấy bình luận như ở ClientController@productDetail
+        $comments = $product->comments()
+            ->with('user', 'replies.user')
+            ->whereNull('parent_id')
+            ->latest()
+            ->get();
+
+        return view('layouts.user.productDetail', compact('product', 'colors', 'capacities', 'categories', 'variants', 'comments'));
     }
 
     public function store(Request $request)

@@ -169,6 +169,46 @@
                                 </div>
                                 <!--  hr -->
                                 <hr>
+                                <!-- Product Comments -->
+                                <div class="mt-4">
+                                    <h5 class="mb-3">Bình luận sản phẩm</h5>
+                                    @if(session('success'))
+                                        <div class="alert alert-success">{{ session('success') }}</div>
+                                    @endif
+                                    <div class="mb-4">
+                                        @forelse($comments as $cmt)
+                                            <div class="mb-3 p-2 border rounded">
+                                                <strong>{{ $cmt->user->name ?? 'Khách' }}</strong>
+                                                <div class="text-muted small">{{ $cmt->created_at->diffForHumans() }}</div>
+                                                <div>{{ $cmt->content }}</div>
+                                                @if($cmt->replies && $cmt->replies->count())
+                                                    <div class="mt-2 ms-3">
+                                                        @foreach($cmt->replies as $rep)
+                                                            <div class="mb-2 p-2 border-start">
+                                                                <strong>{{ $rep->user->name ?? 'Khách' }}</strong>
+                                                                <div class="text-muted small">{{ $rep->created_at->diffForHumans() }}</div>
+                                                                <div>{{ $rep->content }}</div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @empty
+                                            <div class="text-muted">Chưa có bình luận nào.</div>
+                                        @endforelse
+                                    </div>
+                                    @auth
+                                        <form method="POST" action="{{ route('product.comments.store', $product->id) }}">
+                                            @csrf
+                                            <div class="mb-2">
+                                                <textarea name="content" class="form-control" rows="3" placeholder="Nhập bình luận..."></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary btn-sm">Gửi bình luận</button>
+                                        </form>
+                                    @else
+                                        <div class="alert alert-info">Bạn cần <a href="{{ route('auth.login') }}">đăng nhập</a> để bình luận.</div>
+                                    @endauth
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -112,14 +112,126 @@ class StatisticController extends Controller
         ));
     }
 
-    public function donhang()
+    public function donhang(Request $request)
     {
+        $filter = $request->get('filter', 'all'); // all, today, week, month, year
+        
+        // Basic order statistics
         $totalOrders = Order::count();
-        $pendingOrders = Order::where('status', 0)->count(); // Chưa xử lý
-        $processedOrders = Order::where('status', 1)->count(); // Đã xử lý
+        $pendingOrders = Order::where('status', 0)->count();
+        $processedOrders = Order::where('status', 1)->count();
         $totalProductsSold = OrderDetail::sum('quantity');
+        
+        // Revenue statistics
+        $query = Order::query();
+        
+        // Apply time filter
+        switch($filter) {
+            case 'today':
+                $query->whereDate('created_at', today());
+                break;
+            case 'week':
+                $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                break;
+            case 'month':
+                $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+                break;
+            case 'year':
+                $query->whereYear('created_at', now()->year);
+                break;
+        }
+        
+        // Total revenue (only paid orders)
+        $totalRevenue = $query->clone()
+            ->whereIn('status', [1, 2, 3, 4, 5]) // Completed orders
+            ->where('status_method', '>', 0) // Paid orders
+            ->sum('total_amount');
+            
+        // Revenue by payment method
+        $revenueByPayment = $query->clone()
+            ->whereIn('status', [1, 2, 3, 4, 5])
+            ->where('status_method', '>', 0)
+            ->select('payment_method', DB::raw('SUM(total_amount) as revenue'))
+            ->groupBy('payment_method')
+            ->get();
+            
+        // Revenue by order status
+        $revenueByStatus = $query->clone()
+            ->where('status_method', '>', 0)
+            ->select('status', DB::raw('SUM(total_amount) as revenue'), DB::raw('COUNT(*) as order_count'))
+            ->groupBy('status')
+            ->get();
+            
+        // Average order value
+        $avgOrderValue = $query->clone()
+            ->whereIn('status', [1, 2, 3, 4, 5])
+            ->where('status_method', '>', 0)
+            ->avg('total_amount');
+            
+        // Top customers by revenue
+        $topCustomers = $query->clone()
+            ->whereIn('status', [1, 2, 3, 4, 5])
+            ->where('status_method', '>', 0)
+            ->where('user_id', '>', 0)
+            ->select('user_id', DB::raw('SUM(total_amount) as total_spent'), DB::raw('COUNT(*) as order_count'))
+            ->groupBy('user_id')
+            ->orderByDesc('total_spent')
+            ->limit(5)
+            ->with('user')
+            ->get();
+            
+        // Refund statistics
+        $totalRefunds = \App\Models\RefundRequest::count();
+        $refundAmount = \App\Models\RefundRequest::whereHas('order', function($q) {
+            $q->where('status', 9); // Completed refunds
+        })->with('order')->get()->sum('order.total_amount');
+        
+        // Monthly revenue chart data
+        $monthlyRevenue = Order::select(
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(total_amount) as revenue')
+            )
+            ->whereIn('status', [1, 2, 3, 4, 5])
+            ->where('status_method', '>', 0)
+            ->whereYear('created_at', now()->year)
+            ->groupBy('year', 'month')
+            ->orderBy('month')
+            ->get();
+            
+        $monthlyLabels = $monthlyRevenue->map(function($item) {
+            return Carbon::create($item->year, $item->month)->format('M Y');
+        });
+        $monthlyData = $monthlyRevenue->pluck('revenue');
+        
+        // Order status distribution
+        $statusDistribution = Order::select('status', DB::raw('COUNT(*) as count'))
+            ->groupBy('status')
+            ->get();
+            
+        $statusLabels = $statusDistribution->map(function($item) {
+            $statusNames = [
+                0 => 'Chờ xử lý',
+                1 => 'Đã xác nhận', 
+                2 => 'Đang xử lý',
+                3 => 'Đã giao cho vận chuyển',
+                4 => 'Đang vận chuyển',
+                5 => 'Đã giao hàng',
+                6 => 'Đã hủy',
+                7 => 'Xác nhận yêu cầu hoàn hàng',
+                8 => 'Hoàn hàng',
+                9 => 'Hoàn tiền',
+                10 => 'Không xác nhận yêu cầu hoàn hàng'
+            ];
+            return $statusNames[$item->status] ?? 'Không xác định';
+        });
+        $statusData = $statusDistribution->pluck('count');
+        
         return view('layouts.admin.thongke.donhang', compact(
-            'totalOrders', 'pendingOrders', 'processedOrders', 'totalProductsSold'
+            'totalOrders', 'pendingOrders', 'processedOrders', 'totalProductsSold',
+            'totalRevenue', 'revenueByPayment', 'revenueByStatus', 'avgOrderValue',
+            'topCustomers', 'totalRefunds', 'refundAmount', 'filter',
+            'monthlyLabels', 'monthlyData', 'statusLabels', 'statusData'
         ));
     }
 } 

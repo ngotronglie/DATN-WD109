@@ -14,10 +14,12 @@
         4 => 'đang giao đến',
         5 => 'Đã giao',
         6 => 'Đã hủy',
-        7 => 'xác nhận yêu cầu Hoàn hàng',
+        7 => 'xác nhận yêu cầu Hoàn tiền',
         8 => 'Hoàn hàng',
-        9 => 'Hoàn tiền ',
-        10 => 'không xác nhận yêu cầu hoàn hàng',
+        9 => 'Hoàn tiền thành công',
+        10 => 'không xác nhận yêu cầu hoàn tiền',
+        11 => 'Đang yêu cầu hoàn hàng',
+        12 => 'Không hoàn hàng',
         ];
         $statusColors = [
         0 => 'bg-warning text-dark', // Chờ xác nhận
@@ -27,10 +29,12 @@
         4 => 'bg-warning text-dark', // Đang giao đến
         5 => 'bg-success text-white', // Đã giao
         6 => 'bg-danger text-white', // Đã hủy
-        7 => 'bg-secondary text-white', // Xác nhận yêu cầu hoàn hàng
+        7 => 'bg-secondary text-white', // Xác nhận yêu cầu hoàn tiền
         8 => 'bg-info text-white', // Hoàn hàng
         9 => 'bg-success text-dark', // Hoàn tiền
-        10 => 'bg-dark text-white', // Không xác nhận yêu cầu hoàn hàng
+        10 => 'bg-dark text-white', // Không xác nhận yêu cầu hoàn tiền
+        11 => 'bg-warning text-dark', // Đang yêu cầu hoàn hàng
+        12 => 'bg-dark text-white', // Không hoàn hàng
         ];
 
         $status = $order->status;
@@ -42,6 +46,13 @@
             <p class="mb-1"><strong>Ngày đặt:</strong> {{ $order->created_at->format('d/m/Y') }}</p>
             <p class="mb-0"><strong>Trạng thái:</strong> <span class="badge {{ $badgeClass }} px-3 py-1 rounded-pill">{{ $statusText }}</span></p>
         </div>
+
+        @if (in_array($order->status, [0,1]))
+        <form action="{{ route('user.orders.cancel', $order->id) }}" method="POST" class="mb-4">
+            @csrf
+            <button type="submit" class="btn btn-outline-danger rounded-pill" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">Hủy đơn</button>
+        </form>
+        @endif
 
         @if ($order->voucher)
         <div class="mb-4">
@@ -105,8 +116,8 @@
 
 
         </table>
-        {{-- Nếu đơn hàng đang ở trạng thái đã hoàn thành (4) hoặc đã hủy (5) --}}
-        @if (in_array($order->status, [4, 5]))
+        {{-- Nếu đơn hàng đang ở trạng thái đang giao đến (4) hoặc đã giao (5) --}}
+        @if (in_array($order->status, [4, 5]) && strtolower((string)$order->payment_method) === 'vnpay')
         @if ($order->refundRequest == null)
         <div class="text-end mt-4">
             <button class="btn btn-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#refundModal">
@@ -120,23 +131,35 @@
         @endif
         @endif
 
-        {{-- Nếu đơn đang xử lý hoàn trả (status = 7) và thiếu thông tin --}}
+        {{-- Xác nhận nhận hàng và Yêu cầu hoàn hàng (giai đoạn sau trạng thái đang giao đến) --}}
+        @if ($order->status == 4)
+        <form action="{{ route('user.orders.confirmReceived', $order->id) }}" method="POST" class="text-end mt-2">
+            @csrf
+            <button type="submit" class="btn btn-outline-success rounded-pill">Xác nhận đã nhận hàng</button>
+        </form>
+        @endif
+
+        @if (in_array($order->status, [4]) && $order->refundRequest == null)
+        <div class="text-end mt-2">
+            <button class="btn btn-outline-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#returnModal">
+                Yêu cầu hoàn hàng
+            </button>
+        </div>
+        @endif
+
+        {{-- Nếu đơn đang xử lý hoàn tiền do admin (status = 7) và thiếu thông tin ngân hàng --}}
         @if ($order->status == 7 && $order->refundRequest)
         @php
         $refund = $order->refundRequest;
-        $missingInfo = !$refund->bank_name || !$refund->bank_number || !$refund->image;
+        $missingInfo = !$refund->bank_name || !$refund->bank_number || !$refund->account_name;
         @endphp
 
         @if ($missingInfo)
         <div class="alert alert-info mt-4 rounded-4 d-flex justify-content-between align-items-center">
-            <span>Bạn cần cung cấp thông tin chuyển khoản và ảnh trả hàng.</span>
+            <span>Bạn cần cung cấp thông tin tài khoản ngân hàng để nhận hoàn tiền.</span>
             <a href="{{ route('account.fillinfo', $refund->id) }}" class="btn btn-primary btn-sm rounded-pill">
-                Trả hàng ngay
+                Cung cấp thông tin ngân hàng
             </a>
-        </div>
-        @else
-        <div class="alert alert-warning mt-4 rounded-4">
-            Bạn đã gửi yêu cầu hoàn hàng. Vui lòng đợi quản trị viên xử lý.
         </div>
         @endif
         @endif
@@ -180,7 +203,8 @@
     @endif
 </div>
 
-{{-- Modal hoàn tiền --}}
+{{-- Modal hoàn tiền (chỉ hiển thị khi thanh toán online) --}}
+@if (strtolower((string)$order->payment_method) === 'vnpay')
 <div class="modal fade" id="refundModal" tabindex="-1" aria-labelledby="refundModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <form action="{{ route('refund.store') }}" method="POST" enctype="multipart/form-data" class="modal-content shadow rounded-4 fs-5">
@@ -225,6 +249,62 @@
 
     </div>
 </div>
+@endif
+
+{{-- Modal hoàn hàng (áp dụng cho đơn đang giao đến hoặc đã giao) --}}
+@if (in_array($order->status, [4,5]))
+<div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form action="{{ route('order.return', $order->id) }}" method="POST" enctype="multipart/form-data" class="modal-content shadow rounded-4 fs-5">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title" id="returnModalLabel">Yêu cầu hoàn hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Lý do hoàn hàng</label>
+                    <select class="form-select return-reason-select" name="reason" required>
+                        <option value="">-- Chọn lý do --</option>
+                        <option value="Không ưng ý sau khi nhận">Không ưng ý sau khi nhận</option>
+                        <option value="Sản phẩm không đúng mong đợi">Sản phẩm không đúng mong đợi</option>
+                        <option value="Đổi ý">Đổi ý</option>
+                        <option value="Khác">Khác (ghi rõ ở ghi chú)</option>
+                    </select>
+                    <input type="text" name="reason_input" class="form-control mt-2 return-reason-input" placeholder="Nhập lý do khác nếu chọn 'Khác'" style="display: none;">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ảnh minh chứng (nếu có)</label>
+                    <input type="file" class="form-control" name="image" accept="image/*">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-danger">Gửi yêu cầu hoàn hàng</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </form>
+    </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const select2 = document.querySelector('.return-reason-select');
+            const input2 = document.querySelector('.return-reason-input');
+            if (select2 && input2) {
+                select2.addEventListener('change', function() {
+                    if (select2.value === 'Khác') {
+                        input2.style.display = 'block';
+                        input2.required = true;
+                    } else {
+                        if (input2.value === '' || input2.value === null) {
+                            input2.style.display = 'none';
+                            input2.required = false;
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+@endif
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const select = document.querySelector('.reason-select');

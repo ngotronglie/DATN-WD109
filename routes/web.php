@@ -96,13 +96,9 @@ Route::get('/cart', [ClientController::class, 'showCart'])->name('cart');
 
 Route::get('/wishlist', [App\Http\Controllers\FavoriteController::class, 'index'])->name('wishlist')->middleware('auth');
 
-Route::get('/productdetail', function () {
-    return view('layouts.user.productDetail');
-})->name('productdetail');
+// Route removed: product detail must be served via controller to provide required data
 
-Route::get('/shop', function () {
-    return view('layouts.user.shop');
-})->name('shop');
+Route::get('/shop', [ClientController::class, 'products'])->name('shop.index');
 
 
 // Route::get('/blog', function () {
@@ -128,6 +124,11 @@ Route::post('/api/cart/update-qty', [\App\Http\Controllers\Client\ClientControll
 Route::post('/api/cart/remove', [\App\Http\Controllers\Client\ClientController::class, 'apiRemoveCartItem']);
 Route::post('/api/checkout', [\App\Http\Controllers\Client\ClientController::class, 'apiCheckout']);
 
+// Product comments
+Route::post('/product/{product}/comments', [\App\Http\Controllers\Client\ClientController::class, 'storeProductComment'])
+    ->middleware('auth')
+    ->name('product.comments.store');
+
 
 Route::get('/register', [RegisterController::class, 'create'])->name('auth.register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
@@ -143,6 +144,10 @@ Route::get('/verify-email/{email}/{token}', [VerifyEmailController::class, 'veri
 // Order routes
 Route::post('/order/place', [EmailOrderController::class, 'placeOrder'])->name('order.place');
 Route::post('/order/cancel/{id}', [EmailOrderController::class, 'cancelOrder'])->name('order.cancel');
+// Cho phép người dùng tự hủy đơn ở trạng thái 0 hoặc 1
+Route::post('/account/order/{id}/cancel', [UserOrderController::class, 'cancelOrder'])->name('user.orders.cancel');
+// Người dùng xác nhận đã nhận hàng khi trạng thái đang vận chuyển (4)
+Route::post('/account/order/{id}/confirm-received', [UserOrderController::class, 'confirmReceived'])->name('user.orders.confirmReceived');
 
 
 Route::middleware(['auth'])->group(function () {
@@ -256,6 +261,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/refunds/{id}', [OrderController::class, 'showRefundDetail'])->name('refunds.detail');
     Route::post('/refunds/{id}/approve', [OrderController::class, 'approveRefund'])->name('refunds.approve');
     Route::post('/refunds/{id}/upload-proof', [OrderController::class, 'uploadRefundProof'])->name('refunds.uploadProof');
+    // Khởi tạo hoàn tiền khi đang đóng gói
+    Route::post('/orders/{id}/refund/initiate', [OrderController::class, 'initiateRefund'])->name('orders.refund.initiate');
 
 
     // routes/web.php

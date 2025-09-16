@@ -41,13 +41,68 @@ class OrderController extends Controller
 
         // Nếu đơn hàng được đánh dấu là "Đã giao hàng" (status = 5)
         if ((int)$newStatus === 5) {
-            $order->status_method = 1;
-            $order->payment_method = 'cod';
+            // Nếu là COD thì đánh dấu đã thu tiền COD, nếu là VNPAY thì đã thanh toán trước đó (2)
+            if ((int)$order->status_method === 0) {
+                $order->status_method = 1; // thu COD khi giao
+            }
+            if (!$order->payment_method) {
+                $order->payment_method = 'cod';
+            }
         }
 
         $order->save();
 
         return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
+    }
+
+    // Admin thao tác hoàn tiền ngay tại bước đóng gói (status = 2)
+    public function initiateRefund(Request $request, $id)
+    {
+        $order = Order::with('refundRequest')->findOrFail($id);
+
+        // Chỉ cho phép hoàn tiền với đơn thanh toán online (VD: vnpay)
+        $paymentMethod = strtolower((string) $order->payment_method);
+        if (!in_array($paymentMethod, ['vnpay', 'online'])) {
+            return back()->with('error', 'Hoàn tiền chỉ áp dụng cho đơn thanh toán online. Đơn COD không hỗ trợ hoàn tiền.');
+        }
+
+        if (!in_array((int)$order->status, [1, 2])) {
+            return back()->with('error', 'Chỉ có thể khởi tạo hoàn tiền khi đơn đang ở bước Đã xác nhận/Đang xử lý.');
+        }
+
+        $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        if ($order->refundRequest) {
+            return back()->with('error', 'Đơn hàng đã có yêu cầu hoàn.');
+        }
+
+        $refund = RefundRequest::create([
+            'order_id' => $order->id,
+            'user_id' => $order->user_id,
+            'reason' => $request->input('reason'),
+            'refund_requested_at' => now(),
+        ]);
+
+        // Chuyển trạng thái đơn sang 7: đã xác nhận yêu cầu hoàn hàng
+        $order->status = 7;
+        $order->save();
+
+        // Gửi thông báo email cho người dùng kèm link nhập thông tin ngân hàng
+        try {
+            $user = $order->user;
+            if ($user && $user->email) {
+                \Mail::send('emails.refund-init', ['order' => $order, 'refund' => $refund], function ($message) use ($user, $order) {
+                    $message->to($user->email);
+                    $message->subject('Yêu cầu hoàn tiền cho đơn #' . $order->order_code);
+                });
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Không thể gửi mail hoàn tiền: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Đã khởi tạo hoàn tiền và thông báo khách hàng nhập thông tin ngân hàng.');
     }
 
 
@@ -71,6 +126,11 @@ class OrderController extends Controller
     public function approveRefund($id)
     {
         $refund = RefundRequest::findOrFail($id);
+
+        // Không cho duyệt nếu thiếu thông tin ngân hàng của khách
+        if (empty($refund->bank_name) || empty($refund->bank_number) || empty($refund->account_name)) {
+            return redirect()->back()->with('error', 'Không thể hoàn tiền: thiếu thông tin ngân hàng của khách hàng.');
+        }
         $refund->refund_completed_at = now();
         $refund->refunded_by = Auth::user()->name;
         $refund->save();
@@ -89,6 +149,11 @@ class OrderController extends Controller
     public function uploadRefundProof(Request $request, $id)
     {
         $refund = RefundRequest::findOrFail($id);
+
+        // Không cho upload/hoàn nếu thiếu thông tin ngân hàng của khách
+        if (empty($refund->bank_name) || empty($refund->bank_number) || empty($refund->account_name)) {
+            return redirect()->back()->with('error', 'Thiếu thông tin ngân hàng của khách hàng. Vui lòng yêu cầu khách bổ sung trước khi hoàn tiền.');
+        }
 
         $request->validate([
             'proof_image' => 'required|image|max:2048',
@@ -109,10 +174,10 @@ class OrderController extends Controller
 
         $refund->save();
 
-        // ✅ Cập nhật trạng thái đơn hàng
+        // ✅ Cập nhật trạng thái đơn hàng sang Hoàn tiền thành công
         $order = Order::find($refund->order_id);
-        if ($order && $order->status == 8) {
-            $order->status = 9; // Trạng thái "Đã hoàn"
+        if ($order) {
+            $order->status = 9; // Hoàn tiền thành công
             $order->save();
         }
 
@@ -140,22 +205,26 @@ class OrderController extends Controller
         $refund->status = '2'; // Đã từ chối
         $refund->save();
 
-        // Cập nhật trạng thái đơn hàng thành 10
+        // Cập nhật trạng thái đơn hàng: 11 -> 12 (Không hoàn hàng), ngược lại giữ 10 (không xác nhận hoàn tiền)
         $order = Order::find($refund->order_id);
         if ($order) {
-            $order->status = 10; // Hoàn hàng bị từ chối
+            if ((int)$order->status === 11) {
+                $order->status = 12; // Không hoàn hàng
+            } else {
+                $order->status = 10; // Không xác nhận yêu cầu hoàn tiền
+            }
             $order->save();
         }
 
-        return redirect()->back()->with('success', 'Yêu cầu hoàn đã bị từ chối.');
+        return redirect()->back()->with('success', 'Yêu cầu đã bị từ chối.');
     }
     public function confirmReceiveBack($refundId)
     {
         $refund = RefundRequest::findOrFail($refundId);
         $order = $refund->order;
 
-        // Kiểm tra trạng thái hiện tại trước khi cập nhật
-        if ($order->status != 7) {
+        // Cho phép duyệt khi ở trạng thái 7 (luồng cũ) hoặc 11 (Đang yêu cầu hoàn hàng)
+        if (!in_array((int)$order->status, [7, 11])) {
             return back()->with('error', 'Đơn hàng không ở trạng thái chờ xác nhận hoàn hàng.');
         }
 
@@ -163,10 +232,10 @@ class OrderController extends Controller
         $refund->received_back_at = now();
         $refund->save();
 
-        // Cập nhật trạng thái đơn hàng sang "Đã nhận hàng hoàn"
+        // Cập nhật trạng thái đơn hàng sang "Đã hoàn hàng"
         $order->status = 8;
         $order->save();
 
-        return back()->with('success', 'Xác nhận đã nhận hàng hoàn thành công.');
+        return back()->with('success', 'Xác nhận duyệt hoàn hàng thành công.');
     }
 }

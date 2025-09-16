@@ -48,6 +48,13 @@ class UserOrderController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
 
+        // Chỉ cho phép yêu cầu hoàn tiền cho đơn thanh toán online
+        $order = Order::where('id', $request->order_id)->where('user_id', Auth::id())->firstOrFail();
+        $paymentMethod = strtolower((string) $order->payment_method);
+        if (!in_array($paymentMethod, ['vnpay', 'online'])) {
+            return back()->with('error', 'Hoàn tiền chỉ áp dụng cho đơn thanh toán online. Đơn COD không hỗ trợ hoàn tiền.');
+        }
+
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('refund_images', 'public');
@@ -70,10 +77,8 @@ class UserOrderController extends Controller
         $order = Order::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
         $request->validate([
-            'bank_name' => 'required|string|max:255',
-            'bank_number' => 'required|string|max:50',
-            'account_name' => 'required|string|max:255',
-            'reason' => 'required|string',
+            'reason' => 'required|string|max:1000',
+            'reason_input' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
@@ -85,29 +90,33 @@ class UserOrderController extends Controller
         RefundRequest::create([
             'order_id' => $order->id,
             'user_id' => auth()->id(),
-            'bank_name' => $request->bank_name,
-            'bank_number' => $request->bank_number,
-            'account_name' => $request->account_name,
-            'reason' => $request->reason,
+            'reason' => $request->reason === 'Khác' ? ($request->reason_input ?? 'Khác') : $request->reason,
             'image' => $imagePath,
             'refund_requested_at' => now(),
         ]);
 
-        $order->status = 7; // Đã yêu cầu hoàn
+        $order->status = 11; // Đang yêu cầu hoàn hàng (hoàn hàng từ phía khách)
         $order->save();
 
-        return redirect()->route('account.order')->with('success', 'Đã gửi yêu cầu hoàn hàng.');
+        return redirect()->route('user.orders.show', $order->id)->with('success', 'Đã gửi yêu cầu hoàn hàng, vui lòng chờ quản trị viên duyệt.');
     }
 
     public function cancelOrder(Request $request, $id)
     {
         $order = Order::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
-        if ($order->status !== 0) {
-            return redirect()->back()->with('error', 'Chỉ có thể hủy đơn hàng đang chờ xác nhận.');
+        if (!in_array((int)$order->status, [0,1])) {
+            return redirect()->back()->with('error', 'Chỉ có thể hủy đơn ở trạng thái chờ xác nhận hoặc đã xác nhận.');
         }
 
-        $order->status = 6; // Giả sử 6 là trạng thái "Đã hủy"
+        // Khôi phục tồn kho cho các sản phẩm trong đơn
+        foreach ($order->orderDetails as $detail) {
+            if ($detail->productVariant) {
+                $detail->productVariant->increment('quantity', (int)$detail->quantity);
+            }
+        }
+
+        $order->status = 6; // Đã hủy
         $order->save();
 
         return redirect()->route('account.order')->with('success', 'Đơn hàng đã được hủy thành công.');
@@ -137,22 +146,34 @@ class UserOrderController extends Controller
             'bank_name' => 'required|string|max:255',
             'bank_number' => 'required|string|max:50',
             'account_name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('refund_images', 'public');
-            $validated['image'] = $imagePath;
-        }
+        // Không yêu cầu ảnh/sent_back cho hoàn tiền do admin
 
         // ✅ Cập nhật thời gian gửi hàng
-        if ($request->has('sent_back')) {
-            $refund->sent_back_at = now();
-        }
+        // giữ nguyên lịch sử nếu có nhưng không bắt buộc
 
         $refund->update($validated);
 
         return redirect()->route('user.orders.show', $refund->order_id)->with('success', 'Thông tin hoàn hàng đã được cập nhật.');
+    }
+
+    public function confirmReceived($id)
+    {
+        $order = Order::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+
+        if ((int)$order->status !== 4) {
+            return redirect()->back()->with('error', 'Chỉ xác nhận khi đơn đang vận chuyển.');
+        }
+
+        $order->status = 5; // Đã giao hàng
+        // Nếu chưa đánh dấu thanh toán, coi như đã thu COD khi khách xác nhận nhận hàng
+        if ((int)($order->status_method ?? 0) === 0) {
+            $order->status_method = 1; // Đã thanh toán (COD)
+        }
+        $order->save();
+
+        return redirect()->route('user.orders.show', $order->id)->with('success', 'Đã xác nhận nhận hàng. Cảm ơn bạn!');
     }
 
 

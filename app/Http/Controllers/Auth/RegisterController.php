@@ -61,10 +61,21 @@ class RegisterController extends Controller
         $token = Str::random(64);
         Cache::put('verify_' . $user->email, $token, now()->addMinutes(60)); // Lưu token trong cache 60 phút
 
-        Mail::send('emails.verify-email', ['user' => $user, 'token' => $token], function ($message) use ($user) {
-            $message->to($user->email);
-            $message->subject('Xác minh địa chỉ email');
-        });
+        try {
+            if (app()->environment('local')) {
+                Mail::mailer('log')->send('emails.verify-email', ['user' => $user, 'token' => $token], function ($message) use ($user) {
+                    $message->to($user->email);
+                    $message->subject('Xác minh địa chỉ email');
+                });
+            } else {
+                Mail::send('emails.verify-email', ['user' => $user, 'token' => $token], function ($message) use ($user) {
+                    $message->to($user->email);
+                    $message->subject('Xác minh địa chỉ email');
+                });
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Không thể gửi email xác minh trong môi trường hiện tại: ' . $e->getMessage());
+        }
 
         Auth::login($user);
         return view('auth.verify-notice', ['user' => $user]);
