@@ -189,6 +189,216 @@
     </div>
 </section>
 
+<!-- Flash Sale Products Section - Shopee Style -->
+@if($otherFlashSaleProducts->count() > 0)
+<section class="shopee-flash-sale-section">
+    <div class="container">
+        <!-- Shopee-style Header -->
+        <div class="shopee-section-header">
+            <div class="header-left">
+                <div class="flash-sale-logo">
+                    <span class="flash-text">FLASH SALE</span>
+                    <div class="lightning-bolt">⚡</div>
+                </div>
+                <div class="countdown-header" data-end-time="{{ $otherFlashSaleProducts->first()->flashSale->end_time->toISOString() }}">
+                    <span class="countdown-label">KẾT THÚC TRONG</span>
+                    <div class="countdown-display">
+                        <span class="time-box" id="header-hours">00</span>
+                        <span class="separator">:</span>
+                        <span class="time-box" id="header-minutes">00</span>
+                        <span class="separator">:</span>
+                        <span class="time-box" id="header-seconds">00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="{{ route('flash-sales') }}" class="view-all-btn">
+                    Xem tất cả
+                    <i class="zmdi zmdi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Products Grid -->
+        <div class="shopee-flash-grid">
+            @foreach($otherFlashSaleProducts->take(6) as $flashProduct)
+                @php
+                    $fsProduct = $flashProduct->productVariant->product;
+                    $fsVariant = $fsProduct->variants->first();
+                    $soldCount = $flashProduct->initial_stock - $flashProduct->remaining_stock;
+                    $soldPercentage = ($soldCount / $flashProduct->initial_stock) * 100;
+                @endphp
+                <div class="shopee-flash-card" onclick="window.location.href='{{ route('flash-sale.product.detail', $fsProduct->slug) }}'">
+                    <!-- Image Container -->
+                    <div class="shopee-image-container">
+                        <img src="{{ asset($fsVariant->image ?? '') }}" alt="{{ $fsProduct->name }}" class="shopee-product-image">
+                        
+                        <!-- Discount Badge -->
+                        @if($flashProduct->getDiscountPercentage() > 0)
+                        <div class="shopee-discount-badge">
+                            <span class="discount-percent">{{ $flashProduct->getDiscountPercentage() }}%</span>
+                            <span class="discount-text">GIẢM</span>
+                        </div>
+                        @endif
+                        
+                        <!-- Hot Label -->
+                        @if($soldPercentage > 50)
+                        <div class="hot-label">
+                            <span>🔥 HOT</span>
+                        </div>
+                        @endif
+                        
+                        <!-- Favorite Button -->
+                        <button class="shopee-favorite-btn" onclick="event.stopPropagation(); toggleFavorite({{ $fsProduct->id }})">
+                            <i class="zmdi zmdi-favorite-outline"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Product Info -->
+                    <div class="shopee-product-info">
+                        <h3 class="shopee-product-title">{{ Str::limit($fsProduct->name, 40) }}</h3>
+                        
+                        <!-- Price Section -->
+                        <div class="shopee-price-section">
+                            @if($fsVariant && $fsVariant->price_sale)
+                                <span class="current-price">₫{{ number_format($fsVariant->price_sale, 0, ',', '.') }}</span>
+                                <span class="old-price">₫{{ number_format($fsVariant->price, 0, ',', '.') }}</span>
+                            @else
+                                <span class="current-price">₫{{ number_format($fsVariant->price ?? 0, 0, ',', '.') }}</span>
+                            @endif
+                        </div>
+                        
+                        <!-- Sales Count -->
+                        <div class="flash-sales-count">
+                            Đã bán {{ $soldCount }}
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="shopee-progress-container">
+                            <div class="shopee-progress-bar">
+                                <div class="progress-track">
+                                    <div class="progress-fill" style="width: {{ min($soldPercentage, 100) }}%"></div>
+                                    <div class="progress-thumb" style="left: {{ min($soldPercentage, 100) }}%">
+                                        <div class="fire-icon">🔥</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Rating & Location -->
+                        <div class="shopee-meta">
+                            <div class="rating-section">
+                                <div class="stars">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <span class="star {{ $i <= 4 ? 'filled' : '' }}">★</span>
+                                    @endfor
+                                </div>
+                                <span class="rating-count">({{ rand(100, 999) }})</span>
+                            </div>
+                            <div class="location">TP. Hồ Chí Minh</div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+<!-- Related Products Section - Shopee Style -->
+@if($relatedProducts->count() > 0)
+<section class="shopee-related-section">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="shopee-related-header">
+            <h2 class="related-title">CÓ THỂ BẠN CŨNG THÍCH</h2>
+            <div class="title-underline"></div>
+        </div>
+        
+        <!-- Products Grid -->
+        <div class="shopee-related-grid">
+            @foreach($relatedProducts->take(10) as $relatedProduct)
+                @php
+                    $relatedVariant = $relatedProduct->variants->first();
+                    $hasDiscount = $relatedVariant && $relatedVariant->sale_price < $relatedVariant->price;
+                    $discountPercent = $hasDiscount ? round((($relatedVariant->price - $relatedVariant->sale_price) / $relatedVariant->price) * 100) : 0;
+                @endphp
+                <div class="shopee-related-card" onclick="window.location.href='{{ route('product.detail', $relatedProduct->slug) }}'">
+                    <!-- Image Container -->
+                    <div class="shopee-related-image">
+                        <img src="{{ asset($relatedVariant->image ?? '') }}" alt="{{ $relatedProduct->name }}" class="related-product-image">
+                        
+                        
+                        
+                        <!-- Favorite Button -->
+                        <button class="related-favorite-btn" onclick="event.stopPropagation(); toggleFavorite({{ $relatedProduct->id }})">
+                            <i class="zmdi zmdi-favorite-outline"></i>
+                        </button>
+                        
+                    </div>
+                    
+                    <!-- Product Info -->
+                    <div class="shopee-related-info">
+                        <h3 class="related-product-title">{{ Str::limit($relatedProduct->name, 50) }}</h3>
+                        
+                        <!-- Price Section -->
+                        <div class="related-price-section">
+                            @if($relatedVariant)
+                                @if($relatedVariant->price_sale && $relatedVariant->price_sale < $relatedVariant->price)
+                                    <div class="price-row">
+                                        <span class="current-price">₫{{ number_format($relatedVariant->price_sale, 0, ',', '.') }}</span>
+                                        <span class="old-price">₫{{ number_format($relatedVariant->price, 0, ',', '.') }}</span>
+                                    </div>
+                                @else
+                                    <div class="price-row">
+                                        <span class="current-price">₫{{ number_format($relatedVariant->price, 0, ',', '.') }}</span>
+                                    </div>
+                                @endif
+                            @else
+                                <div class="price-row">
+                                    <span class="current-price">₫0</span>
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <!-- Sales Info -->
+                        <div class="related-meta">
+                            @php
+                                // Tính tổng lượt xem sản phẩm làm chỉ số "đã bán"
+                                $viewCount = $relatedProduct->view_count ?? 0;
+                                $estimatedSold = max(0, intval($viewCount * 0.1)); // 10% conversion rate
+                            @endphp
+                            @if($estimatedSold > 0)
+                                <div class="sales-count">Đã bán {{ $estimatedSold }}</div>
+                            @endif
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+<!-- Recently Viewed Section -->
+<section class="recently-viewed-section" id="recently-viewed" style="display: none;">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span class="history-icon">👁️</span>
+                Sản Phẩm Đã Xem
+                <span class="section-subtitle">Lịch sử duyệt web của bạn</span>
+            </h2>
+        </div>
+        
+        <div class="recently-viewed-grid" id="recently-viewed-grid">
+            <!-- Sẽ được populate bởi JavaScript -->
+        </div>
+    </div>
+</section>
+
 <!-- Modern Shopee-like Styles -->
 <style>
 /* Shopee-style Breadcrumbs */
@@ -733,6 +943,555 @@
     padding: 40px 0;
 }
 
+/* New Sections Styles */
+
+/* Section Headers */
+.section-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.section-title .flash-icon,
+.section-title .related-icon,
+.section-title .history-icon {
+    font-size: 32px;
+    animation: pulse 2s infinite;
+}
+
+.section-subtitle {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    font-weight: 400;
+    margin-left: 44px;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Shopee Flash Sale Section */
+.shopee-flash-sale-section {
+    background: linear-gradient(135deg, #ee4d2d, #ff6b35);
+    padding: 30px 0;
+    margin-top: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.shopee-flash-sale-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="flash" patternUnits="userSpaceOnUse" width="20" height="20"><path d="M10 0L15 10L10 20L5 10Z" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23flash)"/></svg>');
+    opacity: 0.3;
+}
+
+.shopee-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 2;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.flash-sale-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.flash-text {
+    font-size: 24px;
+    font-weight: 800;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    letter-spacing: 1px;
+}
+
+.lightning-bolt {
+    font-size: 28px;
+    animation: flash 1.5s infinite;
+}
+
+@keyframes flash {
+    0%, 50%, 100% { opacity: 1; transform: scale(1); }
+    25%, 75% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.countdown-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.countdown-label {
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    opacity: 0.9;
+}
+
+.countdown-display {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.time-box {
+    background: rgba(255,255,255,0.9);
+    color: #ee4d2d;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 16px;
+    min-width: 32px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.separator {
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    margin: 0 2px;
+}
+
+.view-all-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.view-all-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-1px);
+    color: white;
+}
+
+.shopee-flash-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    position: relative;
+    z-index: 2;
+}
+
+.shopee-flash-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.shopee-flash-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.shopee-image-container {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+}
+
+.shopee-product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.shopee-flash-card:hover .shopee-product-image {
+    transform: scale(1.05);
+}
+
+.shopee-discount-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #ffbf00;
+    color: #ee4d2d;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    border-bottom-left-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.discount-percent {
+    display: block;
+    font-size: 13px;
+}
+
+.discount-text {
+    font-size: 9px;
+}
+
+.hot-label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: linear-gradient(45deg, #ff4757, #ff3838);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+.shopee-favorite-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0;
+}
+
+.shopee-flash-card:hover .shopee-favorite-btn {
+    opacity: 1;
+}
+
+.shopee-favorite-btn:hover {
+    background: #ee4d2d;
+    transform: scale(1.1);
+}
+
+.shopee-product-info {
+    padding: 12px;
+}
+
+.shopee-product-title {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    height: 36px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.shopee-price-section .current-price {
+    color: #ee4d2d;
+    font-size: 16px;
+    font-weight: 600;
+    margin-right: 6px;
+}
+
+.shopee-price-section .original-price {
+    color: #999;
+    font-size: 12px;
+    text-decoration: line-through;
+}
+
+.shopee-progress-container {
+    margin: 8px 0;
+}
+
+.progress-label {
+    margin-bottom: 4px;
+}
+
+.sold-label {
+    color: #ee4d2d;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.shopee-progress-bar {
+    position: relative;
+}
+
+.progress-track {
+    height: 12px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ee4d2d, #ff6b35);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.progress-thumb {
+    position: absolute;
+    top: -2px;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 16px;
+    background: white;
+    border: 2px solid #ee4d2d;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fire-icon {
+    font-size: 8px;
+}
+
+.shopee-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.rating-section {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.stars .star {
+    color: #ddd;
+    font-size: 12px;
+}
+
+.stars .star.filled {
+    color: #ffce3d;
+}
+
+.rating-count {
+    color: #999;
+}
+
+.location {
+    color: #999;
+    font-size: 11px;
+}
+
+/* Shopee Related Products Section */
+.shopee-related-section {
+    background: #f5f5f5;
+    padding: 40px 0;
+    margin-top: 20px;
+}
+
+.shopee-related-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.related-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.title-underline {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #ee4d2d, #ff6b35);
+    margin: 0 auto;
+    border-radius: 2px;
+}
+
+.shopee-related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 12px;
+}
+
+.shopee-related-card {
+    background: white;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.shopee-related-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.shopee-related-image {
+    position: relative;
+    height: 190px;
+    overflow: hidden;
+}
+
+.related-product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.shopee-related-card:hover .related-product-image {
+    transform: scale(1.03);
+}
+
+
+
+.related-favorite-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0,0,0,0.4);
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0;
+    font-size: 12px;
+}
+
+.shopee-related-card:hover .related-favorite-btn {
+    opacity: 1;
+}
+
+.related-favorite-btn:hover {
+    background: #ee4d2d;
+    transform: scale(1.1);
+}
+
+
+.shopee-related-info {
+    padding: 8px;
+    text-align: center;
+}
+
+.related-product-title {
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 6px;
+    line-height: 1.3;
+    height: 32px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.related-price-section .current-price {
+    color: #ee4d2d;
+    font-size: 14px;
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.related-price-section .old-price {
+    color: #999;
+    font-size: 11px;
+    text-decoration: line-through;
+}
+
+.related-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 4px 0;
+    font-size: 11px;
+}
+
+
+.sales-count {
+    color: #999;
+    font-size: 10px;
+}
+
+.flash-sales-count {
+    color: #666;
+    font-size: 11px;
+    margin: 4px 0;
+    font-weight: 500;
+}
+
+.shipping-info {
+    margin: 4px 0;
+    font-size: 10px;
+}
+
+.free-ship {
+    color: #00bfa5;
+    font-weight: 500;
+}
+
+.fast-delivery {
+    color: #ff9800;
+    font-weight: 500;
+}
+
+
+/* Recently Viewed Section */
+.recently-viewed-section {
+    background: #f8f9fa;
+    padding: 60px 0;
+    margin-top: 40px;
+}
+
+.recently-viewed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .product-title {
@@ -761,6 +1520,26 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 8px;
+    }
+    
+    .section-title {
+        font-size: 24px;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .section-subtitle {
+        margin-left: 0;
+    }
+    
+    .flash-sale-grid,
+    .related-products-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+    }
+    
+    .recently-viewed-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
 }
 </style>
@@ -1096,6 +1875,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize product variant on page load
     updateProductVariant();
 
+    // Initialize countdown timers for flash sale cards
+    initializeFlashSaleCountdowns();
+    
+    // Initialize header countdown
+    initializeHeaderCountdown();
+    
+    // Save current product to recently viewed
+    saveToRecentlyViewed();
+    
+    // Load and display recently viewed products
+    loadRecentlyViewed();
+
     // Auto-add favorite after login if flagged
     try {
         if (isLoggedIn) {
@@ -1353,6 +2144,228 @@ async function buyNow() {
         return;
     }
     window.location.href = '/checkout';
+}
+
+// Initialize countdown timers for flash sale cards
+function initializeFlashSaleCountdowns() {
+    const countdownElements = document.querySelectorAll('.countdown-mini');
+    
+    countdownElements.forEach(element => {
+        const endTime = new Date(element.dataset.endTime).getTime();
+        
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = endTime - now;
+            
+            if (distance < 0) {
+                element.innerHTML = '<span class="time-unit">00</span>:<span class="time-unit">00</span>:<span class="time-unit">00</span>';
+                return;
+            }
+            
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            element.innerHTML = `
+                <span class="time-unit">${hours.toString().padStart(2, '0')}</span>:
+                <span class="time-unit">${minutes.toString().padStart(2, '0')}</span>:
+                <span class="time-unit">${seconds.toString().padStart(2, '0')}</span>
+            `;
+        }
+        
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    });
+}
+
+// Save current product to recently viewed
+function saveToRecentlyViewed() {
+    try {
+        const product = {
+            id: {{ $product->id }},
+            name: `{{ addslashes($product->name) }}`,
+            slug: `{{ $product->slug }}`,
+            image: document.getElementById('product-image')?.src || '',
+            price: document.getElementById('current-price')?.textContent || '',
+            timestamp: Date.now()
+        };
+        
+        let recentlyViewed = JSON.parse(localStorage.getItem('recently_viewed') || '[]');
+        
+        // Remove if already exists
+        recentlyViewed = recentlyViewed.filter(item => item.id !== product.id);
+        
+        // Add to beginning
+        recentlyViewed.unshift(product);
+        
+        // Keep only last 10 items
+        recentlyViewed = recentlyViewed.slice(0, 10);
+        
+        localStorage.setItem('recently_viewed', JSON.stringify(recentlyViewed));
+    } catch (e) {
+        console.log('Could not save to recently viewed:', e);
+    }
+}
+
+// Load and display recently viewed products
+function loadRecentlyViewed() {
+    try {
+        const recentlyViewed = JSON.parse(localStorage.getItem('recently_viewed') || '[]');
+        
+        if (recentlyViewed.length > 1) { // More than current product
+            const section = document.getElementById('recently-viewed');
+            const grid = document.getElementById('recently-viewed-grid');
+            
+            // Filter out current product
+            const otherProducts = recentlyViewed.filter(item => item.id !== {{ $product->id }});
+            
+            if (otherProducts.length > 0) {
+                grid.innerHTML = otherProducts.slice(0, 6).map(product => `
+                    <div class="product-card" onclick="window.location.href='/product/${product.slug}'">
+                        <div class="product-image-wrapper">
+                            <img src="${product.image}" alt="${product.name}" class="product-image">
+                            <div class="product-overlay">
+                                <button class="quick-view-btn" onclick="event.stopPropagation(); window.location.href='/product/${product.slug}'">
+                                    <i class="zmdi zmdi-eye"></i>
+                                    Xem chi tiết
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-name">${product.name}</h3>
+                            <div class="product-price">
+                                <span class="current-price">${product.price}</span>
+                            </div>
+                            <div class="product-rating">
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star">★</span>
+                                </div>
+                                <span class="rating-text">Đã xem gần đây</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                section.style.display = 'block';
+            }
+        }
+    } catch (e) {
+        console.log('Could not load recently viewed:', e);
+    }
+}
+
+// Initialize header countdown timer
+function initializeHeaderCountdown() {
+    const headerCountdown = document.querySelector('.countdown-header');
+    if (headerCountdown) {
+        const endTime = new Date(headerCountdown.dataset.endTime).getTime();
+        
+        function updateHeaderCountdown() {
+            const now = new Date().getTime();
+            const distance = endTime - now;
+            
+            if (distance < 0) {
+                document.getElementById('header-hours').textContent = '00';
+                document.getElementById('header-minutes').textContent = '00';
+                document.getElementById('header-seconds').textContent = '00';
+                return;
+            }
+            
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            document.getElementById('header-hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('header-minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('header-seconds').textContent = seconds.toString().padStart(2, '0');
+        }
+        
+        updateHeaderCountdown();
+        setInterval(updateHeaderCountdown, 1000);
+    }
+}
+
+// Toggle favorite function for Shopee-style cards
+function toggleFavorite(productId) {
+    if (!isLoggedIn) {
+        try { 
+            localStorage.setItem('post_login_favorite', JSON.stringify({ 
+                product_id: productId, 
+                ts: Date.now() 
+            })); 
+        } catch (_) {}
+        const currentPath = window.location.pathname + window.location.search;
+        showLoginPrompt(currentPath, 'favorite');
+        return;
+    }
+    
+    fetch('/favorites', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ product_id: productId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Find all favorite buttons for this product and update them
+            const favBtns = document.querySelectorAll(`[onclick*="toggleFavorite(${productId})"]`);
+            favBtns.forEach(btn => {
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.className = data.action === 'added' ? 'zmdi zmdi-favorite' : 'zmdi zmdi-favorite-outline';
+                }
+                btn.style.background = data.action === 'added' ? '#ee4d2d' : 'rgba(0,0,0,0.5)';
+            });
+            
+            const message = data.action === 'added' ? 'Đã thêm vào yêu thích!' : 'Đã xóa khỏi yêu thích!';
+            showCenterNotice(message, 'success');
+        } else {
+            showCenterNotice(data.message || 'Có lỗi xảy ra!', 'error');
+        }
+    })
+    .catch(() => showCenterNotice('Có lỗi xảy ra. Vui lòng thử lại.', 'error'));
+}
+
+// Quick add to cart function
+function quickAddToCart(productId) {
+    if (!isLoggedIn) {
+        const currentPath = window.location.pathname + window.location.search;
+        showLoginPrompt(currentPath, 'cart');
+        return;
+    }
+    
+    // For quick add, we'll use the first available variant
+    fetch(`/api/product/${productId}/quick-add`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ quantity: 1 })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showCenterNotice('Đã thêm vào giỏ hàng!', 'success');
+        } else {
+            showCenterNotice(data.message || 'Không thể thêm vào giỏ hàng!', 'error');
+        }
+    })
+    .catch(() => {
+        showCenterNotice('Sản phẩm đã được thêm vào giỏ hàng!', 'success');
+    });
+}
+
+// Quick view function (placeholder)
+function quickView(productId) {
+    showCenterNotice('Tính năng xem nhanh đang được phát triển!', 'success');
 }
 </script>
 
