@@ -55,7 +55,7 @@
                                         <div class="stock-bar">
                                             <div class="stock-progress" style="width: {{ $soldPercentage }}%"></div>
                                         </div>
-                                        <div class="stock-info">Đã bán {{ $flashProduct->initial_stock - $flashProduct->remaining_stock }}</div>
+                                        <div class="stock-info">🔥 {{ $flashProduct->initial_stock - $flashProduct->remaining_stock }} đã mua</div>
                                     </div>
                                 </a>
                             </div>
@@ -142,9 +142,12 @@
 .product-image-container {
     position: relative;
     width: 100%;
-    /* square ratio */
-    aspect-ratio: 1 / 1;
+    /* wider, shorter ratio like Shopee */
+    aspect-ratio: 1.2 / 1;
     overflow: hidden;
+    border-radius: 6px;
+    margin: 0 auto;
+    width: 80%;
 }
 
 /* Force image to fill container and fit the tile */
@@ -175,33 +178,40 @@
 }
 
 .product-name {
-    font-size: 9px;
-    line-height: 1.1;
-    height: 20px;
+    font-size: 13px;
+    line-height: 1.3;
+    height: 28px;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    margin-bottom: 2px;
+    margin-bottom: 6px;
     color: #333;
     text-align: center;
+    font-weight: 600;
 }
 
 .product-price {
     margin-bottom: 2px;
+    text-align: center;
 }
 
 .sale-price {
     color: #ee4d2d;
-    font-size: 9px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 800;
     display: block;
+    text-align: center;
+    margin-bottom: 2px;
+    text-shadow: 0 1px 2px rgba(238, 77, 45, 0.2);
 }
 
 .original-price {
     color: #929292;
-    font-size: 7px;
+    font-size: 10px;
     text-decoration: line-through;
+    text-align: center;
+    display: block;
 }
 
 .stock-bar {
@@ -234,7 +244,10 @@
         font-size: 14px;
     }
     
-    .product-image-container { aspect-ratio: 1 / 1; }
+    .product-image-container { 
+        aspect-ratio: 1.2 / 1; 
+        width: 80%;
+    }
     
     .countdown-compact {
         flex-direction: column;
@@ -243,11 +256,16 @@
 }
 
 @media (max-width: 576px) {
-    .product-image-container { aspect-ratio: 1 / 1; }
+    .product-image-container { 
+        aspect-ratio: 1.2 / 1; 
+        width: 75%;
+    }
     
-    .sale-price { font-size: 8px; }
+    .sale-price { font-size: 14px; }
     
-    .original-price { font-size: 7px; }
+    .original-price { font-size: 9px; }
+    
+    .product-name { font-size: 11px; }
 }
 </style>
 
