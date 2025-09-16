@@ -94,7 +94,7 @@ class FlashSalesController extends Controller
                     }
 
                     // Tự động lấy original_price từ ProductVariant
-                    $originalPrice = $productVariant->price_sale ?? $productVariant->price;
+                    $originalPrice = $productVariant->price;
 
                     // Validate sale_price không được lớn hơn original_price
                     if ($productData['sale_price'] >= $originalPrice) {
@@ -217,7 +217,7 @@ class FlashSalesController extends Controller
             // Tạo lại flash sale products
             foreach ($request->products as $productData) {
                 $productVariant = ProductVariant::find($productData['product_variant_id']);
-                $originalPrice = $productVariant->price_sale ?? $productVariant->price;
+                $originalPrice = $productVariant->price;
 
                 if ($productData['sale_price'] >= $originalPrice) {
                     throw new \Exception("Giá flash sale phải nhỏ hơn giá gốc cho sản phẩm {$productVariant->product->name}");

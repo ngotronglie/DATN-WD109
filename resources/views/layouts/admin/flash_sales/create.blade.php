@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!selectedVariants.has(variant.id)) {
                     const option = document.createElement('option');
                     option.value = variant.id;
-                    option.textContent = `${variant.color_name} - ${variant.capacity_name} (${formatPrice(variant.price_sale || variant.price)})`;
+                    option.textContent = `${variant.color_name || 'N/A'} - ${variant.capacity_name || 'N/A'}`;
                     option.dataset.variant = JSON.stringify(variant);
                     option.dataset.productName = selectedProduct.name;
                     variantSelect.appendChild(option);
@@ -235,7 +235,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const variantId = selectedVariantOption.value;
         const variantData = JSON.parse(selectedVariantOption.dataset.variant);
         const productName = selectedVariantOption.dataset.productName;
-        const originalPrice = variantData.price_sale || variantData.price;
+        const originalPrice = variantData.price;
+        const existingSalePrice = variantData.price_sale;
         const maxQuantity = variantData.quantity;
         const variantImage = variantData.image;
 
@@ -247,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
         row.innerHTML = `
             <td>
                 <strong>${productName}</strong><br>
-                <small class="text-muted">${variantData.color_name} - ${variantData.capacity_name}</small>
+                <small class="text-muted">${variantData.color_name || 'N/A'} - ${variantData.capacity_name || 'N/A'}</small>
                 <input type="hidden" name="products[${productIndex}][product_variant_id]" value="${variantId}">
             </td>
             <td>
@@ -261,7 +262,9 @@ document.addEventListener('DOMContentLoaded', function() {
                        name="products[${productIndex}][sale_price]" 
                        required min="1" max="${originalPrice - 1}" 
                        data-original-price="${originalPrice}"
-                       data-index="${productIndex}">
+                       data-index="${productIndex}"
+                       value="${existingSalePrice || ''}"
+                       placeholder="${existingSalePrice ? 'Giá khuyến mại hiện tại' : 'Nhập giá flash sale'}">
             </td>
             <td>
                 <input type="number" class="form-control sale-quantity-input" 
@@ -295,6 +298,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset selections
         variantSelect.value = '';
         addProductBtn.disabled = true;
+
+        // Tính toán tiết kiệm nếu có giá sale sẵn
+        if (existingSalePrice) {
+            const salePriceInput = row.querySelector('.sale-price-input');
+            const savingSpan = row.querySelector('.saving-amount');
+            const saving = originalPrice - existingSalePrice;
+            const percentage = Math.round((saving / originalPrice) * 100);
+            savingSpan.innerHTML = `${formatPrice(saving)}<br><small>(${percentage}%)</small>`;
+            savingSpan.className = 'saving-amount text-success';
+        }
 
         productIndex++;
     });
@@ -365,62 +378,79 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Validate form trước khi submit
     form.addEventListener('submit', function(e) {
+        // Xóa tất cả lỗi cũ
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+        
+        let hasError = false;
+        
+        // Kiểm tra sản phẩm
         if (productsTable.rows.length === 0) {
             e.preventDefault();
-            alert('Vui lòng thêm ít nhất một sản phẩm vào Flash Sale!');
-            return;
+            showFieldError(document.getElementById('add_product_btn'), 'Vui lòng thêm ít nhất một sản phẩm vào Flash Sale!');
+            hasError = true;
         }
 
         // Kiểm tra thời gian
-        const startTime = new Date(document.getElementById('start_time').value);
-        const endTime = new Date(document.getElementById('end_time').value);
+        const startTimeInput = document.getElementById('start_time');
+        const endTimeInput = document.getElementById('end_time');
+        const startTime = new Date(startTimeInput.value);
+        const endTime = new Date(endTimeInput.value);
         
         if (endTime <= startTime) {
             e.preventDefault();
-            alert('Thời gian kết thúc phải sau thời gian bắt đầu!');
-            return;
+            showFieldError(endTimeInput, 'Thời gian kết thúc phải sau thời gian bắt đầu!');
+            hasError = true;
         }
 
         // Kiểm tra giá flash sale
         const salePriceInputs = productsTable.querySelectorAll('.sale-price-input');
-        let hasInvalidPrice = false;
         
         salePriceInputs.forEach(input => {
             const salePrice = parseFloat(input.value) || 0;
             const originalPrice = parseFloat(input.dataset.originalPrice);
             
             if (salePrice >= originalPrice) {
-                hasInvalidPrice = true;
-                input.classList.add('is-invalid');
+                showFieldError(input, 'Giá Flash Sale phải nhỏ hơn giá gốc!');
+                hasError = true;
             }
         });
-        
-        if (hasInvalidPrice) {
-            e.preventDefault();
-            alert('Giá Flash Sale phải nhỏ hơn giá gốc!');
-            return;
-        }
 
         // Kiểm tra số lượng flash sale
         const saleQuantityInputs = productsTable.querySelectorAll('.sale-quantity-input');
-        let hasInvalidQuantity = false;
         
         saleQuantityInputs.forEach(input => {
             const saleQuantity = parseInt(input.value) || 0;
             const maxQuantity = parseInt(input.dataset.maxQuantity);
             
             if (saleQuantity > maxQuantity) {
-                hasInvalidQuantity = true;
-                input.classList.add('is-invalid');
+                showFieldError(input, 'Số lượng Flash Sale không được lớn hơn tồn kho!');
+                hasError = true;
             }
         });
         
-        if (hasInvalidQuantity) {
+        if (hasError) {
             e.preventDefault();
-            alert('Số lượng Flash Sale không được lớn hơn tồn kho!');
-            return;
         }
     });
+    
+    // Hàm hiển thị lỗi cho từng field
+    function showFieldError(element, message) {
+        element.classList.add('is-invalid');
+        
+        // Tạo div hiển thị lỗi
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback';
+        errorDiv.textContent = message;
+        
+        // Thêm sau element
+        element.parentNode.insertBefore(errorDiv, element.nextSibling);
+        
+        // Scroll đến field lỗi đầu tiên
+        if (!document.querySelector('.is-invalid')) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
 
     // Helper function
     function formatPrice(price) {

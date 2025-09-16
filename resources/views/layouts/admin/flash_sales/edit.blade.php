@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!selectedVariants.has(variant.id.toString())) {
                     const option = document.createElement('option');
                     option.value = variant.id;
-                    option.textContent = `${variant.color_name} - ${variant.capacity_name} (${formatPrice(variant.price_sale || variant.price)})`;
+                    option.textContent = `${variant.color_name || 'N/A'} - ${variant.capacity_name || 'N/A'}`;
                     option.dataset.variant = JSON.stringify(variant);
                     option.dataset.productName = selectedProduct.name;
                     variantSelect.appendChild(option);
@@ -310,7 +310,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const variantId = selectedVariantOption.value;
         const variantData = JSON.parse(selectedVariantOption.dataset.variant);
         const productName = selectedVariantOption.dataset.productName;
-        const originalPrice = variantData.price_sale || variantData.price;
+        const originalPrice = variantData.price;
+        const existingSalePrice = variantData.price_sale;
         const maxQuantity = variantData.quantity;
         const variantImage = variantData.image;
 
@@ -320,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
         row.innerHTML = `
             <td>
                 <strong>${productName}</strong><br>
-                <small class="text-muted">${variantData.color_name} - ${variantData.capacity_name}</small>
+                <small class="text-muted">${variantData.color_name || 'N/A'} - ${variantData.capacity_name || 'N/A'}</small>
                 <input type="hidden" name="products[${productIndex}][product_variant_id]" value="${variantId}">
             </td>
             <td>
@@ -334,7 +335,9 @@ document.addEventListener('DOMContentLoaded', function() {
                        name="products[${productIndex}][sale_price]" 
                        required min="1" max="${originalPrice - 1}" 
                        data-original-price="${originalPrice}"
-                       data-index="${productIndex}">
+                       data-index="${productIndex}"
+                       value="${existingSalePrice || ''}"
+                       placeholder="${existingSalePrice ? 'Giá khuyến mại hiện tại' : 'Nhập giá flash sale'}">
             </td>
             <td>
                 <input type="number" class="form-control sale-quantity-input" 
@@ -365,6 +368,16 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedVariantOption.remove();
         variantSelect.value = '';
         addProductBtn.disabled = true;
+
+        // Tính toán tiết kiệm nếu có giá sale sẵn
+        if (existingSalePrice) {
+            const salePriceInput = row.querySelector('.sale-price-input');
+            const savingSpan = row.querySelector('.saving-amount');
+            const saving = originalPrice - existingSalePrice;
+            const percentage = Math.round((saving / originalPrice) * 100);
+            savingSpan.innerHTML = `${formatPrice(saving)}<br><small>(${percentage}%)</small>`;
+            savingSpan.className = 'saving-amount text-success';
+        }
 
         productIndex++;
     });
