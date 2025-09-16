@@ -73,7 +73,7 @@
                                 </div>
                             @endif
                             <input type="file" class="form-control @error('Image') is-invalid @enderror"
-                                id="Image" name="Image">
+                                id="Image" name="Image" accept="image/*">
                             @error('Image')
                                 <div class="text-danger mt-1">{{ $message }}</div>
                             @enderror

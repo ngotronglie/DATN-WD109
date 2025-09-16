@@ -14,10 +14,11 @@
                             <div class="col-lg-3 col-md-4">
                                 <div class="product-item">
                                     <div class="product-img">
-                                        <a href="{{ url('product/' . $product->product_slug) }}">
-                                            <img src="{{ asset($product->product_image) }}"
-                                                alt="{{ $product->product_name }}" />
-                                        </a>
+                                    <a href="{{ url('product/' . $product->product_slug) }}">
+    <img src="{{ $product->product_image }}" 
+         alt="{{ $product->product_name }}" />
+</a>
+
                                     </div>
                                     <div class="product-info">
                                         <h6 class="product-title">
@@ -45,14 +46,6 @@
                                                 <a href="#" class="add-to-favorite" data-product-id="{{ $product->product_id }}" title="Thêm vào yêu thích" onclick="addToFavorite(event, {{ $product->product_id }})">
                                                     <i class="zmdi zmdi-favorite"></i>
                                                 </a>
-                                            </li>
-                                            <li>
-                                                <a href="#" title="Add to cart"><i
-                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
-                                            </li>
-                                            <li>
-                                                <a href="#" title="Add to cart"><i
-                                                        class="zmdi zmdi-shopping-cart-plus"></i></a>
                                             </li>
                                         </ul>
                                     </div>

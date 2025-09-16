@@ -39,14 +39,21 @@ class ClientController extends Controller
             ->get()
             ->map(function($product) {
                 $variant = $product->variants->first();
+                // Prefer variant image; fallback to product image uploaded from admin
+                $resolvedImage = $variant && !empty($variant->image)
+                    ? $variant->image
+                    : ($product->image ?? null);
+                // Prefer variant prices; fallback to product base price if set
+                $resolvedPrice = $variant ? $variant->price : ($product->price ?? 0);
+                $resolvedPriceSale = $variant ? $variant->price_sale : 0;
                 return (object) [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'product_view' => $product->view_count,
                     'product_slug' => $product->slug,
-                    'product_image' => $variant ? $variant->image : null,
-                    'product_price' => $variant ? $variant->price : 0,
-                    'product_price_discount' => $variant ? $variant->price_sale : 0,
+                    'product_image' => $resolvedImage,
+                    'product_price' => $resolvedPrice,
+                    'product_price_discount' => $resolvedPriceSale,
                 ];
             });
             

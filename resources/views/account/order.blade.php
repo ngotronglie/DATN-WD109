@@ -117,7 +117,7 @@
                                     <td>
                                         @if ($order->return_requested)
                                         <span class="text-warning fw-semibold">Đã yêu cầu</span>
-                                        @elseif ($order->status == 0)
+                                        @elseif (in_array($order->status, [0,1]))
                                         <form action="{{ route('order.cancel', $order->id) }}" method="POST">
                                             @csrf
                                             <select name="reason_select" class="form-control reason-select" required>

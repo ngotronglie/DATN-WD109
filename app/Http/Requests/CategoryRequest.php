@@ -47,11 +47,12 @@ class CategoryRequest extends FormRequest
 
        
             if ($this->hasFile('Image')) {
-                $rules['Image'] = ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'];
+                // Avoid relying on fileinfo; validate by extension/mime only
+                $rules['Image'] = ['required', 'mimes:jpeg,png,jpg,gif,webp', 'max:4096'];
             }
         } else {
-          
-            $rules['Image'] = ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'];
+            // Create: allow optional image
+            $rules['Image'] = ['nullable', 'mimes:jpeg,png,jpg,gif,webp', 'max:4096'];
         }
 
         return $rules;
