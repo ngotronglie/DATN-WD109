@@ -802,7 +802,7 @@ function showCenterNotice(message, type = 'success') {
 }
 
 // Prompt: ask user to login with explicit button
-function showLoginPrompt() {
+function showLoginPrompt(redirectPath, purpose) {
     const overlay = document.createElement('div');
     overlay.style.position = 'fixed';
     overlay.style.inset = '0';
@@ -822,13 +822,21 @@ function showLoginPrompt() {
     box.style.textAlign = 'center';
 
     const title = document.createElement('div');
-    title.textContent = 'Bạn cần đăng nhập để tiếp tục mua hàng';
+    title.textContent = (purpose === 'favorite')
+        ? 'Bạn cần đăng nhập để thêm vào yêu thích'
+        : (purpose === 'cart'
+            ? 'Bạn cần đăng nhập để thêm vào giỏ hàng'
+            : 'Bạn cần đăng nhập để tiếp tục mua hàng');
     title.style.fontWeight = '700';
     title.style.fontSize = '16px';
     title.style.marginBottom = '8px';
 
     const desc = document.createElement('div');
-    desc.textContent = 'Vui lòng đăng nhập để chuyển đến trang thanh toán.';
+    desc.textContent = (purpose === 'favorite')
+        ? 'Đăng nhập để lưu sản phẩm vào danh sách yêu thích.'
+        : (purpose === 'cart'
+            ? 'Đăng nhập để thêm sản phẩm vào giỏ hàng.'
+            : 'Vui lòng đăng nhập để chuyển đến trang thanh toán.');
     desc.style.color = '#555';
     desc.style.marginBottom = '16px';
 
@@ -838,7 +846,8 @@ function showLoginPrompt() {
     actions.style.justifyContent = 'center';
 
     const loginBtn = document.createElement('a');
-    loginBtn.href = '/login?redirect=' + encodeURIComponent('/checkout');
+    const target = typeof redirectPath === 'string' && redirectPath.startsWith('/') ? redirectPath : '/checkout';
+    loginBtn.href = '/login?redirect=' + encodeURIComponent(target);
     loginBtn.textContent = 'Đăng nhập';
     loginBtn.style.background = '#ee4d2d';
     loginBtn.style.color = '#fff';
@@ -1086,6 +1095,100 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize product variant on page load
     updateProductVariant();
+
+    // Auto-add favorite after login if flagged
+    try {
+        if (isLoggedIn) {
+            const pendingFav = localStorage.getItem('post_login_favorite');
+            if (pendingFav) {
+                const payload = JSON.parse(pendingFav);
+                if (payload && Number(payload.product_id) === Number({{ $product->id }})) {
+                    // Clear flag first to avoid loops
+                    localStorage.removeItem('post_login_favorite');
+                    // Perform favorite add silently
+                    fetch('/favorites', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ product_id: {{ $product->id }} })
+                    })
+                    .then(res => res.json().catch(() => ({})))
+                    .then(data => {
+                        const favBtn = document.querySelector('.btn-favorite');
+                        if (favBtn) { favBtn.classList.add('active'); }
+                        if (data && data.success) {
+                            showCenterNotice('Đã thêm vào danh sách yêu thích!', 'success');
+                        } else if (data && data.message) {
+                            showCenterNotice(data.message, 'success');
+                        } else {
+                            showCenterNotice('Đã thêm vào danh sách yêu thích!', 'success');
+                        }
+                    })
+                    .catch(() => {});
+                }
+            }
+        }
+    } catch (_) {}
+    // Auto-add favorite after login if flagged
+    try {
+        if (isLoggedIn) {
+            const pendingFav = localStorage.getItem('post_login_favorite');
+            if (pendingFav) {
+                const payload = JSON.parse(pendingFav);
+                if (payload && Number(payload.product_id) === Number({{ $product->id }})) {
+                    localStorage.removeItem('post_login_favorite');
+                    fetch('/favorites', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ product_id: {{ $product->id }} })
+                    })
+                    .then(res => res.json().catch(() => ({})))
+                    .then(data => {
+                        const favBtn = document.querySelector('.btn-favorite');
+                        if (favBtn) { favBtn.classList.add('active'); }
+                        showCenterNotice('Đã thêm vào danh sách yêu thích!', 'success');
+                    })
+                    .catch(() => {});
+                }
+            }
+            // Auto-add to cart after login if flagged
+            const pendingCart = localStorage.getItem('post_login_cart');
+            if (pendingCart) {
+                const c = JSON.parse(pendingCart);
+                localStorage.removeItem('post_login_cart');
+                if (c && c.variant_id) {
+                    fetch('/api/add-to-cart', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            product_id: c.product_id,
+                            product_variant_id: c.variant_id,
+                            color_id: c.color_id,
+                            capacity_id: c.capacity_id,
+                            quantity: c.quantity || 1,
+                            is_flash_sale: !!c.is_flash_sale,
+                            flash_sale_id: c.flash_sale_id,
+                            flash_sale_price: c.flash_sale_price
+                        })
+                    })
+                    .then(res => res.json().catch(() => ({})))
+                    .then(data => {
+                        showCenterNotice('Đã thêm vào giỏ hàng!', 'success');
+                    })
+                    .catch(() => {});
+                }
+            }
+        }
+    } catch (_) {}
+
 });
 
 // Add to cart function
@@ -1102,6 +1205,26 @@ async function addToCart() {
     const capacityId = capacityInput.value;
     const key = `${colorId}_${capacityId}`;
     const variantId = variantIdMap[key];
+
+    if (!isLoggedIn) {
+        // Lưu ý định thêm giỏ hàng để tự động thực hiện sau đăng nhập
+        try {
+            localStorage.setItem('post_login_cart', JSON.stringify({
+                product_id: {{ $product->id }},
+                variant_id: variantId,
+                color_id: colorId,
+                capacity_id: capacityId,
+                quantity: quantity,
+                is_flash_sale: true,
+                flash_sale_id: {{ $flashSale->id }},
+                flash_sale_price: {{ $flashSaleProduct->sale_price }},
+                ts: Date.now()
+            }));
+        } catch (_) {}
+        const currentPath = window.location.pathname + window.location.search;
+        showLoginPrompt(currentPath, 'cart');
+        return;
+    }
 
     try {
         const res = await fetch('/api/add-to-cart', {
@@ -1122,7 +1245,8 @@ async function addToCart() {
             })
         });
         if (res.status === 401) {
-            showCenterNotice('Vui lòng đăng nhập để thêm vào giỏ hàng.', 'error');
+            const currentPath = window.location.pathname + window.location.search;
+            showLoginPrompt(currentPath, 'cart');
             return;
         }
         const data = await res.json();
@@ -1139,6 +1263,13 @@ async function addToCart() {
 // Add to wishlist function
 function addToWishlist() {
     const productId = {{ $product->id }};
+    if (typeof isLoggedIn !== 'undefined' && !isLoggedIn) {
+        // Mark intent to auto-add after login and redirect back to this page
+        try { localStorage.setItem('post_login_favorite', JSON.stringify({ product_id: productId, ts: Date.now() })); } catch (_) {}
+        const currentPath = window.location.pathname + window.location.search;
+        showLoginPrompt(currentPath, 'favorite');
+        return;
+    }
     fetch('/favorites', {
         method: 'POST',
         headers: {
@@ -1149,7 +1280,8 @@ function addToWishlist() {
     })
     .then(async (res) => {
         if (res.status === 401) {
-            showCenterNotice('Vui lòng đăng nhập để dùng tính năng yêu thích.', 'error');
+            const currentPath = window.location.pathname + window.location.search;
+            showLoginPrompt(currentPath, 'favorite');
             return null;
         }
         return res.json();
@@ -1216,8 +1348,8 @@ async function buyNow() {
         }));
     }
     if (!isLoggedIn) {
-        // Show prompt; only redirect if user confirms
-        showLoginPrompt();
+        // Show prompt; only redirect if user confirms (to checkout)
+        showLoginPrompt('/checkout');
         return;
     }
     window.location.href = '/checkout';
