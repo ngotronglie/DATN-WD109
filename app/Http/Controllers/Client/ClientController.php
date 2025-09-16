@@ -321,68 +321,177 @@ class ClientController extends Controller
 
     public function apiAddToCart(Request $request)
     {
-        $variantId = $request->input('variant_id');
+        $variantId = $request->input('product_variant_id') ?? $request->input('variant_id');
+        $colorId = $request->input('color_id');
+        $capacityId = $request->input('capacity_id');
+        $isFlashSale = $request->boolean('is_flash_sale', false);
+        $flashSaleId = $request->input('flash_sale_id');
+        $flashSalePrice = $request->input('flash_sale_price');
         $quantity = $request->input('quantity', 1);
 
-        // Validate stock for the variant
-        $variant = ProductVariant::find($variantId);
+        // Nếu không có variantId nhưng có color và capacity, tìm variant tương ứng
+        if (!$variantId && $colorId && $capacityId) {
+            $variant = ProductVariant::where('product_id', $request->input('product_id'))
+                ->where('color_id', $colorId)
+                ->where('capacity_id', $capacityId)
+                ->first();
+                
+            if (!$variant) {
+                return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại hoặc đã hết hàng']);
+            }
+            $variantId = $variant->id;
+        } else {
+            $variant = ProductVariant::find($variantId);
+        }
+
         if (!$variant) {
             return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
         }
+
         if ($quantity < 1) {
             return response()->json(['success' => false, 'message' => 'Số lượng không hợp lệ']);
+        }
+
+        // Kiểm tra số lượng tồn kho cho flash sale
+        if ($isFlashSale && $flashSaleId) {
+            $flashSaleProduct = \App\Models\FlashSaleProduct::where('flash_sale_id', $flashSaleId)
+                ->where('product_variant_id', $variantId)
+                ->first();
+                
+            if (!$flashSaleProduct || $flashSaleProduct->remaining_stock < $quantity) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Sản phẩm flash sale đã hết hàng hoặc vượt quá số lượng cho phép'
+                ]);
+            }
+        } else {
+            // Kiểm tra tồn kho thông thường
+            if ($quantity > $variant->quantity) {
+                return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
+            }
+        }
+
+        $cartData = [
+            'product_variant_id' => $variantId,
+            'quantity' => $quantity,
+        ];
+
+        // Thêm thông tin flash sale nếu có
+        if ($isFlashSale && $flashSaleId) {
+            $cartData['is_flash_sale'] = true;
+            $cartData['flash_sale_id'] = $flashSaleId;
+            $cartData['price'] = $flashSalePrice; // Giá flash sale
         }
 
         if (Auth::check()) {
             $user = Auth::user();
             $cart = Cart::firstOrCreate(['user_id' => $user->id]);
+            
+            // Tìm sản phẩm trong giỏ hàng
             $item = CartItem::where('cart_id', $cart->id)
                 ->where('product_variant_id', $variantId)
+                ->when($isFlashSale, function($query) use ($flashSaleId) {
+                    return $query->where('flash_sale_id', $flashSaleId);
+                }, function($query) {
+                    return $query->whereNull('flash_sale_id');
+                })
                 ->first();
+
             if ($item) {
                 $newQty = $item->quantity + $quantity;
-                if ($newQty > $variant->quantity) {
+                if ($isFlashSale && $flashSaleProduct && $newQty > $flashSaleProduct->remaining_stock) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => 'Vượt quá số lượng tồn kho cho flash sale'
+                    ]);
+                } elseif (!$isFlashSale && $newQty > $variant->quantity) {
                     return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
                 }
+                
                 $item->quantity = $newQty;
+                if ($isFlashSale) {
+                    $item->price = $flashSalePrice;
+                    $item->flash_sale_id = $flashSaleId;
+                }
                 $item->save();
             } else {
-                if ($quantity > $variant->quantity) {
-                    return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
-                }
-                CartItem::create([
+                $itemData = [
                     'cart_id' => $cart->id,
                     'product_variant_id' => $variantId,
                     'quantity' => $quantity,
-                ]);
+                ];
+                
+                if ($isFlashSale) {
+                    $itemData['price'] = $flashSalePrice;
+                    $itemData['flash_sale_id'] = $flashSaleId;
+                }
+                
+                CartItem::create($itemData);
             }
-            return response()->json(['success' => true, 'type' => 'db', 'message' => 'Đã thêm vào giỏ hàng!']);
+            
+            $cartCount = $cart->items()->sum('quantity');
+            return response()->json([
+                'success' => true, 
+                'type' => 'db', 
+                'message' => 'Đã thêm vào giỏ hàng!',
+                'cart_count' => $cartCount
+            ]);
+            
         } else {
             $cart = Session::get('cart', []);
             $found = false;
+            
             foreach ($cart as &$item) {
-                if ($item['product_variant_id'] == $variantId) {
+                $isSameVariant = $item['product_variant_id'] == $variantId;
+                $isSameFlashSale = ($item['flash_sale_id'] ?? null) == $flashSaleId;
+                
+                if ($isSameVariant && ($isFlashSale ? $isSameFlashSale : !isset($item['flash_sale_id']))) {
                     $newQty = $item['quantity'] + $quantity;
-                    if ($newQty > $variant->quantity) {
+                    
+                    if ($isFlashSale && $flashSaleProduct && $newQty > $flashSaleProduct->remaining_stock) {
+                        return response()->json([
+                            'success' => false, 
+                            'message' => 'Vượt quá số lượng tồn kho cho flash sale'
+                        ]);
+                    } elseif (!$isFlashSale && $newQty > $variant->quantity) {
                         return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
                     }
+                    
                     $item['quantity'] = $newQty;
+                    if ($isFlashSale) {
+                        $item['price'] = $flashSalePrice;
+                        $item['flash_sale_id'] = $flashSaleId;
+                    }
                     $found = true;
                     break;
                 }
             }
-            unset($item);
+            
             if (!$found) {
-                if ($quantity > $variant->quantity) {
-                    return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
-                }
-                $cart[] = [
+                $newItem = [
                     'product_variant_id' => $variantId,
                     'quantity' => $quantity,
                 ];
+                
+                if ($isFlashSale) {
+                    $newItem['price'] = $flashSalePrice;
+                    $newItem['flash_sale_id'] = $flashSaleId;
+                }
+                
+                $cart[] = $newItem;
             }
+            
             Session::put('cart', $cart);
-            return response()->json(['success' => true, 'type' => 'session', 'message' => 'Đã thêm vào giỏ hàng!']);
+            
+            // Tính tổng số lượng sản phẩm trong giỏ hàng
+            $cartCount = array_sum(array_column($cart, 'quantity'));
+            
+            return response()->json([
+                'success' => true, 
+                'type' => 'session', 
+                'message' => 'Đã thêm vào giỏ hàng!',
+                'cart_count' => $cartCount
+            ]);
         }
     }
 

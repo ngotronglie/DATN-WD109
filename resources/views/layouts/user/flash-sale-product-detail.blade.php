@@ -133,7 +133,7 @@
 
                         <!-- Action Buttons -->
                         <div class="action-buttons">
-                            <button type="button" class="btn-buy-now" onclick="addToCart()">
+                            <button type="button" class="btn-buy-now" onclick="buyNow()">
                                 <i class="zmdi zmdi-shopping-cart"></i>
                                 Mua ngay
                             </button>
@@ -767,6 +767,39 @@
 
 <!-- JavaScript -->
 <script>
+// Center Notification (toast-like)
+function showCenterNotice(message, type = 'success') {
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.top = '50%';
+    wrapper.style.left = '50%';
+    wrapper.style.transform = 'translate(-50%, -50%)';
+    wrapper.style.zIndex = '9999';
+    wrapper.style.display = 'flex';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.justifyContent = 'center';
+    wrapper.style.pointerEvents = 'none';
+
+    const box = document.createElement('div');
+    box.style.minWidth = '300px';
+    box.style.maxWidth = '420px';
+    box.style.background = '#fff';
+    box.style.borderRadius = '10px';
+    box.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
+    box.style.padding = '16px 18px';
+    box.style.fontSize = '15px';
+    box.style.fontWeight = '600';
+    box.style.textAlign = 'center';
+    box.style.border = type === 'success' ? '1px solid #28a745' : '1px solid #dc3545';
+    box.style.color = type === 'success' ? '#155724' : '#721c24';
+    box.style.background = type === 'success' ? '#d4edda' : '#f8d7da';
+
+    box.textContent = message;
+    wrapper.appendChild(box);
+    document.body.appendChild(wrapper);
+
+    setTimeout(() => wrapper.remove(), 2000);
+}
 document.addEventListener('DOMContentLoaded', function() {
     // Countdown Timer for compact version
     const countdownTimer = document.querySelector('.countdown-timer-compact');
@@ -870,6 +903,13 @@ function getVariantData(colorId, capacityId) {
 const availableCombinations = {
     @foreach($variants as $variant)
     '{{ $variant->color_id }}_{{ $variant->capacity_id }}': true,
+    @endforeach
+};
+
+// Map to find variantId by color-capacity
+const variantIdMap = {
+    @foreach($variants as $variant)
+    '{{ $variant->color_id }}_{{ $variant->capacity_id }}': {{ $variant->id }},
     @endforeach
 };
 
@@ -992,8 +1032,84 @@ function addToCart() {
 
 // Add to wishlist function
 function addToWishlist() {
-    // Here you would typically send an AJAX request to add the item to wishlist
-    alert('Đã thêm vào danh sách yêu thích!');
+    const productId = {{ $product->id }};
+    fetch('/favorites', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ product_id: productId })
+    })
+    .then(async (res) => {
+        if (res.status === 401) {
+            showCenterNotice('Vui lòng đăng nhập để dùng tính năng yêu thích.', 'error');
+            return null;
+        }
+        return res.json();
+    })
+    .then((data) => {
+        if (!data) return;
+        if (data.success) {
+            const favBtn = document.querySelector('.btn-favorite');
+            if (favBtn) {
+                favBtn.classList.add('active');
+            }
+            showCenterNotice('Đã thêm vào danh sách yêu thích!', 'success');
+        } else if (data.message) {
+            showCenterNotice(data.message, 'error');
+        }
+    })
+    .catch(() => showCenterNotice('Có lỗi xảy ra. Vui lòng thử lại.', 'error'));
+}
+
+// Buy Now: add to cart then go to checkout
+async function buyNow() {
+    const quantity = parseInt(document.getElementById('quantity').value || '1', 10);
+    const colorInput = document.querySelector('input[name="color"]:checked');
+    const capacityInput = document.querySelector('input[name="capacity"]:checked');
+    if (!colorInput || !capacityInput) {
+        showCenterNotice('Vui lòng chọn đầy đủ màu sắc và dung lượng.', 'error');
+        return;
+    }
+
+    const colorId = colorInput.value;
+    const capacityId = capacityInput.value;
+    const key = `${colorId}_${capacityId}`;
+    const variantId = variantIdMap[key];
+    if (!variantId) {
+        showCenterNotice('Phiên bản sản phẩm không khả dụng.', 'error');
+        return;
+    }
+
+    // Build checkout_cart item for checkout page only (no server cart)
+    const priceText = document.getElementById('current-price')?.textContent || '0';
+    const priceNumber = parseInt(priceText.replace(/[^\d]/g, ''), 10) || 0;
+    const item = {
+        variant_id: variantId,
+        quantity: quantity,
+        price: priceNumber,
+        name: `{{ addslashes($product->name) }}`,
+        color: colorInput.nextElementSibling?.textContent?.trim() || '',
+        capacity: capacityInput.nextElementSibling?.textContent?.trim() || '',
+        image: document.getElementById('product-image')?.src || ''
+    };
+    localStorage.setItem('checkout_cart', JSON.stringify([item]));
+    const existingUser = localStorage.getItem('checkout_user');
+    if (!existingUser) {
+        localStorage.setItem('checkout_user', JSON.stringify({
+            fullname: '',
+            email: '',
+            phone: '',
+            street: '',
+            ward: '',
+            district: '',
+            city: '',
+            note: '',
+            payment: 'cod'
+        }));
+    }
+    window.location.href = '/checkout';
 }
 </script>
 
