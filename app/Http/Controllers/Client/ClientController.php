@@ -258,20 +258,40 @@ class ClientController extends Controller
             ->first();
 
         if ($variant) {
-            $product = $variant->product;
-            $category = $product->category;
+            // Prefer flash sale pricing if the variant is in an ongoing flash sale
+            $flashSaleProduct = \App\Models\FlashSaleProduct::where('product_variant_id', $variant->id)
+                ->whereHas('flashSale', function ($q) {
+                    $q->ongoing();
+                })
+                ->first();
+
+            if ($flashSaleProduct) {
+                $salePrice = (float) $flashSaleProduct->sale_price;
+                $originalPrice = (float) ($flashSaleProduct->original_price ?? $variant->price ?? $variant->price_sale ?? $salePrice);
+                $quantity = (int) ($flashSaleProduct->remaining_stock ?? $variant->quantity);
+            } else {
+                // Fall back to variant pricing
+                $salePrice = (float) ($variant->price_sale ?? $variant->price);
+                $originalPrice = (float) ($variant->price ?? $salePrice);
+                $quantity = (int) $variant->quantity;
+            }
+
             return response()->json([
                 'success' => true,
-                'image' => asset($variant->image),
-                'price' => $variant->price,
-                'price_sale' => $variant->price_sale,
-                'quantity' => $variant->quantity,
-                'product_name' => $product->name,
-                'category_name' => $category->Name ?? '',
+                'variant' => [
+                    'image' => asset($variant->image),
+                    'sale_price' => $salePrice,
+                    'original_price' => $originalPrice,
+                    'quantity' => $quantity,
+                ],
             ]);
-        } else {
-            return response()->json(['success' => false]);
         }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Variant not found'
+        ]);
+
     }
 
     public function getVoucher(Request $request)

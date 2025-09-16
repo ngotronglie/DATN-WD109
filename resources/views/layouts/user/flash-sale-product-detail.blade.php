@@ -73,9 +73,9 @@
 
                         <!-- Price Section -->
                         <div class="price-section">
-                            <div class="current-price">₫{{ number_format($flashSaleProduct->sale_price, 0, ',', '.') }}</div>
-                            <div class="original-price">₫{{ number_format($flashSaleProduct->original_price, 0, ',', '.') }}</div>
-                            <div class="savings-badge">Tiết kiệm ₫{{ number_format($flashSaleProduct->original_price - $flashSaleProduct->sale_price, 0, ',', '.') }}</div>
+                            <div id="current-price" class="current-price">₫{{ number_format($flashSaleProduct->sale_price, 0, ',', '.') }}</div>
+                            <div id="original-price" class="original-price">₫{{ number_format($flashSaleProduct->original_price, 0, ',', '.') }}</div>
+                            <div id="savings-badge" class="savings-badge">Tiết kiệm ₫{{ number_format($flashSaleProduct->original_price - $flashSaleProduct->sale_price, 0, ',', '.') }}</div>
                         </div>
 
                         <!-- Stock Progress -->
@@ -834,20 +834,39 @@ function switchTab(tabName) {
     document.getElementById(tabName + '-tab').classList.add('active');
 }
 
-// Variant data (you would get this from server)
-const variantData = {
-    @foreach($variants as $variant)
-    '{{ $variant->color_id }}_{{ $variant->capacity_id }}': {
-        image: '{{ asset($variant->image) }}',
-        price: {{ $variant->sale_price ?? $flashSaleProduct->sale_price }},
-        originalPrice: {{ $variant->original_price ?? $flashSaleProduct->original_price }},
-        stock: {{ $variant->stock ?? $flashSaleProduct->remaining_stock }},
-        available: true
-    },
-    @endforeach
-};
+// Get variant data from server via AJAX
+function getVariantData(colorId, capacityId) {
+    return fetch('{{ route("get.variant") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            product_id: {{ $product->id }},
+            color_id: colorId,
+            capacity_id: capacityId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            return {
+                image: data.variant.image,
+                price: data.variant.sale_price || {{ $flashSaleProduct->sale_price }},
+                originalPrice: data.variant.original_price || {{ $flashSaleProduct->original_price }},
+                stock: data.variant.quantity || {{ $flashSaleProduct->remaining_stock }}
+            };
+        }
+        return null;
+    })
+    .catch(error => {
+        console.error('Error fetching variant:', error);
+        return null;
+    });
+}
 
-// Available combinations
+// Available combinations (for disabling options)
 const availableCombinations = {
     @foreach($variants as $variant)
     '{{ $variant->color_id }}_{{ $variant->capacity_id }}': true,
@@ -892,33 +911,50 @@ function updateCapacityOptions() {
 }
 
 // Update product when variant changes
-function updateProductVariant() {
-    const selectedColor = document.querySelector('input[name="color"]:checked').value;
-    const selectedCapacity = document.querySelector('input[name="capacity"]:checked').value;
-    const variantKey = selectedColor + '_' + selectedCapacity;
+async function updateProductVariant() {
+    const selectedColor = document.querySelector('input[name="color"]:checked');
+    const selectedCapacity = document.querySelector('input[name="capacity"]:checked');
     
-    const variant = variantData[variantKey];
-    if (variant) {
-        // Update image
-        document.getElementById('product-image').src = variant.image;
+    if (!selectedColor || !selectedCapacity) {
+        console.log('No color or capacity selected');
+        return;
+    }
+    
+    console.log('Fetching variant for:', selectedColor.value, selectedCapacity.value);
+    
+    try {
+        const variant = await getVariantData(selectedColor.value, selectedCapacity.value);
         
-        // Update price
-        document.querySelector('.current-price').textContent = '₫' + variant.price.toLocaleString('vi-VN');
-        document.querySelector('.original-price').textContent = '₫' + variant.originalPrice.toLocaleString('vi-VN');
-        
-        // Update savings
-        const savings = variant.originalPrice - variant.price;
-        document.querySelector('.savings-badge').textContent = 'Tiết kiệm ₫' + savings.toLocaleString('vi-VN');
-        
-        // Update stock
-        document.querySelector('.remaining-count').textContent = 'Còn lại: ' + variant.stock;
-        document.getElementById('quantity').setAttribute('max', variant.stock);
-        
-        // Update stock progress
-        const soldCount = document.querySelector('.sold-count').textContent.match(/\d+/)[0];
-        const totalStock = parseInt(soldCount) + variant.stock;
-        const soldPercentage = (parseInt(soldCount) / totalStock) * 100;
-        document.querySelector('.progress-fill').style.width = soldPercentage + '%';
+        if (variant) {
+            console.log('Found variant:', variant);
+            
+            // Update image
+            document.getElementById('product-image').src = variant.image;
+            
+            // Update price
+            document.getElementById('current-price').textContent = '₫' + (variant.price ?? variant.sale_price).toLocaleString('vi-VN');
+            document.getElementById('original-price').textContent = '₫' + (variant.originalPrice ?? variant.price ?? variant.sale_price).toLocaleString('vi-VN');
+            
+            // Update savings
+            const vPrice = (variant.price ?? variant.sale_price) * 1;
+            const vOriginal = (variant.originalPrice ?? variant.price ?? variant.sale_price) * 1;
+            const savings = Math.max(0, vOriginal - vPrice);
+            document.getElementById('savings-badge').textContent = 'Tiết kiệm ₫' + savings.toLocaleString('vi-VN');
+            
+            // Update stock
+            document.querySelector('.remaining-count').textContent = 'Còn lại: ' + variant.stock;
+            document.getElementById('quantity').setAttribute('max', variant.stock);
+            
+            // Update stock progress
+            const soldCount = document.querySelector('.sold-count').textContent.match(/\d+/)[0];
+            const totalStock = parseInt(soldCount) + variant.stock;
+            const soldPercentage = (parseInt(soldCount) / totalStock) * 100;
+            document.querySelector('.progress-fill').style.width = soldPercentage + '%';
+        } else {
+            console.log('Variant not found');
+        }
+    } catch (error) {
+        console.error('Error updating variant:', error);
     }
 }
 
