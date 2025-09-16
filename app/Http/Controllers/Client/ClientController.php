@@ -25,6 +25,23 @@ use Illuminate\Support\Facades\Mail;
 
 class ClientController extends Controller
 {
+    /**
+     * Helper function to get proper image URL
+     */
+    private function getImageUrl($imagePath)
+    {
+        if (!$imagePath) {
+            return null;
+        }
+        
+        // Nếu ảnh đã có URL đầy đủ, sử dụng trực tiếp
+        if (strpos($imagePath, 'http') === 0) {
+            return $imagePath;
+        }
+        
+        // Nếu chỉ có đường dẫn tương đối, sử dụng asset()
+        return asset($imagePath);
+    }
     public function index()
     {
         // Get random products with their first available variant
@@ -44,7 +61,7 @@ class ClientController extends Controller
                     'product_name' => $product->name,
                     'product_view' => $product->view_count,
                     'product_slug' => $product->slug,
-                    'product_image' => $variant ? $variant->image : null,
+                    'product_image' => $this->getImageUrl($variant ? $variant->image : null),
                     'product_price' => $variant ? $variant->price : 0,
                     'product_price_discount' => $variant ? $variant->price_sale : 0,
                 ];
@@ -198,7 +215,7 @@ class ClientController extends Controller
             $category = $product->category;
             return response()->json([
                 'success' => true,
-                'image' => asset($variant->image),
+                'image' => $this->getImageUrl($variant->image),
                 'price' => $variant->price,
                 'price_sale' => $variant->price_sale,
                 'quantity' => $variant->quantity,
@@ -356,7 +373,7 @@ class ClientController extends Controller
                     'color' => $item->productVariant->color->name ?? '',
                     'capacity' => $item->productVariant->capacity->name ?? '',
                     'price' => $item->productVariant->price,
-                    'image' => $item->productVariant->image,
+                    'image' => $this->getImageUrl($item->productVariant->image),
                 ];
             })->values();
         } else {
@@ -375,7 +392,7 @@ class ClientController extends Controller
                         'color' => $variant->color->name ?? '',
                         'capacity' => $variant->capacity->name ?? '',
                         'price' => $variant->price,
-                        'image' => $variant->image,
+                        'image' => $this->getImageUrl($variant->image),
                     ];
                 }
             }
@@ -385,11 +402,18 @@ class ClientController extends Controller
 
     public function getDistricts($provinceId)
     {
-        if (!Schema::hasTable('devvn_quanhuyen')) {
+        if (!Schema::hasTable('devvn_quanhuyen') || !Schema::hasTable('tinhthanh')) {
             return response()->json([]);
         }
+        
+        // Lấy mã tỉnh từ ID
+        $province = DB::table('tinhthanh')->where('id', $provinceId)->first();
+        if (!$province) {
+            return response()->json([]);
+        }
+        
         $districts = DB::table('devvn_quanhuyen')
-            ->where('matp', $provinceId)
+            ->where('matp', $province->ma_tinh)
             ->get(['maqh as id', 'name as ten_quan_huyen']);
         return response()->json($districts);
     }
@@ -399,8 +423,18 @@ class ClientController extends Controller
         if (!Schema::hasTable('devvn_xaphuongthitran')) {
             return response()->json([]);
         }
+        
+        // Lấy maqh từ bảng devvn_quanhuyen dựa trên districtId
+        $district = DB::table('devvn_quanhuyen')
+            ->where('id', $districtId)
+            ->first();
+            
+        if (!$district) {
+            return response()->json([]);
+        }
+        
         $wards = DB::table('devvn_xaphuongthitran')
-            ->where('maqh', $districtId)
+            ->where('maqh', $district->maqh)
             ->get(['xaid as id', 'name as ten_phuong_xa']);
         return response()->json($wards);
     }

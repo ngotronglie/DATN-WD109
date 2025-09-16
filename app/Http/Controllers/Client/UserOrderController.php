@@ -76,6 +76,11 @@ class UserOrderController extends Controller
     {
         $order = Order::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
+        // Chỉ cho phép yêu cầu hoàn hàng khi đơn đang giao đến
+        if ((int)$order->status !== 4) {
+            return redirect()->route('user.orders.show', $order->id)->with('error', 'Chỉ có thể yêu cầu hoàn hàng khi đơn đang giao đến.');
+        }
+
         $request->validate([
             'reason' => 'required|string|max:1000',
             'reason_input' => 'nullable|string|max:1000',

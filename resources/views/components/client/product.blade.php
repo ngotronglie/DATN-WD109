@@ -15,7 +15,7 @@
                                 <div class="product-item">
                                     <div class="product-img">
                                         <a href="{{ url('product/' . $product->product_slug) }}">
-                                            <img src="{{ asset($product->product_image) }}"
+                                            <img src="{{ $product->product_image }}"
                                                 alt="{{ $product->product_name }}" />
                                         </a>
                                     </div>
