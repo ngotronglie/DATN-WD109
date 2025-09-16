@@ -175,7 +175,14 @@ class ClientController extends Controller
         $colors = Color::all();
         $capacities = Capacity::all();
         $categories = \App\Models\Categories::with('children')->whereNull('Parent_id')->get();
-        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories'));
+        // Lấy bình luận sản phẩm
+        $comments = $product->comments()
+            ->with('user', 'replies.user')
+            ->whereNull('parent_id')
+            ->latest()
+            ->get();
+            
+        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories', 'comments'));
     }
 
     public function flashSaleProductDetail($slug)

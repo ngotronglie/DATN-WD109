@@ -22,7 +22,8 @@ class FavoriteController extends Controller
             ->with(['product.category', 'product.variants'])
             ->get();
         
-        return view('layouts.user.favorite', compact('favorites'));
+        $comments = []; // Thêm biến comments rỗng để tránh lỗi
+        return view('layouts.user.favorite', compact('favorites', 'comments'));
     }
 
     /**

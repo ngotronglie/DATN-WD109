@@ -2,23 +2,18 @@
 
 @section('content')
         <!-- BREADCRUMBS SETCTION START -->
-        <div class="breadcrumbs-section plr-200 mb-80 section">
-            <div class="breadcrumbs" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 200px; display: flex; align-items: center;">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="breadcrumbs-inner text-center">
-                                <div class="mb-3">
-                                    <i class="zmdi zmdi-favorite" style="font-size: 60px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"></i>
-                                </div>
-                                <h1 class="breadcrumbs-title" style="color: #fff; font-size: 48px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 10px;">Sản phẩm yêu thích</h1>
-                                <p style="color: #fff; font-size: 18px; opacity: 0.9; margin-bottom: 20px;">Khám phá những sản phẩm bạn đã yêu thích</p>
-                                <ul class="breadcrumb-list" style="justify-content: center;">
-                                    <li><a href="{{ route('home') }}" style="color: #fff; opacity: 0.8;">Trang chủ</a></li>
-                                    <li style="color: #fff; opacity: 0.6;">/ Sản phẩm yêu thích</li>
-                                </ul>
-                            </div>
-                        </div>
+        <div class="favorite-breadcrumb">
+            <div class="container">
+                <div class="breadcrumb-content">
+                    <div class="breadcrumb-left">
+                        <i class="zmdi zmdi-favorite"></i>
+                        <h1>Sản phẩm yêu thích</h1>
+                        <span class="favorites-count">(<span id="favorites-display">0</span> sản phẩm)</span>
+                    </div>
+                    <div class="breadcrumb-right">
+                        <a href="{{ route('home') }}">Trang chủ</a>
+                        <span>/</span>
+                        <span>Yêu thích</span>
                     </div>
                 </div>
             </div>
@@ -34,67 +29,55 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="shop-content">
-                                <!-- shop-option start -->
-                                <div class="shop-option box-shadow mb-30 clearfix">
-                                    <!-- showing -->
-                                    <div class="showing f-right text-end">
-                                        <span>Hiển thị: <span id="favorites-count">0</span></span>
-                                    </div>
-                                </div>
-                                <!-- shop-option end -->
                                 
                                 <!-- Favorites Content -->
                                 <div id="favorites-container">
                                     @if(isset($favorites) && count($favorites) > 0)
-                                        <div class="row">
+                                        <div class="favorites-grid">
                                             @foreach($favorites as $favorite)
                                                 @if($favorite->product)
-                                                <div class="col-lg-4 col-md-6 mb-4">
-                                                    <div class="product-item">
-                                                        <div class="product-img">
-                                                            <a href="{{ route('product.detail', $favorite->product->slug) }}">
-                                                                @if($favorite->product->variants && $favorite->product->variants->first() && $favorite->product->variants->first()->image)
-                                                                    <img src="{{ asset($favorite->product->variants->first()->image) }}" alt="{{ $favorite->product->name }}" />
+                                                <div class="favorite-card">
+                                                    <div class="card-image">
+                                                        <div class="image-placeholder"></div>
+                                                        <a href="{{ route('product.detail', $favorite->product->slug) }}">
+                                                            @if($favorite->product->variants && $favorite->product->variants->first() && $favorite->product->variants->first()->image)
+                                                                <img class="product-image" src="{{ asset($favorite->product->variants->first()->image) }}" alt="{{ $favorite->product->name }}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0;" />
+                                                            @else
+                                                                <img class="product-image" src="{{ asset('frontend/img/product/1.jpg') }}" alt="{{ $favorite->product->name }}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0;" />
+                                                            @endif
+                                                        </a>
+                                                        <button class="remove-favorite-btn" data-favorite-id="{{ $favorite->id }}" title="Xóa khỏi yêu thích">
+                                                            <i class="zmdi zmdi-close"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="card-content">
+                                                        <h3 class="product-name">
+                                                            <a href="{{ route('product.detail', $favorite->product->slug) }}">{{ Str::limit($favorite->product->name, 60) }}</a>
+                                                        </h3>
+                                                        <div class="product-price">
+                                                            @if($favorite->product->variants && $favorite->product->variants->first())
+                                                                @php $variant = $favorite->product->variants->first(); @endphp
+                                                                @if($variant->price_sale && $variant->price_sale < $variant->price)
+                                                                    <span class="current-price">₫{{ number_format($variant->price_sale, 0, ',', '.') }}</span>
+                                                                    <span class="old-price">₫{{ number_format($variant->price, 0, ',', '.') }}</span>
                                                                 @else
-                                                                    <img src="{{ asset('frontend/img/product/1.jpg') }}" alt="{{ $favorite->product->name }}" />
+                                                                    <span class="current-price">₫{{ number_format($variant->price, 0, ',', '.') }}</span>
                                                                 @endif
-                                                            </a>
+                                                            @else
+                                                                <span class="current-price">Liên hệ</span>
+                                                            @endif
                                                         </div>
-                                                        <div class="product-info">
-                                                            <h6 class="product-title">
-                                                                <a href="{{ route('product.detail', $favorite->product->slug) }}">{{ $favorite->product->name }}</a>
-                                                            </h6>
-                                                            <div class="pro-rating">
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
+                                                        <div class="card-actions">
+                                                            @php
+                                                                // Tính tổng số lượng đã bán từ order_detail
+                                                                $totalSold = \DB::table('order_detail')
+                                                                    ->join('product_variants', 'order_detail.product_variant_id', '=', 'product_variants.id')
+                                                                    ->where('product_variants.product_id', $favorite->product->id)
+                                                                    ->sum('order_detail.quantity');
+                                                            @endphp
+                                                            <div class="sales-info">
+                                                                Đã bán {{ $totalSold }}
                                                             </div>
-                                                            <h3 class="pro-price">
-                                                                @if($favorite->product->variants && $favorite->product->variants->first())
-                                                                    {{ number_format($favorite->product->variants->first()->price) }} VNĐ
-                                                                @else
-                                                                    Liên hệ
-                                                                @endif
-                                                            </h3>
-                                                            <ul class="action-button">
-                                                                <li>
-                                                                    <a href="#" class="remove-favorite" data-favorite-id="{{ $favorite->id }}" title="Xóa khỏi danh sách yêu thích">
-                                                                        <i class="zmdi zmdi-delete" style="color: #e74c3c;"></i>
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="{{ route('product.detail', $favorite->product->slug) }}" title="Xem chi tiết">
-                                                                        <i class="zmdi zmdi-zoom-in"></i>
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#" class="add-to-cart" data-product-id="{{ $favorite->product->id }}" title="Thêm vào giỏ hàng">
-                                                                        <i class="zmdi zmdi-shopping-cart-plus"></i>
-                                                                    </a>
-                                                                </li>
-                                                            </ul>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -126,6 +109,217 @@
 
 @section('script-client')
 <style>
+/* Favorite Breadcrumb */
+.favorite-breadcrumb {
+    background: #f8f9fa;
+    padding: 20px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.breadcrumb-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.breadcrumb-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.breadcrumb-left i {
+    font-size: 24px;
+    color: #ee4d2d;
+}
+
+.breadcrumb-left h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.favorites-count {
+    color: #666;
+    font-size: 14px;
+}
+
+.breadcrumb-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #666;
+}
+
+.breadcrumb-right a {
+    color: #ee4d2d;
+    text-decoration: none;
+}
+
+.breadcrumb-right a:hover {
+    text-decoration: underline;
+}
+
+/* Favorites Grid */
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.favorite-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid #f0f0f0;
+}
+
+.favorite-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.card-image {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+}
+
+.image-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    z-index: 1;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.card-image .product-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
+    transition: all 0.3s ease;
+    opacity: 0;
+    z-index: 2;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+}
+
+.card-image .product-image.loaded {
+    opacity: 1;
+}
+
+@keyframes fadeInImage {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.favorite-card:hover .card-image .product-image {
+    transform: scale(1.05);
+}
+
+.remove-favorite-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.favorite-card:hover .remove-favorite-btn {
+    opacity: 1;
+}
+
+.remove-favorite-btn:hover {
+    background: #e74c3c;
+    transform: scale(1.1);
+}
+
+.card-content {
+    padding: 12px;
+}
+
+.product-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.product-name a {
+    color: #333;
+    text-decoration: none;
+}
+
+.product-name a:hover {
+    color: #ee4d2d;
+}
+
+.product-price {
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.current-price {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ee4d2d;
+}
+
+.old-price {
+    font-size: 12px;
+    color: #999;
+    text-decoration: line-through;
+    margin-left: 6px;
+}
+
+.sales-info {
+    text-align: center;
+    color: #666;
+    font-size: 12px;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
 @keyframes slideInRight {
     from {
         transform: translateX(100%);
@@ -153,17 +347,79 @@
 .btn-confirm:hover {
     background: #c82333 !important;
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .favorite-hero-section {
+        padding: 60px 0;
+    }
+    
+    .hero-title {
+        font-size: 36px;
+    }
+    
+    .hero-subtitle {
+        font-size: 18px;
+    }
+    
+    .floating-hearts {
+        height: 150px;
+    }
+    
+    .heart {
+        font-size: 24px;
+    }
+    
+    .stat-number {
+        font-size: 36px;
+    }
+}
 </style>
 
 <script>
 $(document).ready(function() {
+    // Xử lý loading ảnh sản phẩm
+    $('.product-image').each(function() {
+        const img = $(this);
+        const placeholder = img.closest('.card-image').find('.image-placeholder');
+        
+        // Đặt kích thước ngay lập tức để tránh flash
+        img.css({
+            'width': '100%',
+            'height': '100%',
+            'object-fit': 'cover',
+            'position': 'absolute',
+            'top': '0',
+            'left': '0',
+            'opacity': '0'
+        });
+        
+        // Nếu ảnh đã load
+        if (this.complete && this.naturalWidth > 0) {
+            img.css('opacity', '1');
+            placeholder.hide();
+        } else {
+            // Xử lý khi ảnh load xong
+            img.on('load', function() {
+                $(this).css('opacity', '1');
+                placeholder.fadeOut(200);
+            });
+            
+            // Xử lý khi ảnh lỗi
+            img.on('error', function() {
+                $(this).css('opacity', '1');
+                placeholder.fadeOut(200);
+            });
+        }
+    });
+    
     // Xóa sản phẩm khỏi favorites
-    $('.remove-favorite').on('click', function(e) {
+    $('.remove-favorite-btn').on('click', function(e) {
         e.preventDefault();
         
         const favoriteId = $(this).data('favorite-id');
-        const productItem = $(this).closest('.col-lg-4');
-        const productName = $(this).closest('.product-item').find('.product-title a').text();
+        const productItem = $(this).closest('.favorite-card');
+        const productName = $(this).closest('.favorite-card').find('.product-name a').text();
         
         // Hiển thị modal xác nhận
         showConfirmModal(
@@ -183,7 +439,7 @@ $(document).ready(function() {
                             updateFavoritesCount();
                             
                             // Kiểm tra nếu không còn sản phẩm nào
-                            if ($('.product-item').length === 0) {
+                            if ($('.favorite-card').length === 0) {
                                 location.reload();
                             }
                         });
@@ -199,33 +455,11 @@ $(document).ready(function() {
         );
     });
     
-    // Thêm vào giỏ hàng
-    $('.add-to-cart').on('click', function(e) {
-        e.preventDefault();
-        
-        const productId = $(this).data('product-id');
-        
-        $.ajax({
-            url: '/api/add-to-cart',
-            type: 'POST',
-            data: {
-                product_id: productId,
-                quantity: 1,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                showNotification('Đã thêm sản phẩm vào giỏ hàng', 'success');
-            },
-            error: function(xhr) {
-                showNotification('Có lỗi xảy ra khi thêm vào giỏ hàng', 'error');
-            }
-        });
-    });
     
     // Cập nhật số lượng favorites
     function updateFavoritesCount() {
-        const count = $('.product-item').length;
-        $('#favorites-count').text(count);
+        const count = $('.favorite-card').length;
+        $('#favorites-display').text(count);
     }
     
     // Hiển thị thông báo
