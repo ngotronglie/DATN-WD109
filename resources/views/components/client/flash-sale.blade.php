@@ -30,7 +30,7 @@
                     @if($flashProduct->hasStock() && $flashProduct->productVariant)
                         <div class="col-lg-1 col-md-2 col-sm-2 col-2 mb-1">
                             <div class="flash-product-card">
-                                <a href="{{ route('product.detail', $flashProduct->productVariant->product->id) }}" class="text-decoration-none">
+                                <a href="{{ route('product.detail', $flashProduct->productVariant->product->slug) }}" class="text-decoration-none">
                                     {{-- Product Image --}}
                                     <div class="product-image-container">
                                         <img src="{{ $flashProduct->productVariant->image ?: asset('images/no-image.png') }}" 
