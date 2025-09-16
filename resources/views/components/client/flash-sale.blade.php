@@ -26,8 +26,23 @@
         {{-- Products Grid --}}
         <div class="row g-1">
             @foreach($flashSales as $flashSale)
-                @foreach($flashSale->flashSaleProductsByPriority->take($limit) as $flashProduct)
-                    @if($flashProduct->hasStock() && $flashProduct->productVariant)
+                @php
+                    // Group items by product to avoid duplicate cards for different variants
+                    $itemsGroupedByProduct = $flashSale->flashSaleProductsByPriority
+                        ->filter(function($item){
+                            return $item->productVariant && $item->hasStock();
+                        })
+                        ->groupBy(function($item){
+                            return optional(optional($item->productVariant)->product)->id;
+                        })
+                        ->map(function($group){
+                            // Use the highest-priority item in each product group
+                            return $group->first();
+                        })
+                        ->take($limit);
+                @endphp
+                @foreach($itemsGroupedByProduct as $flashProduct)
+                    @if($flashProduct && $flashProduct->productVariant)
                         <div class="col-lg-1 col-md-2 col-sm-2 col-2 mb-1">
                             <div class="flash-product-card">
                                 <a href="{{ route('flash-sale.product.detail', $flashProduct->productVariant->product->slug) }}" class="text-decoration-none">

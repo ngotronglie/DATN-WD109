@@ -72,8 +72,20 @@
 
                     {{-- Products Grid --}}
                     <div class="row">
-                        @foreach($flashSale->flashSaleProductsByPriority as $flashProduct)
-                            @if($flashProduct->hasStock() && $flashProduct->productVariant)
+                        @php
+                            // Nhóm theo product_id để tránh hiển thị trùng cùng 1 sản phẩm khác biến thể
+                            $flashProductsByProduct = $flashSale->flashSaleProductsByPriority
+                                ->filter(function($item){ return $item->productVariant && $item->hasStock(); })
+                                ->groupBy(function ($item) {
+                                    return optional(optional($item->productVariant)->product)->id;
+                                })
+                                ->map(function ($group) {
+                                    // lấy item ưu tiên cao nhất trong nhóm
+                                    return $group->first();
+                                });
+                        @endphp
+                        @foreach($flashProductsByProduct as $flashProduct)
+                            @if($flashProduct && $flashProduct->productVariant)
                                 <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4">
                                     <div class="flash-product-card h-100">
                                         {{-- Product Image --}}
