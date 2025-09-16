@@ -48,6 +48,7 @@ Route::get('/blog', [ClientController::class, 'blog'])->name('blog');
 Route::get('/search', [ClientController::class, 'search'])->name('search');
 Route::get('/category/{slug}', [ClientController::class, 'category'])->name('category');
 Route::get('/product/{slug}', [ClientController::class, 'productDetail'])->name('product.detail');
+Route::get('/flash-sale-product/{slug}', [ClientController::class, 'flashSaleProductDetail'])->name('flash-sale.product.detail');
 Route::get('/blog/{slug}', [ClientController::class, 'post'])->name('post');
 
 Route::get('/account/order', [UserOrderController::class, 'index'])->name(name: 'account.order');

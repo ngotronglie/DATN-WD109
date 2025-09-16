@@ -28,34 +28,6 @@ class ClientController extends Controller
 {
     public function index()
     {
-<<<<<<< HEAD
-        $products = DB::select('SELECT
-            p.id AS product_id,
-            p.name AS product_name,
-            p.view_count AS product_view,
-            p.slug as product_slug,
-            pv.image AS product_image,
-            pv.price AS product_price,
-            pv.price_sale AS product_price_discount
-        FROM products p
-        JOIN (
-            SELECT *
-            FROM product_variants
-            WHERE (product_id, id) IN (
-                SELECT product_id, MIN(id)
-                FROM (
-                    SELECT product_id, id
-                    FROM product_variants
-                    WHERE quantity > 0
-                    ORDER BY RAND()
-                ) AS random_variants
-                GROUP BY product_id
-            )
-        ) pv ON pv.product_id = p.id
-        WHERE p.is_active = 1
-        LIMIT 0, 8;');
-        
-=======
         // Get random products with their first available variant
         $products = Product::where('is_active', 1)
             ->with(['variants' => function($query) {
@@ -78,8 +50,6 @@ class ClientController extends Controller
                     'product_price_discount' => $variant ? $variant->price_sale : 0,
                 ];
             });
-            
->>>>>>> developer
         $banners = \App\Models\Banner::where('is_active', 1)->orderByDesc('id')->get();
         $categories = \App\Models\Categories::whereNull('Parent_id')->where('Is_active', 1)->get();
         
@@ -204,8 +174,57 @@ class ClientController extends Controller
         $colors = Color::all();
         $capacities = Capacity::all();
         $categories = \App\Models\Categories::with('children')->whereNull('Parent_id')->get();
-        $comments = $product->comments()->with('user', 'replies.user')->whereNull('parent_id')->latest()->get();
-        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories', 'comments'));
+        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories'));
+    }
+
+    public function flashSaleProductDetail($slug)
+    {
+        $product = Product::where('slug', $slug)->firstOrFail();
+        if (!request()->ajax() && request()->header('Purpose') !== 'prefetch') {
+            $product->increment('view_count');
+        }
+        
+        // Tìm flash sale đang hoạt động cho sản phẩm này
+        $flashSale = FlashSale::where('is_active', 1)
+            ->where('start_time', '<=', now())
+            ->where('end_time', '>=', now())
+            ->whereHas('flashSaleProducts', function($query) use ($product) {
+                $query->whereHas('productVariant', function($q) use ($product) {
+                    $q->where('product_id', $product->id);
+                });
+            })
+            ->first();
+            
+        if (!$flashSale) {
+            // Nếu không có flash sale, chuyển về trang chi tiết thường
+            return redirect()->route('product.detail', $slug);
+        }
+        
+        // Lấy thông tin flash sale product
+        $flashSaleProduct = $flashSale->flashSaleProducts()
+            ->whereHas('productVariant', function($query) use ($product) {
+                $query->where('product_id', $product->id);
+            })
+            ->first();
+            
+        if (!$flashSaleProduct) {
+            return redirect()->route('product.detail', $slug);
+        }
+        
+        $variants = $product->variants()->where('quantity', '>', 0)->get();
+        $colors = Color::all();
+        $capacities = Capacity::all();
+        $categories = \App\Models\Categories::with('children')->whereNull('Parent_id')->get();
+        
+        return view('layouts.user.flash-sale-product-detail', compact(
+            'product', 
+            'variants', 
+            'colors', 
+            'capacities', 
+            'categories',
+            'flashSale',
+            'flashSaleProduct'
+        ));
     }
 
     public function storeProductComment(Request $request, $productId)
