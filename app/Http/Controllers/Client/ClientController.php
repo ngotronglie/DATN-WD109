@@ -805,6 +805,30 @@ class ClientController extends Controller
 
             return view('layouts.user.vnpay_success', ['order' => $order]);
         } else {
+            // Đánh dấu đơn hàng thất bại và khôi phục tồn kho, voucher
+            if ($order) {
+                // Cập nhật trạng thái đơn và phương thức thanh toán
+                $order->status = 6; // Đã hủy
+                $order->payment_method = 'vnpay';
+                $order->status_method = 0; // chưa thanh toán
+                $order->save();
+
+                // Khôi phục tồn kho các sản phẩm trong đơn
+                foreach ($order->orderDetails as $detail) {
+                    if ($detail->productVariant) {
+                        $detail->productVariant->increment('quantity', (int) $detail->quantity);
+                    }
+                }
+
+                // Khôi phục số lượng voucher nếu có
+                if (!empty($order->voucher_id)) {
+                    $voucher = \App\Models\Voucher::find($order->voucher_id);
+                    if ($voucher) {
+                        $voucher->increment('quantity', 1);
+                    }
+                }
+            }
+
             return view('layouts.user.vnpay_fail', ['order' => $order]);
         }
     }

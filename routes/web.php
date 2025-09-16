@@ -51,6 +51,7 @@ Route::get('/blog/{slug}', [ClientController::class, 'post'])->name('post');
 
 Route::get('/account/order', [UserOrderController::class, 'index'])->name(name: 'account.order');
 Route::get('/account/order/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
+Route::post('/account/order/{id}/reorder', [UserOrderController::class, 'reorder'])->name('user.orders.reorder');
 Route::post('/order/{id}/return', [UserOrderController::class, 'returnOrder'])->name('order.return');
 Route::post('/refund', [UserOrderController::class, 'store'])->name('refund.store');
 
