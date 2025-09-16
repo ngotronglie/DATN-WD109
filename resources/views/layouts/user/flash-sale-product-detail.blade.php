@@ -137,9 +137,12 @@
                                 <i class="zmdi zmdi-shopping-cart"></i>
                                 Mua ngay
                             </button>
-                            <button type="button" class="btn-add-cart" onclick="addToWishlist()">
-                                <i class="zmdi zmdi-favorite"></i>
+                            <button type="button" class="btn-add-cart" onclick="addToCart()">
+                                <i class="zmdi zmdi-shopping-cart"></i>
                                 Thêm vào giỏ
+                            </button>
+                            <button type="button" class="btn-favorite" onclick="addToWishlist()">
+                                <i class="zmdi zmdi-favorite"></i>
                             </button>
                         </div>
 
@@ -500,6 +503,20 @@
     color: #ee4d2d;
 }
 
+.variant-option input[type="radio"]:disabled + .option-text {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #f8f9fa;
+    color: #999;
+    border-color: #e9ecef;
+}
+
+.variant-option input[type="radio"]:disabled + .option-text:hover {
+    background: #f8f9fa;
+    color: #999;
+    border-color: #e9ecef;
+}
+
 /* Quantity Section */
 .quantity-section {
     display: flex;
@@ -589,6 +606,27 @@
 .btn-add-cart:hover {
     background: #ee4d2d;
     color: white;
+}
+
+.btn-favorite {
+    background: #fff;
+    color: #666;
+    border: 1px solid #ddd;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-favorite:hover {
+    background: #fff5f5;
+    color: #ee4d2d;
+    border-color: #ee4d2d;
 }
 
 /* Social Share */
@@ -795,6 +833,116 @@ function switchTab(tabName) {
     event.target.classList.add('active');
     document.getElementById(tabName + '-tab').classList.add('active');
 }
+
+// Variant data (you would get this from server)
+const variantData = {
+    @foreach($variants as $variant)
+    '{{ $variant->color_id }}_{{ $variant->capacity_id }}': {
+        image: '{{ asset($variant->image) }}',
+        price: {{ $variant->sale_price ?? $flashSaleProduct->sale_price }},
+        originalPrice: {{ $variant->original_price ?? $flashSaleProduct->original_price }},
+        stock: {{ $variant->stock ?? $flashSaleProduct->remaining_stock }},
+        available: true
+    },
+    @endforeach
+};
+
+// Available combinations
+const availableCombinations = {
+    @foreach($variants as $variant)
+    '{{ $variant->color_id }}_{{ $variant->capacity_id }}': true,
+    @endforeach
+};
+
+// Update capacity options based on selected color
+function updateCapacityOptions() {
+    const selectedColor = document.querySelector('input[name="color"]:checked').value;
+    const capacityInputs = document.querySelectorAll('input[name="capacity"]');
+    const currentCapacity = document.querySelector('input[name="capacity"]:checked');
+    let hasAvailableCapacity = false;
+    
+    capacityInputs.forEach(input => {
+        const capacityId = input.value;
+        const combinationKey = selectedColor + '_' + capacityId;
+        const isAvailable = availableCombinations[combinationKey];
+        
+        const label = input.nextElementSibling;
+        
+        if (isAvailable) {
+            input.disabled = false;
+            label.style.opacity = '1';
+            label.style.cursor = 'pointer';
+            label.classList.remove('disabled');
+            hasAvailableCapacity = true;
+        } else {
+            input.disabled = true;
+            label.style.opacity = '0.4';
+            label.style.cursor = 'not-allowed';
+            label.classList.add('disabled');
+        }
+    });
+    
+    // If current capacity is not available, select the first available one
+    if (currentCapacity && currentCapacity.disabled) {
+        const firstAvailable = document.querySelector('input[name="capacity"]:not(:disabled)');
+        if (firstAvailable) {
+            firstAvailable.checked = true;
+        }
+    }
+}
+
+// Update product when variant changes
+function updateProductVariant() {
+    const selectedColor = document.querySelector('input[name="color"]:checked').value;
+    const selectedCapacity = document.querySelector('input[name="capacity"]:checked').value;
+    const variantKey = selectedColor + '_' + selectedCapacity;
+    
+    const variant = variantData[variantKey];
+    if (variant) {
+        // Update image
+        document.getElementById('product-image').src = variant.image;
+        
+        // Update price
+        document.querySelector('.current-price').textContent = '₫' + variant.price.toLocaleString('vi-VN');
+        document.querySelector('.original-price').textContent = '₫' + variant.originalPrice.toLocaleString('vi-VN');
+        
+        // Update savings
+        const savings = variant.originalPrice - variant.price;
+        document.querySelector('.savings-badge').textContent = 'Tiết kiệm ₫' + savings.toLocaleString('vi-VN');
+        
+        // Update stock
+        document.querySelector('.remaining-count').textContent = 'Còn lại: ' + variant.stock;
+        document.getElementById('quantity').setAttribute('max', variant.stock);
+        
+        // Update stock progress
+        const soldCount = document.querySelector('.sold-count').textContent.match(/\d+/)[0];
+        const totalStock = parseInt(soldCount) + variant.stock;
+        const soldPercentage = (parseInt(soldCount) / totalStock) * 100;
+        document.querySelector('.progress-fill').style.width = soldPercentage + '%';
+    }
+}
+
+// Add event listeners to variant options
+document.addEventListener('DOMContentLoaded', function() {
+    // Color change
+    document.querySelectorAll('input[name="color"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            updateCapacityOptions();
+            updateProductVariant();
+        });
+    });
+    
+    // Capacity change
+    document.querySelectorAll('input[name="capacity"]').forEach(radio => {
+        radio.addEventListener('change', updateProductVariant);
+    });
+    
+    // Initialize capacity options on page load
+    updateCapacityOptions();
+    
+    // Initialize product variant on page load
+    updateProductVariant();
+});
 
 // Add to cart function
 function addToCart() {
