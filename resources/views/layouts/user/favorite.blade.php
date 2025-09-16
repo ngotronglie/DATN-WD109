@@ -39,13 +39,58 @@
                                                 <div class="favorite-card">
                                                     <div class="card-image">
                                                         <div class="image-placeholder"></div>
-                                                        <a href="{{ route('product.detail', $favorite->product->slug) }}">
+                                                        @php
+                                                            // Kiểm tra flash sale cho link
+                                                            $variant = $favorite->product->variants->first();
+                                                            $flashSaleProduct = null;
+                                                            if ($variant) {
+                                                                $flashSaleProduct = \App\Models\FlashSaleProduct::whereHas('flashSale', function($query) {
+                                                                    $query->where('is_active', true)
+                                                                          ->where('start_time', '<=', now())
+                                                                          ->where('end_time', '>', now());
+                                                                })
+                                                                ->where('product_variant_id', $variant->id)
+                                                                ->where('remaining_stock', '>', 0)
+                                                                ->first();
+                                                            }
+                                                            $productUrl = $flashSaleProduct ? route('flash-sale.product.detail', $favorite->product->slug) : route('product.detail', $favorite->product->slug);
+                                                        @endphp
+                                                        <a href="{{ $productUrl }}">
                                                             @if($favorite->product->variants && $favorite->product->variants->first() && $favorite->product->variants->first()->image)
                                                                 <img class="product-image" src="{{ asset($favorite->product->variants->first()->image) }}" alt="{{ $favorite->product->name }}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0;" />
                                                             @else
                                                                 <img class="product-image" src="{{ asset('frontend/img/product/1.jpg') }}" alt="{{ $favorite->product->name }}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0;" />
                                                             @endif
                                                         </a>
+                                                        
+                                                        @php
+                                                            // Kiểm tra flash sale cho badge
+                                                            $variant = $favorite->product->variants->first();
+                                                            $flashSaleProduct = null;
+                                                            if ($variant) {
+                                                                $flashSaleProduct = \App\Models\FlashSaleProduct::whereHas('flashSale', function($query) {
+                                                                    $query->where('is_active', true)
+                                                                          ->where('start_time', '<=', now())
+                                                                          ->where('end_time', '>', now());
+                                                                })
+                                                                ->where('product_variant_id', $variant->id)
+                                                                ->where('remaining_stock', '>', 0)
+                                                                ->with('flashSale')
+                                                                ->first();
+                                                            }
+                                                        @endphp
+                                                        
+                                                        @if($flashSaleProduct)
+                                                            <div class="flash-sale-badge">
+                                                                <i class="zmdi zmdi-flash"></i>
+                                                                <span>FLASH SALE</span>
+                                                            </div>
+                                                            <div class="flash-sale-timer" data-end-time="{{ $flashSaleProduct->flashSale->end_time->format('Y-m-d H:i:s') }}">
+                                                                <i class="zmdi zmdi-time"></i>
+                                                                <span class="timer-text">00:00:00</span>
+                                                            </div>
+                                                        @endif
+                                                        
                                                         <button class="remove-favorite-btn" data-favorite-id="{{ $favorite->id }}" title="Xóa khỏi yêu thích">
                                                             <i class="zmdi zmdi-close"></i>
                                                         </button>
@@ -56,8 +101,26 @@
                                                         </h3>
                                                         <div class="product-price">
                                                             @if($favorite->product->variants && $favorite->product->variants->first())
-                                                                @php $variant = $favorite->product->variants->first(); @endphp
-                                                                @if($variant->price_sale && $variant->price_sale < $variant->price)
+                                                                @php 
+                                                                    $variant = $favorite->product->variants->first();
+                                                                    // Kiểm tra xem sản phẩm có đang flash sale không
+                                                                    $flashSaleProduct = \App\Models\FlashSaleProduct::whereHas('flashSale', function($query) {
+                                                                        $query->where('is_active', true)
+                                                                              ->where('start_time', '<=', now())
+                                                                              ->where('end_time', '>', now());
+                                                                    })
+                                                                    ->where('product_variant_id', $variant->id)
+                                                                    ->where('remaining_stock', '>', 0)
+                                                                    ->first();
+                                                                @endphp
+                                                                
+                                                                @if($flashSaleProduct)
+                                                                    <span class="current-price flash-sale-price">₫{{ number_format($flashSaleProduct->sale_price, 0, ',', '.') }}</span>
+                                                                    <span class="old-price">₫{{ number_format($flashSaleProduct->original_price, 0, ',', '.') }}</span>
+                                                                    <div class="flash-sale-discount">
+                                                                        -{{ round((($flashSaleProduct->original_price - $flashSaleProduct->sale_price) / $flashSaleProduct->original_price) * 100) }}%
+                                                                    </div>
+                                                                @elseif($variant->price_sale && $variant->price_sale < $variant->price)
                                                                     <span class="current-price">₫{{ number_format($variant->price_sale, 0, ',', '.') }}</span>
                                                                     <span class="old-price">₫{{ number_format($variant->price, 0, ',', '.') }}</span>
                                                                 @else
@@ -320,6 +383,72 @@
     font-weight: 500;
 }
 
+/* Flash Sale Styles */
+.flash-sale-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    box-shadow: 0 2px 8px rgba(238, 90, 36, 0.3);
+    animation: flashPulse 2s infinite;
+}
+
+.flash-sale-badge i {
+    font-size: 12px;
+}
+
+@keyframes flashPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.flash-sale-timer {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 4px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 500;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.flash-sale-timer i {
+    font-size: 10px;
+    color: #ffd700;
+}
+
+.flash-sale-price {
+    color: #ff6b6b !important;
+    font-weight: 700 !important;
+    font-size: 18px !important;
+}
+
+.flash-sale-discount {
+    background: #ff6b6b;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 4px;
+}
+
 @keyframes slideInRight {
     from {
         transform: translateX(100%);
@@ -412,6 +541,38 @@ $(document).ready(function() {
             });
         }
     });
+    
+    // Flash Sale Countdown Timer
+    function updateFlashSaleTimers() {
+        $('.flash-sale-timer').each(function() {
+            const timer = $(this);
+            const endTime = new Date(timer.data('end-time')).getTime();
+            const now = new Date().getTime();
+            const timeLeft = endTime - now;
+            
+            if (timeLeft > 0) {
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                const timeString = 
+                    (hours < 10 ? '0' : '') + hours + ':' +
+                    (minutes < 10 ? '0' : '') + minutes + ':' +
+                    (seconds < 10 ? '0' : '') + seconds;
+                
+                timer.find('.timer-text').text(timeString);
+            } else {
+                timer.find('.timer-text').text('Đã kết thúc');
+                timer.addClass('expired');
+            }
+        });
+    }
+    
+    // Cập nhật timer mỗi giây
+    if ($('.flash-sale-timer').length > 0) {
+        updateFlashSaleTimers();
+        setInterval(updateFlashSaleTimers, 1000);
+    }
     
     // Xóa sản phẩm khỏi favorites
     $('.remove-favorite-btn').on('click', function(e) {
