@@ -83,6 +83,9 @@ Route::get('/address/wards/{districtId}', function($districtId) {
     }
 });
 
+// Vouchers
+Route::get('/vouchers/active', [ClientController::class, 'getActiveVouchers'])->name('vouchers.active');
+
 // Old route for backward compatibility
 Route::get('/address/wards-by-province/{province_id}', [AddressController::class, 'getWards']);
 

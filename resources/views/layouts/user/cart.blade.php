@@ -63,9 +63,11 @@
                                 <span id="cart-shipping" style="color:#ff9800;font-weight:600;">0đ</span>
                             </div>
                             <div class="voucher-box p-2 rounded" id="voucher-box" style="background:#f8f9fa;">
-                                <div class="input-group mb-2">
-                                    <input type="text" class="form-control" id="voucher-input" placeholder="Nhập mã giảm giá">
-                                    <button class="btn btn-success" type="button" id="apply-voucher-btn">Áp dụng</button>
+                                <div class="mb-2">
+                                    <label for="voucher-select" class="form-label mb-1" style="font-weight:600;">Chọn voucher</label>
+                                    <select id="voucher-select" class="form-select">
+                                        <option value="">-- Không áp dụng voucher --</option>
+                                    </select>
                                 </div>
                                 <div id="voucher-message" class="small"></div>
                             </div>
@@ -387,44 +389,69 @@
         }
     }
 
-    // API giả lập kiểm tra voucher
-    async function checkVoucher(code) {
+    // Voucher listing and selection
+    async function fetchActiveVouchers() {
         try {
-            const res = await fetch(`/api/voucher?code=${encodeURIComponent(code)}`);
+            const res = await fetch('/vouchers/active');
             return await res.json();
         } catch (e) {
-            return {
-                success: false,
-                message: 'Không thể kiểm tra mã giảm giá.'
-            };
+            return [];
         }
     }
 
-    document.getElementById('apply-voucher-btn').onclick = async function() {
-        const code = document.getElementById('voucher-input').value.trim();
+    async function initVoucherSelect() {
+        const select = document.getElementById('voucher-select');
         const msg = document.getElementById('voucher-message');
         const box = document.getElementById('voucher-box');
-        if (!code) {
-            msg.innerText = 'Vui lòng nhập mã giảm giá.';
-            box.style.border = '';
-            window.currentVoucher = null;
-            updateCartSummary();
-            return;
-        }
-        msg.innerText = 'Đang kiểm tra...';
-        const res = await checkVoucher(code);
-        if (res.success) {
-            msg.innerText = `Áp dụng thành công: Giảm ${res.discount}% (tối thiểu ${formatCurrency(res.min_money)}, tối đa ${formatCurrency(res.max_money)})`;
+        const list = await fetchActiveVouchers();
+        list.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.id;
+            opt.setAttribute('data-code', v.code);
+            opt.setAttribute('data-discount', v.discount);
+            opt.setAttribute('data-min', v.min_money ?? 0);
+            opt.setAttribute('data-max', v.max_money ?? 0);
+            opt.textContent = `${v.code} - Giảm ${v.discount}% (tối thiểu ${formatCurrency(v.min_money || 0)}, tối đa ${formatCurrency(v.max_money || 0)})`;
+            select.appendChild(opt);
+        });
+
+        // Restore previous selection
+        try {
+            const saved = JSON.parse(localStorage.getItem('checkout_voucher') || 'null');
+            if (saved && saved.id) {
+                select.value = String(saved.id);
+                window.currentVoucher = saved;
+                box.style.border = '2px solid #28a745';
+                msg.innerText = `Áp dụng: ${saved.code} - Giảm ${saved.discount}%`;
+                updateCartSummary();
+            }
+        } catch (e) {}
+
+        select.addEventListener('change', function() {
+            const option = this.options[this.selectedIndex];
+            if (!this.value) {
+                msg.innerText = 'Không áp dụng voucher';
+                box.style.border = '';
+                window.currentVoucher = null;
+                localStorage.removeItem('checkout_voucher');
+                updateCartSummary();
+                return;
+            }
+            const applied = {
+                success: true,
+                id: this.value,
+                code: option.getAttribute('data-code'),
+                discount: Number(option.getAttribute('data-discount')),
+                min_money: Number(option.getAttribute('data-min')),
+                max_money: Number(option.getAttribute('data-max'))
+            };
+            window.currentVoucher = applied;
+            localStorage.setItem('checkout_voucher', JSON.stringify(applied));
+            msg.innerText = `Áp dụng: ${applied.code} - Giảm ${applied.discount}% (tối thiểu ${formatCurrency(applied.min_money)}, tối đa ${formatCurrency(applied.max_money)})`;
             box.style.border = '2px solid #28a745';
-            window.currentVoucher = res;
             updateCartSummary();
-        } else {
-            msg.innerText = res.message || 'Mã không hợp lệ.';
-            box.style.border = '2px solid #dc3545';
-            window.currentVoucher = null;
-            updateCartSummary();
-        }
-    };
+        });
+    }
 
     // Real-time validation
     function addRealTimeValidation() {
@@ -490,6 +517,9 @@
 
         // Add real-time validation
         addRealTimeValidation();
+
+        // Init voucher select list
+        initVoucherSelect();
 
         // Lấy thông tin user và fill vào form nếu có
         try {
@@ -627,16 +657,10 @@
 
         localStorage.setItem('checkout_cart', JSON.stringify(cartData));
         localStorage.setItem('checkout_user', JSON.stringify(userInfo));
-        const voucherCode = document.getElementById('voucher-input')?.value.trim() || '';
         if (window.currentVoucher) {
             localStorage.setItem('checkout_voucher', JSON.stringify(window.currentVoucher));
         } else {
             localStorage.removeItem('checkout_voucher');
-        }
-        if (voucherCode) {
-            localStorage.setItem('checkout_voucher_code', voucherCode);
-        } else {
-            localStorage.removeItem('checkout_voucher_code');
         }
         window.location.href = '/checkout';
     };

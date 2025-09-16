@@ -252,6 +252,19 @@ class ClientController extends Controller
         }
     }
 
+    public function getActiveVouchers()
+    {
+        $vouchers = Voucher::query()
+            ->where('is_active', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_time', '>=', now())
+            ->where('quantity', '>', 0)
+            ->orderByDesc('created_at')
+            ->get(['id', 'code', 'discount', 'min_money', 'max_money']);
+
+        return response()->json($vouchers);
+    }
+
     public function apiAddToCart(Request $request)
     {
         $variantId = $request->input('variant_id');
