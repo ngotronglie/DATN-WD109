@@ -72,11 +72,44 @@ class ClientController extends Controller
         return view('layouts.user.main', compact('products', 'banners', 'categories'));
     }
 
-    public function products()
+    public function products(Request $request)
     {
-        $categories = Categories::with('children')->whereNull('parent_id')->get();
+        $categories = Categories::with('children')->whereNull('Parent_id')->get();
         $allCategories = Categories::where('Is_active', 1)->get();
-        $products = Product::where('is_active', 1)->paginate(12);
+
+        $query = Product::with(['mainVariant', 'variants'])->where('is_active', 1);
+
+        // Lọc theo danh mục
+        $categoryId = $request->query('category');
+        if (!empty($categoryId)) {
+            $query->where('categories_id', (int) $categoryId);
+        }
+
+        // Lọc theo giá dựa trên biến thể
+        $minPrice = $request->query('min_price');
+        $maxPrice = $request->query('max_price');
+        if ($minPrice !== null || $maxPrice !== null) {
+            $query->whereHas('variants', function ($q) use ($minPrice, $maxPrice) {
+                if ($minPrice !== null && $minPrice !== '') {
+                    $q->where('price', '>=', (float) $minPrice);
+                }
+                if ($maxPrice !== null && $maxPrice !== '') {
+                    $q->where('price', '<=', (float) $maxPrice);
+                }
+            });
+        }
+
+        // Sắp xếp
+        $sort = $request->query('sort');
+        if ($sort === 'az') {
+            $query->orderBy('name', 'asc');
+        } elseif ($sort === 'za') {
+            $query->orderBy('name', 'desc');
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $products = $query->paginate(12)->appends($request->query());
 
         return view('layouts.user.shop', compact('categories', 'allCategories', 'products'));
     }

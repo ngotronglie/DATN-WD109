@@ -210,10 +210,14 @@
                                 <h6 class="widget-title border-left mb-20">Danh mục</h6>
                                 <div id="cat-treeview" class="product-cat">
                                     <ul>
+                                        <li>
+                                            <a href="{{ route('shop.index', request()->except('category','page')) }}" class="{{ request()->filled('category') ? '' : 'fw-bold text-primary' }}">
+                                                Tất cả
+                                            </a>
+                                        </li>
                                         @foreach($allCategories as $cat)
                                             <li>
-                                                <span>ID: {{ $cat->id }}</span>
-                                                <a href="{{ url('shop') . '?category=' . $cat->ID }}">
+                                                <a href="{{ route('shop.index', array_merge(request()->except('page'), ['category' => $cat->ID])) }}" class="{{ (string)request('category') === (string)$cat->ID ? 'fw-bold text-primary' : '' }}">
                                                     {{ $cat->Name }}
                                                 </a>
                                             </li>
@@ -225,12 +229,20 @@
                             <aside class="widget shop-filter box-shadow mb-30">
                                 <h6 class="widget-title border-left mb-20">Giá</h6>
                                 <form method="GET" action="{{ route('shop.index') }}">
+                                    <div class="mb-2 small text-muted">Khoảng giá: <span id="price-range-text">—</span></div>
+                                    <div id="slider-range" class="mb-3"></div>
                                     <div class="input-group mb-2">
-                                        <input type="number" name="min_price" class="form-control" placeholder="Giá từ" value="{{ request('min_price') }}" min="0">
+                                        <input id="min_price" type="number" name="min_price" class="form-control" placeholder="Giá từ" value="{{ request('min_price') }}" min="0">
                                         <span class="input-group-text">-</span>
-                                        <input type="number" name="max_price" class="form-control" placeholder="Giá đến" value="{{ request('max_price') }}" min="0">
+                                        <input id="max_price" type="number" name="max_price" class="form-control" placeholder="Giá đến" value="{{ request('max_price') }}" min="0">
                                     </div>
+                                    @foreach(request()->except('min_price','max_price','page') as $key => $value)
+                                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                    @endforeach
                                     <button type="submit" class="btn btn-warning btn-block w-100">Lọc</button>
+                                    @if(request()->filled('min_price') || request()->filled('max_price'))
+                                        <a href="{{ route('shop.index', request()->except('min_price','max_price','page')) }}" class="btn btn-link w-100 mt-2 p-0">Xóa lọc giá</a>
+                                    @endif
                                 </form>
                             </aside>
                             <!-- widget-color -->
