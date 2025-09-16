@@ -800,6 +800,71 @@ function showCenterNotice(message, type = 'success') {
 
     setTimeout(() => wrapper.remove(), 2000);
 }
+
+// Prompt: ask user to login with explicit button
+function showLoginPrompt() {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.background = 'rgba(0,0,0,0.45)';
+    overlay.style.zIndex = '10000';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+
+    const box = document.createElement('div');
+    box.style.background = '#fff';
+    box.style.borderRadius = '10px';
+    box.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+    box.style.padding = '20px 22px';
+    box.style.maxWidth = '440px';
+    box.style.width = 'calc(100% - 40px)';
+    box.style.textAlign = 'center';
+
+    const title = document.createElement('div');
+    title.textContent = 'Bạn cần đăng nhập để tiếp tục mua hàng';
+    title.style.fontWeight = '700';
+    title.style.fontSize = '16px';
+    title.style.marginBottom = '8px';
+
+    const desc = document.createElement('div');
+    desc.textContent = 'Vui lòng đăng nhập để chuyển đến trang thanh toán.';
+    desc.style.color = '#555';
+    desc.style.marginBottom = '16px';
+
+    const actions = document.createElement('div');
+    actions.style.display = 'flex';
+    actions.style.gap = '10px';
+    actions.style.justifyContent = 'center';
+
+    const loginBtn = document.createElement('a');
+    loginBtn.href = '/login?redirect=' + encodeURIComponent('/checkout');
+    loginBtn.textContent = 'Đăng nhập';
+    loginBtn.style.background = '#ee4d2d';
+    loginBtn.style.color = '#fff';
+    loginBtn.style.padding = '10px 16px';
+    loginBtn.style.borderRadius = '6px';
+    loginBtn.style.textDecoration = 'none';
+    loginBtn.style.fontWeight = '600';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Để sau';
+    cancelBtn.style.background = '#f1f3f5';
+    cancelBtn.style.border = '1px solid #dee2e6';
+    cancelBtn.style.color = '#333';
+    cancelBtn.style.padding = '10px 16px';
+    cancelBtn.style.borderRadius = '6px';
+    cancelBtn.style.cursor = 'pointer';
+    cancelBtn.onclick = () => document.body.removeChild(overlay);
+
+    actions.appendChild(loginBtn);
+    actions.appendChild(cancelBtn);
+    box.appendChild(title);
+    box.appendChild(desc);
+    box.appendChild(actions);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+}
 document.addEventListener('DOMContentLoaded', function() {
     // Countdown Timer for compact version
     const countdownTimer = document.querySelector('.countdown-timer-compact');
@@ -912,6 +977,9 @@ const variantIdMap = {
     '{{ $variant->color_id }}_{{ $variant->capacity_id }}': {{ $variant->id }},
     @endforeach
 };
+
+// Auth flag from server
+const isLoggedIn = {{ auth()->check() ? 'true' : 'false' }};
 
 // Update capacity options based on selected color
 function updateCapacityOptions() {
@@ -1146,6 +1214,11 @@ async function buyNow() {
             note: '',
             payment: 'cod'
         }));
+    }
+    if (!isLoggedIn) {
+        // Show prompt; only redirect if user confirms
+        showLoginPrompt();
+        return;
     }
     window.location.href = '/checkout';
 }

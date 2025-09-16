@@ -16,6 +16,7 @@
 
                     <form action="{{ route('login.store') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="redirect" value="{{ request('redirect', '') }}">
                         <div class="form-floating mb-3">
                             <input type="email" class="form-control rounded-pill" id="email" name="email" placeholder="Email" required>
                             <label for="email">Email</label>

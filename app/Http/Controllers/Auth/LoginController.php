@@ -33,6 +33,11 @@ class LoginController extends Controller
 
         if (Auth::attempt($request->only('email', 'password'))) {
             $request->session()->regenerate();
+            // Redirect to provided path if present (only allow relative paths)
+            $redirect = $request->input('redirect');
+            if ($redirect && is_string($redirect) && str_starts_with($redirect, '/')) {
+                return redirect($redirect)->with('success', 'Đăng nhập thành công!');
+            }
             return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
         }
 
