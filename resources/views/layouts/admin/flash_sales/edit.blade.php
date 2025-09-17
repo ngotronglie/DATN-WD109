@@ -116,12 +116,11 @@
                                             <tr>
                                                 <th width="22%">Sản phẩm</th>
                                                 <th width="10%">Ảnh</th>
-                                                <th width="12%">Giá gốc</th>
-                                                <th width="15%">Giá Flash Sale <span class="text-danger">*</span></th>
-                                                <th width="18%">Số lượng <span class="text-danger">*</span></th>
-                                                <th width="12%">Trạng thái</th>
-                                                <th width="12%">Tiết kiệm</th>
-                                                <th width="12%">Thao tác</th>
+                                                <th width="15%">Giá gốc</th>
+                                                <th width="20%">Giá Flash Sale <span class="text-danger">*</span></th>
+                                                <th width="20%">Số lượng <span class="text-danger">*</span></th>
+                                                <th width="20%">Tiết kiệm</th>
+                                                <th width="15%">Thao tác</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -168,13 +167,7 @@
                                                            data-max-quantity="{{ $flashSaleProduct->productVariant->quantity + $flashSaleProduct->sale_quantity }}"
                                                            data-index="{{ $index }}"
                                                            placeholder="Max: {{ $flashSaleProduct->productVariant->quantity + $flashSaleProduct->sale_quantity }}">
-                                                </td>
-                                                <td>
-                                                    <select class="form-control" name="products[{{ $index }}][status]">
-                                                        <option value="active" {{ ($flashSaleProduct->status ?? 'active') == 'active' ? 'selected' : '' }}>Hoạt động</option>
-                                                        <option value="featured" {{ ($flashSaleProduct->status ?? 'active') == 'featured' ? 'selected' : '' }}>Nổi bật</option>
-                                                        <option value="inactive" {{ ($flashSaleProduct->status ?? 'active') == 'inactive' ? 'selected' : '' }}>Tạm dừng</option>
-                                                    </select>
+                                                    <input type="hidden" name="products[{{ $index }}][status]" value="{{ $flashSaleProduct->status ?? 'active' }}">
                                                 </td>
                                                 <td class="text-center">
                                                     @php

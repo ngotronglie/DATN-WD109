@@ -156,8 +156,7 @@
                                             <th width="9%" class="text-center">Tiết kiệm</th>
                                             <th width="8%" class="text-center">Số lượng</th>
                                             <th width="7%" class="text-center">Đã bán</th>
-                                            <th width="7%" class="text-center">Còn lại</th>
-                                            <th width="8%" class="text-center">Tỷ lệ bán</th>
+                                            <th width="10%" class="text-center">Còn lại</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -227,38 +226,15 @@
                                                 <span class="badge bg-info">{{ $flashSaleProduct->sale_quantity }}</span>
                                             </td>
                                             <td class="text-center">
-                                                @php
-                                                    $sold = $flashSaleProduct->initial_stock - $flashSaleProduct->remaining_stock;
-                                                @endphp
-                                                <span class="badge bg-warning">{{ $sold }}</span>
+                                                <span class="badge bg-warning">{{ $flashSaleProduct->initial_stock - $flashSaleProduct->remaining_stock }}</span>
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge {{ $flashSaleProduct->remaining_stock > 0 ? 'bg-success' : 'bg-danger' }}">
-                                                    {{ $flashSaleProduct->remaining_stock }}
-                                                </span>
-                                            </td>
-                                            <td class="text-center">
-                                                @php
-                                                    $sellRate = $flashSaleProduct->sale_quantity > 0 
-                                                        ? round(($sold / $flashSaleProduct->sale_quantity) * 100) 
-                                                        : 0;
-                                                @endphp
-                                                <div class="progress" style="height: 20px;">
-                                                    <div class="progress-bar 
-                                                        @if($sellRate >= 80) bg-success
-                                                        @elseif($sellRate >= 50) bg-warning
-                                                        @else bg-danger
-                                                        @endif" 
-                                                         role="progressbar" 
-                                                         style="width: {{ $sellRate }}%">
-                                                        {{ $sellRate }}%
-                                                    </div>
-                                                </div>
+                                                <span class="badge bg-success">{{ $flashSaleProduct->remaining_stock }}</span>
                                             </td>
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="9" class="text-center">Chưa có sản phẩm nào trong flash sale này</td>
+                                            <td colspan="10" class="text-center">Chưa có sản phẩm nào trong flash sale này</td>
                                         </tr>
                                         @endforelse
                                     </tbody>

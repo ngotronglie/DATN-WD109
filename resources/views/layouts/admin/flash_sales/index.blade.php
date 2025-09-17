@@ -41,7 +41,6 @@
                                     <th class="text-center">Thời gian bắt đầu</th>
                                     <th class="text-center">Thời gian kết thúc</th>
                                     <th class="text-center">Số sản phẩm</th>
-                                    <th class="text-center">Trạng thái</th>
                                     <th class="text-center">Tình trạng</th>
                                     <th class="text-center">Thao tác</th>
                                 </tr>
@@ -55,13 +54,6 @@
                                     <td class="text-center">{{ $flashSale->end_time->format('d/m/Y H:i') }}</td>
                                     <td class="text-center">
                                         <span class="badge bg-info">{{ $flashSale->flashSaleProducts->count() }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        @if($flashSale->is_active)
-                                            <span class="badge bg-success">Hoạt động</span>
-                                        @else
-                                            <span class="badge bg-secondary">Tạm dừng</span>
-                                        @endif
                                     </td>
                                     <td class="text-center">
                                         @if($flashSale->isOngoing())
@@ -86,12 +78,14 @@
                                             </a>
                                             @endif
 
+                                            @if(!$flashSale->isExpired())
                                             <button type="button" 
                                                     class="btn {{ $flashSale->is_active ? 'btn-secondary' : 'btn-success' }} btn-sm me-1"
                                                     title="{{ $flashSale->is_active ? 'Tạm dừng' : 'Kích hoạt' }}"
                                                     onclick="toggleStatus({{ $flashSale->id }})">
                                                 {{ $flashSale->is_active ? '⏸️' : '▶️' }}
                                             </button>
+                                            @endif
 
                                             @if(!$flashSale->isOngoing())
                                             <button type="button" 

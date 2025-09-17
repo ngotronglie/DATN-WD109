@@ -27,16 +27,21 @@
                                 </div>
                             </div>
 
+                            
+
+                            <!-- Thời gian -->
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="is_active">Trạng thái</label>
-                                    <select class="form-control @error('is_active') is-invalid @enderror"
-                                            id="is_active" name="is_active">
-                                        <option value="1" {{ old('is_active') == '1' ? 'selected' : '' }}>Hoạt động</option>
-                                        <option value="0" {{ old('is_active') == '0' ? 'selected' : '' }}>Tạm dừng</option>
-                                    </select>
+                                    <label for="is_active">Kích hoạt ngay</label>
+                                    <div class="form-check">
+                                        <input type="hidden" name="is_active" value="0">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" checked>
+                                        <label class="form-check-label" for="is_active">
+                                            Bật để kích hoạt Flash Sale ngay khi đến thời gian bắt đầu
+                                        </label>
+                                    </div>
                                     @error('is_active')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -112,8 +117,6 @@
                                                 <th width="12%">Giá gốc</th>
                                                 <th width="15%">Giá Flash Sale <span class="text-danger">*</span></th>
                                                 <th width="18%">Số lượng <span class="text-danger">*</span></th>
-                                                <th width="12%">Hoạt động</th>
-
                                                 <th width="12%">Tiết kiệm</th>
 
                                                 <th width="12%">Thao tác</th>
@@ -275,13 +278,6 @@ document.addEventListener('DOMContentLoaded', function() {
                        data-max-quantity="${maxQuantity}"
                        data-index="${productIndex}"
                        placeholder="Max: ${maxQuantity}">
-            </td>
-            <td>
-                <select class="form-control" name="products[${productIndex}][status]">
-                    <option value="active">Hoạt động</option>
-                    <option value="featured">Nổi bật</option>
-                    <option value="inactive">Tạm dừng</option>
-                </select>
             </td>
             <td class="text-center">
                 <span class="saving-amount" data-index="${productIndex}">-</span>

@@ -57,7 +57,7 @@
                         <!-- Flash Sale Countdown Compact -->
                         <div class="flash-sale-countdown-compact">
                             <span class="flash-sale-label-compact">⚡ Flash Sale</span>
-                            <div class="countdown-timer-compact" data-end-time="{{ $flashSale->end_time->toISOString() }}">
+                            <div class="countdown-timer-compact" data-end-time="{{ $flashSale->end_time->toIso8601String() }}">
                                 <span id="compact-hours">00</span>:
                                 <span id="compact-minutes">00</span>:
                                 <span id="compact-seconds">00</span>

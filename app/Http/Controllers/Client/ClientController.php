@@ -770,6 +770,7 @@ class ClientController extends Controller
     public function apiCheckout(Request $request)
     {
         try {
+            DB::beginTransaction();
             $data = $request->all();
             $userId = auth()->check() ? auth()->id() : 0;
             $orderCode = strtoupper(bin2hex(random_bytes(6)));
@@ -835,14 +836,40 @@ class ClientController extends Controller
                         return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
                     }
 
+                    // Xác định flash sale sản phẩm (nếu có) và trừ tồn kho flash sale
+                    $flashSaleIdForLine = null;
+                    $fsp = null;
+                    $isItemFlashSale = !empty($item['is_flash_sale']) || isset($item['flash_sale_id']);
+                    if ($isItemFlashSale && !empty($item['flash_sale_id'])) {
+                        $fsp = \App\Models\FlashSaleProduct::where('flash_sale_id', $item['flash_sale_id'])
+                            ->where('product_variant_id', $item['variant_id'])
+                            ->whereHas('flashSale', function ($q) { $q->ongoing(); })
+                            ->first();
+                    } else {
+                        $fsp = \App\Models\FlashSaleProduct::where('product_variant_id', $item['variant_id'])
+                            ->whereHas('flashSale', function ($q) { $q->ongoing(); })
+                            ->first();
+                    }
+
+                    if ($fsp) {
+                        if ($fsp->remaining_stock < (int) $item['quantity']) {
+                            return response()->json(['success' => false, 'message' => 'Vượt quá số lượng Flash Sale còn lại']);
+                        }
+                        // Trừ tồn kho flash sale
+                        $fsp->decrement('remaining_stock', (int) $item['quantity']);
+                        $flashSaleIdForLine = $fsp->flash_sale_id;
+                    }
+
+                    // Tạo chi tiết đơn hàng, đính kèm flash_sale_id nếu có
                     \App\Models\OrderDetail::create([
                         'order_id' => $order->id,
                         'product_variant_id' => $item['variant_id'],
+                        'flash_sale_id' => $flashSaleIdForLine,
                         'quantity' => $item['quantity'],
                         'price' => $item['price'],
                     ]);
 
-                    // Trừ tồn kho
+                    // Trừ tồn kho biến thể thực tế
                     $variant->decrement('quantity', (int) $item['quantity']);
                 }
             }
@@ -872,8 +899,10 @@ class ClientController extends Controller
                 \Session::forget('cart');
             }
 
+            DB::commit();
             return response()->json(['success' => true, 'order_id' => $order->id, 'order_code' => $orderCode]);
         } catch (\Throwable $e) {
+            DB::rollBack();
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
