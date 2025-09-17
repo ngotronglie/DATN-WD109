@@ -106,8 +106,18 @@ class ClientController extends Controller
             ->take(12)
             ->get();
             
-        // Lấy flash sales đang hoạt động
-        $flashSales = FlashSale::getActiveFlashSales();
+        // Lấy tất cả flash sales có bật is_active, gồm sắp diễn ra, đang diễn ra, đã kết thúc (ưu tiên đang diễn ra)
+        $flashSales = FlashSale::where('is_active', true)
+            ->orderByRaw("CASE 
+                WHEN start_time <= NOW() AND end_time >= NOW() THEN 0  -- ongoing
+                WHEN start_time > NOW() THEN 1                          -- upcoming
+                ELSE 2                                                  -- ended
+            END")
+            ->orderBy('start_time', 'asc')
+            ->with(['flashSaleProductsByPriority.productVariant.product', 
+                    'flashSaleProductsByPriority.productVariant.color',
+                    'flashSaleProductsByPriority.productVariant.capacity'])
+            ->get();
         
         return view('layouts.user.main', [
             'categories' => $categories,
@@ -166,8 +176,13 @@ class ClientController extends Controller
 
     public function flashSales()
     {
-        // Lấy tất cả flash sales đang hoạt động
-        $flashSales = FlashSale::getActiveFlashSales();
+        // Lấy tất cả flash sales có bật is_active
+        $flashSales = FlashSale::where('is_active', true)
+            ->orderBy('start_time', 'asc')
+            ->with(['flashSaleProductsByPriority.productVariant.product', 
+                    'flashSaleProductsByPriority.productVariant.color',
+                    'flashSaleProductsByPriority.productVariant.capacity'])
+            ->get();
         
         // Lấy categories để hiển thị filter
         $categories = Categories::whereNull('Parent_id')->where('Is_active', 1)->get();
@@ -547,9 +562,18 @@ class ClientController extends Controller
 
         // Set the correct price based on whether it's a flash sale or regular product
         if ($isFlashSale && $flashSaleId) {
-            $cartData['is_flash_sale'] = true;
-            $cartData['flash_sale_id'] = $flashSaleId;
-            $cartData['price'] = $flashSalePrice; // Flash sale price
+            // Only apply flash price if the variant is part of an ongoing flash sale
+            $fsp = \App\Models\FlashSaleProduct::where('flash_sale_id', $flashSaleId)
+                ->where('product_variant_id', $variantId)
+                ->whereHas('flashSale', function ($q) { $q->ongoing(); })
+                ->first();
+            if ($fsp) {
+                $cartData['is_flash_sale'] = true;
+                $cartData['flash_sale_id'] = $flashSaleId;
+                $cartData['price'] = (float) $fsp->sale_price; // Flash sale price
+            } else {
+                $cartData['price'] = $variant->price_sale ?? $variant->price;
+            }
         } else {
             // For regular products, use sale price if available, otherwise use regular price
             $cartData['price'] = $variant->price_sale ?? $variant->price;
@@ -582,8 +606,18 @@ class ClientController extends Controller
                 
                 $item->quantity = $newQty;
                 if ($isFlashSale) {
-                    $item->price = $flashSalePrice;
-                    $item->flash_sale_id = $flashSaleId;
+                    // keep flash price only if still ongoing
+                    $fsp = \App\Models\FlashSaleProduct::where('flash_sale_id', $flashSaleId)
+                        ->where('product_variant_id', $variantId)
+                        ->whereHas('flashSale', function ($q) { $q->ongoing(); })
+                        ->first();
+                    if ($fsp) {
+                        $item->price = (float) $fsp->sale_price;
+                        $item->flash_sale_id = $flashSaleId;
+                    } else {
+                        $item->price = $variant->price_sale ?? $variant->price;
+                        $item->flash_sale_id = null;
+                    }
                 }
                 $item->save();
             } else {
@@ -595,7 +629,16 @@ class ClientController extends Controller
                 ];
                 
                 if ($isFlashSale) {
-                    $itemData['flash_sale_id'] = $flashSaleId;
+                    $fsp = \App\Models\FlashSaleProduct::where('flash_sale_id', $flashSaleId)
+                        ->where('product_variant_id', $variantId)
+                        ->whereHas('flashSale', function ($q) { $q->ongoing(); })
+                        ->first();
+                    if ($fsp) {
+                        $itemData['flash_sale_id'] = $flashSaleId;
+                        $itemData['price'] = (float) $fsp->sale_price;
+                    } else {
+                        $itemData['price'] = $variant->price_sale ?? $variant->price;
+                    }
                 }
                 
                 CartItem::create($itemData);
@@ -731,7 +774,10 @@ class ClientController extends Controller
                 // For flash sale items, ensure we have the correct original price
                 $originalPrice = $variant->price;
                 if ($isFlashSale) {
-                    $fsp = \App\Models\FlashSaleProduct::find($item->flash_sale_id);
+                    $fsp = \App\Models\FlashSaleProduct::where('flash_sale_id', $item->flash_sale_id)
+                        ->where('product_variant_id', $item->product_variant_id)
+                        ->whereHas('flashSale', function ($q) { $q->ongoing(); })
+                        ->first();
                     if ($fsp) {
                         $effectivePrice = (float) $fsp->sale_price;
                         $originalPrice = (float) ($fsp->original_price ?? $variant->price);
@@ -768,7 +814,10 @@ class ClientController extends Controller
                 $originalPrice = $variant->price;
                 
                 if ($isFlashSale && !empty($item['flash_sale_id'])) {
-                    $fsp = \App\Models\FlashSaleProduct::find($item['flash_sale_id']);
+                    $fsp = \App\Models\FlashSaleProduct::where('flash_sale_id', $item['flash_sale_id'])
+                        ->where('product_variant_id', $variant->id)
+                        ->whereHas('flashSale', function ($q) { $q->ongoing(); })
+                        ->first();
                     if ($fsp) {
                         $effectivePrice = (float) $fsp->sale_price;
                         $originalPrice = (float) ($fsp->original_price ?? $variant->price);

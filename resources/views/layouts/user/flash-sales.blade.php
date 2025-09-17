@@ -628,7 +628,7 @@ function buyNow(variantId, price) {
     .then(data => {
         if (data.success) {
             // Redirect to cart page immediately after successful addition
-            window.location.href = '{{ route('cart.index') }}';
+            window.location.href = '{{ route('cart') }}';
         } else {
             showNotification(data.message || 'Có lỗi xảy ra!', 'error');
         }

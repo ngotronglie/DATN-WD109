@@ -34,7 +34,7 @@ class OrderController extends Controller
     // Cập nhật trạng thái đơn hàng (AJAX)
     public function updateStatus(Request $request, $id)
     {
-        DB::beginTransaction();
+        \DB::beginTransaction();
 
         try {
             $order = Order::with('orderDetails.productVariant')->findOrFail($id);
@@ -126,12 +126,12 @@ class OrderController extends Controller
             }
 
             $order->save();
-            DB::commit();
+            \DB::commit();
 
             return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
 
         } catch (\Exception $e) {
-            DB::rollBack();
+            \DB::rollBack();
             return redirect()->back()->with('error', 'Lỗi khi cập nhật đơn hàng: ' . $e->getMessage());
         }
     }

@@ -14,10 +14,10 @@ return new class extends Migration
         if (Schema::hasTable('flash_sale_products')) {
             Schema::table('flash_sale_products', function (Blueprint $table) {
                 if (!Schema::hasColumn('flash_sale_products', 'priority')) {
-                    $table->integer('priority')->default(0)->after('remaining_stock')->comment('Thứ tự ưu tiên hiển thị (càng cao càng ưu tiên)');
+                    $table->integer('priority')->default(0)->after('remaining_stock');
                 }
                 if (!Schema::hasColumn('flash_sale_products', 'status')) {
-                    $table->enum('status', ['active', 'inactive', 'featured'])->default('active')->after('priority')->comment('Trạng thái sản phẩm: active, inactive, featured');
+                    $table->enum('status', ['active', 'inactive', 'featured'])->default('active')->after('priority');
                 }
             });
         }
@@ -30,11 +30,11 @@ return new class extends Migration
     {
         if (Schema::hasTable('flash_sale_products')) {
             Schema::table('flash_sale_products', function (Blueprint $table) {
-                if (Schema::hasColumn('flash_sale_products', 'priority')) {
-                    $table->dropColumn('priority');
-                }
                 if (Schema::hasColumn('flash_sale_products', 'status')) {
                     $table->dropColumn('status');
+                }
+                if (Schema::hasColumn('flash_sale_products', 'priority')) {
+                    $table->dropColumn('priority');
                 }
             });
         }

@@ -11,8 +11,12 @@
                     <div class="flash-icon me-2">⚡</div>
                     <h3 class="section-title mb-0">FLASH SALE</h3>
                     @if($flashSales->first())
-                        <div class="countdown-compact ms-3" data-end-time="{{ $flashSales->first()->end_time->toISOString() }}">
-                            <span class="countdown-text">Kết thúc sau</span>
+                        @php $fs = $flashSales->first(); @endphp
+                        <div class="countdown-compact ms-3" 
+                             data-start-time="{{ optional($fs->start_time)->toISOString() }}"
+                             data-end-time="{{ optional($fs->end_time)->toISOString() }}"
+                             data-status="{{ $fs->status_code }}">
+                            <span class="countdown-text status-label">{{ $fs->status_label }}</span>
                             <span class="timer-compact">
                                 <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
                             </span>
@@ -62,6 +66,7 @@
                                             <span class="sale-price">₫{{ number_format($flashProduct->sale_price, 0, ',', '.') }}</span>
                                             <span class="original-price">₫{{ number_format($flashProduct->original_price, 0, ',', '.') }}</span>
                                         </div>
+                                        <div class="status-pill status-{{ $flashSale->status_code }}">{{ $flashSale->status_label }}</div>
                                         
                                     </div>
                                 </a>
@@ -120,6 +125,17 @@
     font-size: 12px;
     font-weight: 600;
 }
+
+.status-pill {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 10px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+.status-upcoming { background: #fff3cd; color: #856404; }
+.status-ongoing { background: #d4edda; color: #155724; }
+.status-ended { background: #f8d7da; color: #721c24; }
 
 .view-all-link {
     color: #ee4d2d;
@@ -263,26 +279,50 @@ document.addEventListener('DOMContentLoaded', function() {
     // Countdown Timer - Compact Version
     const countdownCompact = document.querySelector('.countdown-compact');
     if (countdownCompact) {
-        const endTime = new Date(countdownCompact.dataset.endTime).getTime();
+        const startTimeRaw = countdownCompact.dataset.startTime;
+        const endTimeRaw = countdownCompact.dataset.endTime;
+        const statusInitial = countdownCompact.dataset.status;
+        const startTime = startTimeRaw ? new Date(startTimeRaw).getTime() : null;
+        const endTime = endTimeRaw ? new Date(endTimeRaw).getTime() : null;
+        const statusLabel = countdownCompact.querySelector('.status-label');
         
         function updateCountdown() {
             const now = new Date().getTime();
-            const distance = endTime - now;
-            
-            if (distance < 0) {
+            if (startTime && now < startTime) {
+                // Upcoming
+                const distance = startTime - now;
+                statusLabel.textContent = 'Chưa bắt đầu';
+                if (distance <= 0) {
+                    statusLabel.textContent = 'Đã bắt đầu';
+                }
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+                document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+                return;
+            }
+
+            if (endTime && now <= endTime) {
+                // Ongoing
+                const distance = endTime - now;
+                statusLabel.textContent = 'Đã bắt đầu';
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+                document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+                return;
+            }
+
+            // Ended
+            if (statusLabel) statusLabel.textContent = 'Đã kết thúc';
                 document.getElementById('hours').textContent = '00';
                 document.getElementById('minutes').textContent = '00';
                 document.getElementById('seconds').textContent = '00';
-                return;
-            }
-            
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
-            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
-            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+            return;
         }
         
         updateCountdown();

@@ -111,6 +111,36 @@ class FlashSale extends Model
     }
 
     /**
+     * Trạng thái theo thời gian: upcoming | ongoing | ended
+     */
+    public function getStatusCodeAttribute()
+    {
+        $now = Carbon::now();
+        if ($this->end_time && $now->gt($this->end_time)) {
+            return 'ended';
+        }
+        if ($this->start_time && $now->lt($this->start_time)) {
+            return 'upcoming';
+        }
+        return 'ongoing';
+    }
+
+    /**
+     * Nhãn trạng thái hiển thị
+     */
+    public function getStatusLabelAttribute()
+    {
+        switch ($this->status_code) {
+            case 'upcoming':
+                return 'Chưa bắt đầu';
+            case 'ended':
+                return 'Đã kết thúc';
+            default:
+                return 'Đã bắt đầu';
+        }
+    }
+
+    /**
      * Lấy Flash Sale đang hoạt động
      */
     public static function getActiveFlashSales()
