@@ -34,25 +34,106 @@ class OrderController extends Controller
     // Cập nhật trạng thái đơn hàng (AJAX)
     public function updateStatus(Request $request, $id)
     {
-        $order = Order::findOrFail($id);
-        $newStatus = $request->input('status');
+        DB::beginTransaction();
 
-        $order->status = $newStatus;
+        try {
+            $order = Order::with('orderDetails.productVariant')->findOrFail($id);
+            $newStatus = (int)$request->input('status');
+            $oldStatus = $order->status;
 
-        // Nếu đơn hàng được đánh dấu là "Đã giao hàng" (status = 5)
-        if ((int)$newStatus === 5) {
-            // Nếu là COD thì đánh dấu đã thu tiền COD, nếu là VNPAY thì đã thanh toán trước đó (2)
-            if ((int)$order->status_method === 0) {
-                $order->status_method = 1; // thu COD khi giao
+            // Nếu hủy đơn hàng (status = 6) và trước đó chưa bị hủy
+            if ($newStatus === 6 && $oldStatus !== 6) {
+                foreach ($order->orderDetails as $detail) {
+                    // Cập nhật số lượng tồn kho cho biến thể sản phẩm
+                    if ($detail->productVariant) {
+                        $detail->productVariant->increment('quantity', $detail->quantity);
+                    }
+
+                    // Nếu là sản phẩm flash sale, cập nhật lại số lượng tồn kho flash sale
+                    if ($detail->flash_sale_id) {
+                        $flashSaleProduct = \App\Models\FlashSaleProduct::where('flash_sale_id', $detail->flash_sale_id)
+                            ->where('product_variant_id', $detail->product_variant_id)
+                            ->lockForUpdate() // Khóa bản ghi để tránh race condition
+                            ->first();
+
+                        if ($flashSaleProduct) {
+                            // Cập nhật remaining_stock và sold_quantity một cách thủ công
+                            $flashSaleProduct->remaining_stock += $detail->quantity;
+                            $flashSaleProduct->sold_quantity = max(0, $flashSaleProduct->sold_quantity - $detail->quantity);
+
+                            // Đảm bảo remaining_stock không vượt quá initial_stock
+                            if ($flashSaleProduct->remaining_stock > $flashSaleProduct->initial_stock) {
+                                $flashSaleProduct->remaining_stock = $flashSaleProduct->initial_stock;
+                            }
+
+                            $flashSaleProduct->save();
+                        }
+                    }
+                }
             }
-            if (!$order->payment_method) {
-                $order->payment_method = 'cod';
+            // Nếu đơn hàng đang bị hủy (status = 6) và được cập nhật sang trạng thái khác
+            elseif ($oldStatus === 6 && $newStatus !== 6) {
+                foreach ($order->orderDetails as $detail) {
+                    // Giảm số lượng tồn kho cho biến thể sản phẩm
+                    if ($detail->productVariant) {
+                        if ($detail->productVariant->quantity >= $detail->quantity) {
+                            $detail->productVariant->decrement('quantity', $detail->quantity);
+                        } else {
+                            throw new \Exception('Không đủ số lượng tồn kho cho sản phẩm: ' . ($detail->productVariant->product->name ?? ''));
+                        }
+                    }
+
+                    // Nếu là sản phẩm flash sale, giảm số lượng tồn kho flash sale
+                    if ($detail->flash_sale_id) {
+                        $flashSaleProduct = \App\Models\FlashSaleProduct::where('flash_sale_id', $detail->flash_sale_id)
+                            ->where('product_variant_id', $detail->product_variant_id)
+                            ->lockForUpdate() // Khóa bản ghi để tránh race condition
+                            ->first();
+
+                        if ($flashSaleProduct) {
+                            if ($flashSaleProduct->remaining_stock >= $detail->quantity) {
+                                // Cập nhật remaining_stock và sold_quantity một cách thủ công
+                                $flashSaleProduct->remaining_stock -= $detail->quantity;
+                                $flashSaleProduct->sold_quantity += $detail->quantity;
+
+                                // Đảm bảo sold_quantity không vượt quá initial_stock
+                                if ($flashSaleProduct->sold_quantity > $flashSaleProduct->initial_stock) {
+                                    $flashSaleProduct->sold_quantity = $flashSaleProduct->initial_stock;
+                                    $flashSaleProduct->remaining_stock = 0;
+                                }
+
+                                $flashSaleProduct->save();
+                            } else {
+                                throw new \Exception('Không đủ số lượng tồn kho flash sale cho sản phẩm: ' . ($detail->productVariant->product->name ?? ''));
+                            }
+                        }
+                    }
+                }
             }
+
+            // Cập nhật trạng thái đơn hàng
+            $order->status = $newStatus;
+
+            // Nếu đơn hàng được đánh dấu là "Đã giao hàng" (status = 5)
+            if ($newStatus === 5) {
+                // Nếu là COD thì đánh dấu đã thu tiền COD, nếu là VNPAY thì đã thanh toán trước đó (2)
+                if ((int)$order->status_method === 0) {
+                    $order->status_method = 1; // thu COD khi giao
+                }
+                if (!$order->payment_method) {
+                    $order->payment_method = 'cod';
+                }
+            }
+
+            $order->save();
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Lỗi khi cập nhật đơn hàng: ' . $e->getMessage());
         }
-
-        $order->save();
-
-        return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
     }
 
     // Admin thao tác hoàn tiền ngay tại bước đóng gói (status = 2)

@@ -28,7 +28,10 @@
                     <div class="product-images-container">
                         <!-- Main Image -->
                         <div class="main-image-wrapper">
-                            <img id="product-image" src="{{ isset($variants[0]) ? asset($variants[0]->image) : '' }}" alt="{{ $product->name }}" class="main-product-image">
+                            <img id="product-image" src="{{ isset($variants[0]) ? (str_starts_with($variants[0]->image, 'http') ? $variants[0]->image : asset('storage/' . $variants[0]->image)) : asset('images/no-image.png') }}" 
+                                 alt="{{ $product->name }}" 
+                                 class="main-product-image"
+                                 onerror="this.src='{{ asset('images/no-image.png') }}'">
                             <!-- Flash Sale Badge -->
                             <div class="flash-sale-badge">
                                 <span class="badge-text">⚡ FLASH SALE</span>
@@ -42,8 +45,11 @@
                             @foreach($variants as $variant)
                                 @if(!in_array($variant->color_id, $seenColorIds))
                                     @php $seenColorIds[] = $variant->color_id; @endphp
-                                    <div class="thumbnail-item" onclick="changeMainImage('{{ asset($variant->image) }}')">
-                                        <img src="{{ asset($variant->image) }}" alt="Thumbnail" class="thumbnail-image">
+                                    <div class="thumbnail-item" onclick="changeMainImage('{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}')">
+                                        <img src="{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}" 
+                                             alt="Thumbnail" 
+                                             class="thumbnail-image"
+                                             onerror="this.src='{{ asset('images/no-image.png') }}'">
                                     </div>
                                 @endif
                             @endforeach
@@ -1345,19 +1351,29 @@ async function addToCart() {
     const capacityId = capacityInput.value;
     const key = `${colorId}_${capacityId}`;
     const variantId = variantIdMap[key];
+    
+    // Check if the selected variant is part of the flash sale
+    const isOnSale = !!flashSaleCombinations[key];
+    const cartData = {
+        product_id: {{ $product->id }},
+        product_variant_id: variantId,
+        color_id: colorId,
+        capacity_id: capacityId,
+        quantity: quantity
+    };
+    
+    // Only add flash sale data if the variant is part of the flash sale
+    if (isOnSale) {
+        cartData.is_flash_sale = true;
+        cartData.flash_sale_id = {{ $flashSale->id }};
+        cartData.flash_sale_price = flashSaleCombinations[key].sale_price;
+    }
 
     if (!isLoggedIn) {
         // Lưu ý định thêm giỏ hàng để tự động thực hiện sau đăng nhập
         try {
             localStorage.setItem('post_login_cart', JSON.stringify({
-                product_id: {{ $product->id }},
-                variant_id: variantId,
-                color_id: colorId,
-                capacity_id: capacityId,
-                quantity: quantity,
-                is_flash_sale: true,
-                flash_sale_id: {{ $flashSale->id }},
-                flash_sale_price: {{ $flashSaleProduct->sale_price }},
+                ...cartData,
                 ts: Date.now()
             }));
         } catch (_) {}
@@ -1373,22 +1389,15 @@ async function addToCart() {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
-            body: JSON.stringify({
-                product_id: {{ $product->id }},
-                product_variant_id: variantId,
-                color_id: colorId,
-                capacity_id: capacityId,
-                quantity: quantity,
-                is_flash_sale: true,
-                flash_sale_id: {{ $flashSale->id }},
-                flash_sale_price: {{ $flashSaleProduct->sale_price }}
-            })
+            body: JSON.stringify(cartData)
         });
+        
         if (res.status === 401) {
             const currentPath = window.location.pathname + window.location.search;
             showLoginPrompt(currentPath, 'cart');
             return;
         }
+        
         const data = await res.json();
         if (data && data.success) {
             showCenterNotice('Đã thêm vào giỏ hàng!', 'success');
@@ -1396,6 +1405,7 @@ async function addToCart() {
             showCenterNotice(data?.message || 'Không thể thêm vào giỏ hàng.', 'error');
         }
     } catch (e) {
+        console.error('Error adding to cart:', e);
         showCenterNotice('Có lỗi xảy ra. Vui lòng thử lại.', 'error');
     }
 }
@@ -1460,6 +1470,9 @@ async function buyNow() {
         return;
     }
 
+    // Check if the selected variant is part of the flash sale
+    const isOnSale = !!flashSaleCombinations[key];
+    
     // Build checkout_cart item for checkout page only (no server cart)
     const priceText = document.getElementById('current-price')?.textContent || '0';
     const priceNumber = parseInt(priceText.replace(/[^\d]/g, ''), 10) || 0;
@@ -1472,6 +1485,14 @@ async function buyNow() {
         capacity: capacityInput.nextElementSibling?.textContent?.trim() || '',
         image: document.getElementById('product-image')?.src || ''
     };
+    
+    // Only add flash sale data if the variant is part of the flash sale
+    if (isOnSale) {
+        item.is_flash_sale = true;
+        item.flash_sale_id = {{ $flashSale->id }};
+        item.flash_sale_price = flashSaleCombinations[key].sale_price;
+    }
+    
     localStorage.setItem('checkout_cart', JSON.stringify([item]));
     const existingUser = localStorage.getItem('checkout_user');
     if (!existingUser) {

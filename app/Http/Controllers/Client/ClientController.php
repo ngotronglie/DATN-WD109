@@ -514,11 +514,14 @@ class ClientController extends Controller
             'quantity' => $quantity,
         ];
 
-        // Thêm thông tin flash sale nếu có
+        // Set the correct price based on whether it's a flash sale or regular product
         if ($isFlashSale && $flashSaleId) {
             $cartData['is_flash_sale'] = true;
             $cartData['flash_sale_id'] = $flashSaleId;
-            $cartData['price'] = $flashSalePrice; // Giá flash sale
+            $cartData['price'] = $flashSalePrice; // Flash sale price
+        } else {
+            // For regular products, use sale price if available, otherwise use regular price
+            $cartData['price'] = $variant->price_sale ?? $variant->price;
         }
 
         if (Auth::check()) {
@@ -557,10 +560,10 @@ class ClientController extends Controller
                     'cart_id' => $cart->id,
                     'product_variant_id' => $variantId,
                     'quantity' => $quantity,
+                    'price' => $isFlashSale ? $flashSalePrice : ($variant->price_sale ?? $variant->price)
                 ];
                 
                 if ($isFlashSale) {
-                    $itemData['price'] = $flashSalePrice;
                     $itemData['flash_sale_id'] = $flashSaleId;
                 }
                 
@@ -609,10 +612,10 @@ class ClientController extends Controller
                 $newItem = [
                     'product_variant_id' => $variantId,
                     'quantity' => $quantity,
+                    'price' => $isFlashSale ? $flashSalePrice : ($variant->price_sale ?? $variant->price)
                 ];
                 
                 if ($isFlashSale) {
-                    $newItem['price'] = $flashSalePrice;
                     $newItem['flash_sale_id'] = $flashSaleId;
                 }
                 
@@ -680,89 +683,83 @@ class ClientController extends Controller
                 : collect();
             $result = $items->map(function ($item) {
                 $variant = $item->productVariant;
+                if (!$variant) {
+                    return null;
+                }
+                
                 $isFlashSale = !is_null($item->flash_sale_id);
-                $effectivePrice = $item->price ?? ($variant->price_sale ?? $variant->price);
-                $originalPrice = $variant->price ?? $effectivePrice;
+                
+                // Always use the price stored in the cart item if available
+                $effectivePrice = $item->price;
+                
+                // If no price is set in cart item, fall back to variant's sale price or regular price
+                if (is_null($effectivePrice)) {
+                    $effectivePrice = $variant->price_sale ?? $variant->price;
+                }
+                
+                // For flash sale items, ensure we have the correct original price
+                $originalPrice = $variant->price;
                 if ($isFlashSale) {
                     $fsp = \App\Models\FlashSaleProduct::find($item->flash_sale_id);
                     if ($fsp) {
-                        $effectivePrice = $item->price ?? (float) $fsp->sale_price;
-                        $originalPrice = (float) ($fsp->original_price ?? $originalPrice);
+                        $effectivePrice = (float) $fsp->sale_price;
+                        $originalPrice = (float) ($fsp->original_price ?? $variant->price);
                     }
                 }
+                
                 return [
                     'id' => $item->id,
                     'variant_id' => $item->product_variant_id,
                     'quantity' => $item->quantity,
-                    'name' => $variant->product->name ?? '',
-                    'color' => $variant->color->name ?? '',
-                    'capacity' => $variant->capacity->name ?? '',
+                    'name' => $variant->product->name ?? 'Sản phẩm không xác định',
+                    'color' => $variant->color->name ?? 'Không xác định',
+                    'capacity' => $variant->capacity->name ?? 'Không xác định',
                     'price' => (float) $effectivePrice,
                     'original_price' => (float) $originalPrice,
                     'is_flash_sale' => $isFlashSale,
-                    'image' => $variant->image,
-
-                    'name' => $item->productVariant->product->name ?? '',
-                    'color' => $item->productVariant->color->name ?? '',
-                    'capacity' => $item->productVariant->capacity->name ?? '',
-                    'price' => $item->productVariant->price,
-                    'image' => $this->getImageUrl($item->productVariant->image),
-
+                    'image' => $this->getImageUrl($variant->image),
                 ];
-            })->values();
+            })->filter()->values(); // Remove any null items
         } else {
             $cart = Session::get('cart', []);
             $variantIds = array_column($cart, 'product_variant_id');
             $variants = ProductVariant::with('product', 'color', 'capacity')->whereIn('id', $variantIds)->get();
             $result = [];
+            
             foreach ($cart as $item) {
                 $variant = $variants->where('id', $item['product_variant_id'])->first();
-                if ($variant) {
-                    $isFlashSale = isset($item['flash_sale_id']);
-                    $effectivePrice = $item['price'] ?? ($variant->price_sale ?? $variant->price);
-                    $originalPrice = $variant->price ?? $effectivePrice;
-                    if ($isFlashSale) {
-                        $fsp = \App\Models\FlashSaleProduct::find($item['flash_sale_id']);
-                        if ($fsp) {
-                            $effectivePrice = $item['price'] ?? (float) $fsp->sale_price;
-                            $originalPrice = (float) ($fsp->original_price ?? $originalPrice);
-                        }
+                if (!$variant) continue;
+                
+                $isFlashSale = !empty($item['flash_sale_id']);
+                
+                // Use the price from the cart item if available, otherwise use variant's price
+                $effectivePrice = $item['price'] ?? ($variant->price_sale ?? $variant->price);
+                $originalPrice = $variant->price;
+                
+                if ($isFlashSale && !empty($item['flash_sale_id'])) {
+                    $fsp = \App\Models\FlashSaleProduct::find($item['flash_sale_id']);
+                    if ($fsp) {
+                        $effectivePrice = (float) $fsp->sale_price;
+                        $originalPrice = (float) ($fsp->original_price ?? $variant->price);
                     }
-                    $result[] = [
-                        'id' => null,
-                        'variant_id' => $variant->id,
-                        'quantity' => $item['quantity'],
-                        'name' => $variant->product->name ?? '',
-                        'color' => $variant->color->name ?? '',
-                        'capacity' => $variant->capacity->name ?? '',
-
-                        'price' => (float) $effectivePrice,
-                        'original_price' => (float) $originalPrice,
-                        'is_flash_sale' => $isFlashSale,
-                        'image' => $variant->image,
-
-                        'price' => $variant->price,
-                        'image' => $this->getImageUrl($variant->image),
-
-                    ];
                 }
+                
+                $result[] = [
+                    'id' => null,
+                    'variant_id' => $variant->id,
+                    'quantity' => $item['quantity'],
+                    'name' => $variant->product->name ?? 'Sản phẩm không xác định',
+                    'color' => $variant->color->name ?? 'Không xác định',
+                    'capacity' => $variant->capacity->name ?? 'Không xác định',
+                    'price' => (float) $effectivePrice,
+                    'original_price' => (float) $originalPrice,
+                    'is_flash_sale' => $isFlashSale,
+                    'image' => $this->getImageUrl($variant->image)
+                ];
             }
         }
+        
         return response()->json(['success' => true, 'data' => $result]);
-    }
-
-    public function getProvinces()
-    {
-        if (!Schema::hasTable('tinhthanh')) {
-            return response()->json([]);
-        }
-        // Chỉ trả các tỉnh/thành còn hiệu lực có dữ liệu quận/huyện
-        $provinces = DB::table('tinhthanh as t')
-            ->join('devvn_quanhuyen as qh', 'qh.matp', '=', 't.ma_tinh')
-            ->select('t.id', 't.ten_tinh')
-            ->distinct()
-            ->orderBy('t.ten_tinh')
-            ->get();
         return response()->json($provinces);
     }
     public function getDistricts($provinceId)

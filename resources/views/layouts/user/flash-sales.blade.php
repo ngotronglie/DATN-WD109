@@ -90,9 +90,12 @@
                                     <div class="flash-product-card h-100">
                                         {{-- Product Image --}}
                                         <div class="product-image-container">
-                                            <img src="{{ $flashProduct->productVariant->image ? asset('storage/' . $flashProduct->productVariant->image) : asset('images/no-image.png') }}" 
-                                                 alt="{{ $flashProduct->productVariant->product->name }}" 
-                                                 class="product-image">
+                                            <a href="{{ route('flash-sale.product.detail', $flashProduct->productVariant->product->slug) }}">
+                                                <img src="{{ $flashProduct->productVariant->image ? (str_starts_with($flashProduct->productVariant->image, 'http') ? $flashProduct->productVariant->image : asset('storage/' . $flashProduct->productVariant->image)) : asset('images/no-image.png') }}" 
+                                                     alt="{{ $flashProduct->productVariant->product->name }}" 
+                                                     class="product-image"
+                                                     onerror="this.src='{{ asset('images/no-image.png') }}'">
+                                            </a>
                                             
                                             {{-- Discount Badge --}}
                                             <div class="discount-badge">
@@ -110,7 +113,7 @@
                                         {{-- Product Info --}}
                                         <div class="product-content p-3">
                                             <h5 class="product-title mb-2">
-                                                <a href="{{ route('product.detail', $flashProduct->productVariant->product->id) }}">
+                                                <a href="{{ route('flash-sale.product.detail', $flashProduct->productVariant->product->slug) }}">
                                                     {{ $flashProduct->productVariant->product->name }}
                                                 </a>
                                             </h5>
@@ -136,21 +139,6 @@
                                                 </div>
                                             </div>
 
-                                            {{-- Stock Progress --}}
-                                            <div class="stock-section mb-3">
-                                                @php
-                                                    $soldPercentage = (($flashProduct->initial_stock - $flashProduct->remaining_stock) / $flashProduct->initial_stock) * 100;
-                                                @endphp
-                                                <div class="stock-progress-bar">
-                                                    <div class="progress">
-                                                        <div class="progress-bar bg-danger" style="width: {{ $soldPercentage }}%"></div>
-                                                    </div>
-                                                    <div class="stock-info">
-                                                        <small class="text-muted">Đã bán {{ $flashProduct->initial_stock - $flashProduct->remaining_stock }}</small>
-                                                        <small class="text-muted">Còn {{ $flashProduct->remaining_stock }}</small>
-                                                    </div>
-                                                </div>
-                                            </div>
 
                                             {{-- Action Buttons --}}
                                             <div class="product-actions">
