@@ -38,10 +38,14 @@
                         
                         <!-- Thumbnail Images -->
                         <div class="thumbnail-gallery">
+                            @php $seenColorIds = []; @endphp
                             @foreach($variants as $variant)
-                            <div class="thumbnail-item" onclick="changeMainImage('{{ asset($variant->image) }}')">
-                                <img src="{{ asset($variant->image) }}" alt="Thumbnail" class="thumbnail-image">
-                            </div>
+                                @if(!in_array($variant->color_id, $seenColorIds))
+                                    @php $seenColorIds[] = $variant->color_id; @endphp
+                                    <div class="thumbnail-item" onclick="changeMainImage('{{ asset($variant->image) }}')">
+                                        <img src="{{ asset($variant->image) }}" alt="Thumbnail" class="thumbnail-image">
+                                    </div>
+                                @endif
                             @endforeach
                         </div>
                     </div>

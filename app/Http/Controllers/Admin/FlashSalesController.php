@@ -353,4 +353,47 @@ class FlashSalesController extends Controller
 
         return view('layouts.admin.flash_sales.statistics', compact('stats'));
     }
+
+    /**
+     * JSON: Live stats for a flash sale (for admin show auto-update)
+     */
+    public function apiStats($id)
+    {
+        $flashSale = FlashSale::with([
+            'flashSaleProducts:id,flash_sale_id,product_variant_id,sale_quantity,initial_stock,remaining_stock,original_price,sale_price,status,priority',
+            'flashSaleProducts.productVariant:id,product_id,color_id,capacity_id'
+        ])->findOrFail($id);
+
+        $items = [];
+        $sumSaleQty = 0;
+        $sumRemaining = 0;
+        $sumSold = 0;
+
+        foreach ($flashSale->flashSaleProducts as $item) {
+            $sold = (int) $item->initial_stock - (int) $item->remaining_stock;
+            $items[] = [
+                'variant_id' => (int) $item->product_variant_id,
+                'sale_quantity' => (int) $item->sale_quantity,
+                'initial_stock' => (int) $item->initial_stock,
+                'remaining_stock' => (int) $item->remaining_stock,
+                'sold' => (int) max(0, $sold),
+                'status' => (string) ($item->status ?? 'active'),
+                'sale_price' => (float) $item->sale_price,
+                'original_price' => (float) $item->original_price,
+            ];
+            $sumSaleQty += (int) $item->sale_quantity;
+            $sumRemaining += (int) $item->remaining_stock;
+            $sumSold += (int) max(0, $sold);
+        }
+
+        return response()->json([
+            'success' => true,
+            'summary' => [
+                'sale_quantity' => $sumSaleQty,
+                'remaining' => $sumRemaining,
+                'sold' => $sumSold,
+            ],
+            'items' => $items,
+        ]);
+    }
 }
