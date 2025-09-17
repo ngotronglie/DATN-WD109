@@ -146,19 +146,12 @@
                             </div>
 
                             <!-- Địa chỉ -->
-                            <div class="mb-3">
-
-                                <label for="address_detail" class="form-label">Địa chỉ (số nhà, tên đường) <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="address_detail" name="address_detail" required 
-                                       placeholder="Nhập số nhà, tên đường">
-                                <div class="invalid-feedback" id="address_detail-error"></div>
-                            </div>
+                     
                             
                             <div class="mb-3">
                                 <label for="province" class="form-label">Tỉnh/Thành phố <span class="text-danger">*</span></label>
                                 <select id="province" name="province" class="form-select" required>
                                     <option value="">-- Chọn tỉnh/thành phố --</option>
-
                                     @foreach($provinces as $province)
                                     <option value="{{ $province->ten_tinh }}" data-id="{{ $province->id }}">
                                         {{ $province->ten_tinh }}
@@ -184,7 +177,14 @@
                                 <div class="invalid-feedback" id="ward-error"></div>
                             </div>
 
-                            <!-- Ghi chú -->
+                            <div class="mb-3">
+
+                            <label for="address_detail" class="form-label">Địa chỉ (số nhà, tên đường) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="address_detail" name="address_detail" required 
+                                placeholder="Nhập số nhà, tên đường">
+                            <div class="invalid-feedback" id="address_detail-error"></div>
+                            </div>
+<!-- Ghi chú -->
                             <div class="mb-3">
 
                                 <label for="note" class="form-label">Ghi chú</label>
@@ -309,6 +309,25 @@
     const districtSelect = document.getElementById('district');
     const wardSelect = document.getElementById('ward');
 
+    async function ensureProvincesLoaded() {
+        // If provinces are already rendered by server, skip
+        try {
+            const res = await fetch('/address/provinces');
+            const data = await res.json();
+            provinceSelect.innerHTML = '<option value="">-- Chọn tỉnh/thành phố --</option>';
+            data.forEach(function(p){
+                provinceSelect.innerHTML += `<option value="${p.ten_tinh}" data-id="${p.id}">${p.ten_tinh}</option>`;
+            });
+            return data;
+        } catch (_) {
+            return [];
+        }
+    }
+
+    // Track requests to avoid race conditions when user changes fast
+    let districtLoadSeq = 0;
+    let wardLoadSeq = 0;
+
     // Khi chọn tỉnh/thành phố
     provinceSelect?.addEventListener('change', function() {
         const provinceId = this.options[this.selectedIndex]?.getAttribute('data-id');
@@ -323,12 +342,14 @@
         
         // Load districts
         console.log('Loading districts for province:', provinceId);
+        const mySeq = ++districtLoadSeq;
         fetch(`/address/districts/${provinceId}`)
             .then(res => {
                 console.log('Districts response status:', res.status);
                 return res.json();
             })
             .then(data => {
+                if (mySeq !== districtLoadSeq) return; // ignore outdated
                 console.log('Districts data received:', data);
                 districtSelect.disabled = false;
                 data.forEach(function(district) {
@@ -353,12 +374,14 @@
         
         // Load wards
         console.log('Loading wards for district:', districtId);
+        const myWardSeq = ++wardLoadSeq;
         fetch(`/address/wards/${districtId}`)
             .then(res => {
                 console.log('Wards response status:', res.status);
                 return res.json();
             })
             .then(data => {
+                if (myWardSeq !== wardLoadSeq) return; // ignore outdated
                 console.log('Wards data received:', data);
                 wardSelect.disabled = false;
                 data.forEach(function(ward) {
@@ -636,6 +659,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', async function() {
+        await ensureProvincesLoaded();
         try {
             const res = await fetch('/api/cart');
             const data = await res.json();
@@ -655,6 +679,45 @@
         // Init voucher select list
         initVoucherSelect();
 
+        // Helpers to load address levels programmatically (for prefilling)
+        async function loadDistrictsByProvinceId(provinceId) {
+            districtSelect.innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
+            wardSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
+            districtSelect.disabled = true;
+            wardSelect.disabled = true;
+            if (!provinceId) return [];
+            try {
+                const res = await fetch(`/address/districts/${provinceId}`);
+                const data = await res.json();
+                districtSelect.disabled = false;
+                data.forEach(function(district) {
+                    districtSelect.innerHTML += `<option value="${district.ten_quan_huyen}" data-id="${district.id}">${district.ten_quan_huyen}</option>`;
+                });
+                return data;
+            } catch (_) {
+                districtSelect.innerHTML = '<option value="">-- Lỗi tải dữ liệu --</option>';
+                return [];
+            }
+        }
+
+        async function loadWardsByDistrictId(districtId) {
+            wardSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
+            wardSelect.disabled = true;
+            if (!districtId) return [];
+            try {
+                const res = await fetch(`/address/wards/${districtId}`);
+                const data = await res.json();
+                wardSelect.disabled = false;
+                data.forEach(function(ward) {
+                    wardSelect.innerHTML += `<option value="${ward.ten_phuong_xa}">${ward.ten_phuong_xa}</option>`;
+                });
+                return data;
+            } catch (_) {
+                wardSelect.innerHTML = '<option value="">-- Lỗi tải dữ liệu --</option>';
+                return [];
+            }
+        }
+
         // Lấy thông tin user và fill vào form nếu có
         try {
             const userRes = await fetch('/api/user', {
@@ -666,9 +729,48 @@
                 document.getElementById('phone').value = userData.user.phone || '';
                 document.getElementById('email').value = userData.user.email || '';
                 document.getElementById('address_detail').value = userData.user.street || '';
-                document.getElementById('ward').value = userData.user.ward || '';
-                document.getElementById('district').value = userData.user.district || '';
-                document.getElementById('province').value = userData.user.city || '';
+                const savedProvinceName = userData.user.city || '';
+                const savedDistrictName = userData.user.district || '';
+                const savedWardName = userData.user.ward || '';
+
+                // Prefill province by matching option text
+                if (savedProvinceName) {
+                    let selectedProvinceOption = null;
+                    for (const opt of provinceSelect.options) {
+                        if ((opt.textContent || '').trim() === savedProvinceName.trim()) {
+                            selectedProvinceOption = opt;
+                            break;
+                        }
+                    }
+                    if (selectedProvinceOption) {
+                        provinceSelect.value = selectedProvinceOption.value;
+                        const provinceId = selectedProvinceOption.getAttribute('data-id');
+                        // Load districts and then wards based on saved values
+                        const districts = await loadDistrictsByProvinceId(provinceId);
+                        if (savedDistrictName) {
+                            let selectedDistrictOption = null;
+                            for (const opt of districtSelect.options) {
+                                if ((opt.textContent || '').trim() === savedDistrictName.trim()) {
+                                    selectedDistrictOption = opt;
+                                    break;
+                                }
+                            }
+                            if (selectedDistrictOption) {
+                                districtSelect.value = selectedDistrictOption.value;
+                                const districtId = selectedDistrictOption.getAttribute('data-id');
+                                await loadWardsByDistrictId(districtId);
+                                if (savedWardName) {
+                                    for (const opt of wardSelect.options) {
+                                        if ((opt.textContent || '').trim() === savedWardName.trim()) {
+                                            wardSelect.value = opt.value;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         } catch (e) {}
     });

@@ -750,6 +750,21 @@ class ClientController extends Controller
         }
         return response()->json(['success' => true, 'data' => $result]);
     }
+
+    public function getProvinces()
+    {
+        if (!Schema::hasTable('tinhthanh')) {
+            return response()->json([]);
+        }
+        // Chỉ trả các tỉnh/thành còn hiệu lực có dữ liệu quận/huyện
+        $provinces = DB::table('tinhthanh as t')
+            ->join('devvn_quanhuyen as qh', 'qh.matp', '=', 't.ma_tinh')
+            ->select('t.id', 't.ten_tinh')
+            ->distinct()
+            ->orderBy('t.ten_tinh')
+            ->get();
+        return response()->json($provinces);
+    }
     public function getDistricts($provinceId)
     {
         if (!Schema::hasTable('devvn_quanhuyen') || !Schema::hasTable('tinhthanh')) {
@@ -764,7 +779,7 @@ class ClientController extends Controller
         
         $districts = DB::table('devvn_quanhuyen')
             ->where('matp', $province->ma_tinh)
-            ->get(['maqh as id', 'name as ten_quan_huyen']);
+            ->get(['id', 'name as ten_quan_huyen']);
         return response()->json($districts);
     }
 
@@ -777,6 +792,7 @@ class ClientController extends Controller
         // Lấy maqh từ bảng devvn_quanhuyen dựa trên districtId
         $district = DB::table('devvn_quanhuyen')
             ->where('id', $districtId)
+              ->orWhere('maqh', $districtId)
             ->first();
             
         if (!$district) {
