@@ -8,6 +8,7 @@
                 <div class="tab-content">
                     <!-- popular-product start -->
                     <div id="popular-product" class="tab-pane active show">
+
                         <div class="row">
                             @foreach ($products as $product)
                             <!-- product-item start -->
@@ -49,12 +50,21 @@
                                                 </a>
                                             </li>
                                         </ul>
+
                                     </div>
                                 </div>
+                                @endforeach
+
                             </div>
-                            @endforeach
+
+                            <!-- Nút phải -->
+                            <button class="scroll-btn right" onclick="scrollProducts(1)">
+                                <i class="zmdi zmdi-chevron-right"></i>
+                            </button>
                         </div>
                     </div>
+
+
                     <!-- Kết thúc sản phẩm phổ biến -->
                 </div>
             </div>
@@ -64,6 +74,168 @@
 <!-- PRODUCT TAB SECTION END -->
 
 <style>
+    .product-carousel-wrapper {
+        position: relative;
+    }
+
+    .scroll-btn {
+        position: absolute;
+        top: 40%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .scroll-btn:hover {
+        background: #007bff;
+        color: white;
+    }
+
+    .scroll-btn.left {
+        left: -20px;
+    }
+
+    .scroll-btn.right {
+        right: -20px;
+    }
+
+    /* ==== PRODUCT TAB SECTION ==== */
+    /* Thanh scroll ngang cho sản phẩm */
+.product-scroll {
+    -ms-overflow-style: none;  /* IE, Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+
+    /* Ẩn thanh cuộn trên trình duyệt */
+.product-scroll::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+    .product-scroll::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 10px;
+    }
+
+    .product-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    /* Card sản phẩm để không co giãn */
+    .product-card {
+        width: 220px;
+        /* fix chiều rộng 1 sản phẩm */
+    }
+
+    .product-tab-section {
+        background: #f9f9f9;
+    }
+
+    .product-item {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .product-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Hình ảnh sản phẩm */
+    .product-img img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+    }
+
+    .product-item:hover .product-img img {
+        transform: scale(1.05);
+    }
+
+    /* Thông tin sản phẩm */
+    .product-info {
+        margin-top: 15px;
+    }
+
+    .product-title a {
+        font-size: 15px;
+        font-weight: 600;
+        color: #333;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .product-title a:hover {
+        color: #007bff;
+    }
+
+    .product-views {
+        font-size: 13px;
+        color: #888;
+    }
+
+    /* Giá sản phẩm */
+    .pro-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: #000000ff;
+    }
+
+    .pro-price-sale {
+        font-size: 14px;
+        font-weight: 500;
+        color: #dc3545;
+    }
+
+    /* Nút hành động */
+    .action-button {
+        margin-top: 10px;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .action-button li a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #f1f1f1;
+        color: #333;
+        font-size: 18px;
+        transition: all 0.3s ease;
+    }
+
+    .action-button li a:hover {
+        background: #007bff;
+        color: #fff;
+    }
+
+    .action-button li a i {
+        line-height: 1;
+    }
+
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -185,6 +357,15 @@
 </style>
 
 <script>
+    function scrollProducts(direction) {
+        const container = document.querySelector('.product-scroll');
+        const scrollAmount = 250; // số px cuộn mỗi lần (1-2 sản phẩm)
+        container.scrollBy({
+            left: direction * scrollAmount,
+            behavior: 'smooth'
+        });
+    }
+
     // Cache cho trạng thái yêu thích
     const favoriteCache = new Map();
 

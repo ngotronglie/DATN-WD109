@@ -280,6 +280,30 @@
 
 @endsection
 
+<style>
+/* Khung ảnh */
+.product-img {
+    width: 100%;
+    height: 250px; /* chỉnh chiều cao mong muốn */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+/* Ảnh bên trong khung */
+.product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover !important; /* bắt buộc cắt ảnh đều */
+    display: block;
+}
+
+
+</style>
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
