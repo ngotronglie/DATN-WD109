@@ -112,8 +112,10 @@
                                                 <th width="12%">Giá gốc</th>
                                                 <th width="15%">Giá Flash Sale <span class="text-danger">*</span></th>
                                                 <th width="18%">Số lượng <span class="text-danger">*</span></th>
-                                                <th width="12%">Trạng thái</th>
+                                                <th width="12%">Hoạt động</th>
+
                                                 <th width="12%">Tiết kiệm</th>
+
                                                 <th width="12%">Thao tác</th>
                                             </tr>
                                         </thead>

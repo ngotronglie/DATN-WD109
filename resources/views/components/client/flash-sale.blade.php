@@ -63,14 +63,6 @@
                                             <span class="original-price">₫{{ number_format($flashProduct->original_price, 0, ',', '.') }}</span>
                                         </div>
                                         
-                                        {{-- Progress Bar --}}
-                                        @php
-                                            $soldPercentage = (($flashProduct->initial_stock - $flashProduct->remaining_stock) / $flashProduct->initial_stock) * 100;
-                                        @endphp
-                                        <div class="stock-bar">
-                                            <div class="stock-progress" style="width: {{ $soldPercentage }}%"></div>
-                                        </div>
-                                        <div class="stock-info">🔥 {{ $flashProduct->initial_stock - $flashProduct->remaining_stock }} đã mua</div>
                                     </div>
                                 </a>
                             </div>
@@ -229,25 +221,6 @@
     display: block;
 }
 
-.stock-bar {
-    height: 2px;
-    background: #f5f5f5;
-    border-radius: 1px;
-    overflow: hidden;
-    margin-bottom: 2px;
-}
-
-.stock-progress {
-    height: 100%;
-    background: linear-gradient(90deg, #ee4d2d, #f05d40);
-    transition: width 0.3s ease;
-}
-
-.stock-info {
-    font-size: 6.5px;
-    color: #757575;
-    text-align: center;
-}
 
 /* Responsive */
 @media (max-width: 768px) {

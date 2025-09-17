@@ -29,9 +29,6 @@
                         <a href="{{ route('admin.flash-sales.create') }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus"></i> Tạo Flash Sale mới
                         </a>
-                        <a href="{{ route('admin.flash-sales.statistics') }}" class="btn btn-info btn-sm">
-                            <i class="fas fa-chart-bar"></i> Thống kê
-                        </a>
                     </div>
                 </div>
                 <div class="card-body">

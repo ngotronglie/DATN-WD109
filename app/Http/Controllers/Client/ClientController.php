@@ -12,7 +12,6 @@ use App\Models\Capacity;
 use App\Models\ProductVariant;
 use App\Models\Voucher;
 use App\Models\FlashSale;
-use App\Models\FlashSaleProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -175,14 +174,7 @@ class ClientController extends Controller
         $colors = Color::all();
         $capacities = Capacity::all();
         $categories = \App\Models\Categories::with('children')->whereNull('Parent_id')->get();
-        // Lấy bình luận sản phẩm
-        $comments = $product->comments()
-            ->with('user', 'replies.user')
-            ->whereNull('parent_id')
-            ->latest()
-            ->get();
-            
-        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories', 'comments'));
+        return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories'));
     }
 
     public function flashSaleProductDetail($slug)
@@ -224,32 +216,6 @@ class ClientController extends Controller
         $capacities = Capacity::all();
         $categories = \App\Models\Categories::with('children')->whereNull('Parent_id')->get();
         
-        // Lấy sản phẩm liên quan cùng danh mục
-        $relatedProducts = Product::where('categories_id', $product->categories_id)
-            ->where('id', '!=', $product->id)
-            ->where('is_active', 1)
-            ->with(['variants' => function($query) {
-                $query->where('quantity', '>', 0);
-            }])
-            ->inRandomOrder()
-            ->limit(8)
-            ->get();
-            
-        // Lấy sản phẩm flash sale khác
-        $otherFlashSaleProducts = FlashSaleProduct::whereHas('flashSale', function($query) {
-                $query->where('status', 1)
-                    ->where('start_time', '<=', now())
-                    ->where('end_time', '>=', now());
-            })
-            ->whereHas('productVariant.product', function($query) use ($product) {
-                $query->where('id', '!=', $product->id)
-                    ->where('is_active', 1);
-            })
-            ->with(['productVariant.product.variants', 'flashSale'])
-            ->inRandomOrder()
-            ->limit(6)
-            ->get();
-        
         return view('layouts.user.flash-sale-product-detail', compact(
             'product', 
             'variants', 
@@ -257,9 +223,7 @@ class ClientController extends Controller
             'capacities', 
             'categories',
             'flashSale',
-            'flashSaleProduct',
-            'relatedProducts',
-            'otherFlashSaleProducts'
+            'flashSaleProduct'
         ));
     }
 
