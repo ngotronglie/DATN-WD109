@@ -1,9 +1,14 @@
 @extends('index.clientdashboard')
 
 @section('content')
+
 <div class="container py-5">
     <div class="card shadow p-4 border-0 rounded-4">
-        <h4 class="mb-4 fw-bold text-primary">Chi tiết đơn hàng: <span class="text-dark">{{ $order->order_code }}</span></h4>
+<div class="d-flex align-items-center mb-4">
+    <h4 class="fw-bold text-primary mb-0">Chi tiết đơn hàng:</h4>
+    <span class="ms-2 fs-3 fw-bold text-dark">{{ $order->order_code }}</span>
+</div>
+
 
         @php
         $statusLabels = [

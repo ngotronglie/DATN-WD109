@@ -2,159 +2,285 @@
 
 @section('content')
 
-<!-- BREADCRUMBS SETCTION START -->
-<!-- BREADCRUMBS SETCTION START -->
-<div class="breadcrumbs section plr-200 mb-80" style="margin-top: 15px;">
-    <div class="breadcrumbs overlay-bg">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="breadcrumbs-inner">
-                        <ul class="d-flex align-items-center gap-2">
-                            <li><a href="{{ route('home') }}">Trang chủ</a></li>
-                            <li><span class="text-muted">/</span></li>
-                            <li>Giỏ hàng</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- BREADCRUMBS / HEADER -->
+<div class="text-center mb-5">
+    <h2 class="fw-bold text-danger" style="font-size:2.5rem;">🛒 Giỏ hàng của bạn</h2>
+    <p class="text-muted">Kiểm tra sản phẩm và thông tin giao hàng trước khi đặt</p>
 </div>
-<!-- Tiêu đề Giỏ hàng ở giữa -->
-<div class="text-center mb-4">
-    <h2 class="fw-bold" style="font-size: 2.2rem; color: #dc3545;">🛒 Giỏ hàng</h2>
+<!-- STEP TABS -->
+<div class="checkout-steps mb-4">
+    <ul class="nav justify-content-between text-center">
+        <li class="flex-fill">
+            <a class="step-item active" href="#shopping-cart" data-bs-toggle="tab">
+                <div class="step-number">01</div>
+                <div class="step-label">Shopping cart</div>
+            </a>
+        </li>
+        <li class="flex-fill">
+            <a class="step-item" href="#checkout" data-bs-toggle="tab">
+                <div class="step-number">02</div>
+                <div class="step-label">Checkout</div>
+            </a>
+        </li>
+        <li class="flex-fill">
+            <a class="step-item" href="#order-complete" data-bs-toggle="tab">
+                <div class="step-number">03</div>
+                <div class="step-label">Order complete</div>
+            </a>
+        </li>
+    </ul>
 </div>
-<!-- BREADCRUMBS SETCTION END -->
 
-<!-- Start page content -->
+<!-- PAGE CONTENT -->
 <section id="page-content" class="page-wrapper section">
     <div class="container">
-        <div class="row">
-            <!-- Cart Table -->
-            <div class="col-lg-9 mb-4">
-                <div class="card">
-                    <div class="card-header bg-dark text-white">Giỏ hàng</div>
+        <div class="row gx-4 gy-4">
+
+            <!-- CART TABLE -->
+            <div class="col-lg-8">
+                <div class="card shadow border-0 rounded-4">
+                    <!-- Header -->
+                    <div class="card-header bg-gradient text-white fw-bold rounded-top-4"
+                        style="background: linear-gradient(90deg, #343a40, #495057);">
+                        <i class="bi bi-cart-check me-2"></i> Chi tiết giỏ hàng
+                    </div>
+
                     <div class="card-body p-0">
-                        <table class="table mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Sản phẩm</th>
-                                    <th>màu</th>
-                                    <th>dung lượng</th>
-                                    <th>Giá</th>
-                                    <th>Số lượng</th>
-                                    <th>Tổng</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="cart-table-body">
-                                <!-- Dữ liệu sẽ được render bằng JS -->
-                            </tbody>
-                        </table>
-                        <!-- Tổng tiền và voucher -->
-                        <div class="cart-summary mt-3 p-3 border rounded">
-                            <div class="d-flex align-items-center mb-2">
-                                <strong class="me-2">Tổng tiền:</strong>
-                                <span id="cart-total" style="font-size:1.2em;color:#d9534f;font-weight:600;">0đ</span>
+                        <!-- Bảng giỏ hàng -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-center">
+                                    <tr>
+                                        <th class="text-start">Sản phẩm</th>
+                                        <th>Màu</th>
+                                        <th>Dung lượng</th>
+                                        <th>Giá</th>
+                                        <th>Số lượng</th>
+                                        <th>Tổng</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart-table-body">
+                                    <!-- Render dữ liệu JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Tóm tắt giỏ hàng -->
+                        <div class="cart-summary mt-3 p-3 bg-light rounded-4 shadow-sm">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><i class="bi bi-cash-coin me-2 text-success"></i><strong>Tổng tiền:</strong></span>
+                                <span id="cart-total" class="text-danger fw-semibold">0đ</span>
                             </div>
-                            <div class="d-flex align-items-center mt-2">
-                                <strong class="me-2">Phí ship:</strong>
-                                <span id="cart-shipping" style="color:#ff9800;font-weight:600;">0đ</span>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><i class="bi bi-truck me-2 text-warning"></i><strong>Phí ship:</strong></span>
+                                <span id="cart-shipping" class="text-warning fw-semibold">0đ</span>
                             </div>
-                            <div class="voucher-box p-2 rounded" id="voucher-box" style="background:#f8f9fa;">
-                                <div class="input-group mb-2">
-                                    <input type="text" class="form-control" id="voucher-input" placeholder="Nhập mã giảm giá">
-                                    <button class="btn btn-success" type="button" id="apply-voucher-btn">Áp dụng</button>
+
+                            <!-- Mã giảm giá -->
+                            <!-- Áp mã giảm giá -->
+                            <div class="voucher-box mb-3" style="max-width: 250px;">
+                                <label for="voucher-input" class="form-label fw-semibold">
+                                    <i class="bi bi-ticket-perforated text-danger"></i> Mã giảm giá
+                                </label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control rounded-3 pe-5" id="voucher-input" placeholder="Nhập mã">
+                                    <button type="button" id="apply-voucher-btn"
+                                        class="btn btn-success btn-apply-voucher">
+                                        Áp dụng
+                                    </button>
                                 </div>
-                                <div id="voucher-message" class="small"></div>
+                                <small id="voucher-message" class="text-success"></small>
                             </div>
-                            <div class="d-flex align-items-center mt-2" id="discount-row" style="display:none;">
-                                <strong class="me-2">Giảm giá:</strong>
-                                <span id="cart-discount" style="color:#28a745;font-weight:600;">0đ</span>
+
+
+
+                            <div class="d-flex justify-content-between mb-2" id="discount-row" style="display:none;">
+                                <span><i class="bi bi-percent me-2 text-success"></i><strong>Giảm giá:</strong></span>
+                                <span id="cart-discount" class="text-success fw-semibold">0đ</span>
                             </div>
-                            <div class="d-flex align-items-center mt-2">
-                                <strong class="me-2">Thành tiền:</strong>
-                                <span id="cart-final" style="font-size:1.2em;color:#007bff;font-weight:600;">0đ</span>
+
+                            <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                                <span><i class="bi bi-currency-exchange me-2 text-primary"></i><strong>Thành tiền:</strong></span>
+                                <span id="cart-final" class="text-primary fw-bold fs-5">0đ</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- Order Info & Payment -->
-            <div class="col-lg-3 mb-4">
-                <div class="card">
-                    <div class="card-header bg-dark text-white">Thông tin đơn hàng</div>
+
+
+            <!-- ORDER INFO & PAYMENT -->
+            <div class="col-lg-4">
+                <div class="card shadow border-0 rounded-4">
+                    <!-- Header -->
+                    <div class="card-header bg-gradient text-white fw-bold rounded-top-4"
+                        style="background: linear-gradient(90deg, #198754, #20c997);">
+                        <i class="bi bi-truck me-2"></i> Thông tin giao hàng
+                    </div>
+
                     <div class="card-body">
                         <form>
+                            <!-- Họ và tên -->
                             <div class="mb-3">
-                                <label for="fullname" class="form-label">Họ và tên</label>
-                                <input type="text" class="form-control" id="fullname" required>
+                                <label for="fullname" class="form-label"><i class="bi bi-person"></i> Họ và tên</label>
+                                <input type="text" class="form-control rounded-3" id="fullname" placeholder="Nhập họ tên" required>
                             </div>
+
+                            <!-- SĐT -->
                             <div class="mb-3">
-                                <label for="phone" class="form-label">Số điện thoại</label>
-                                <input type="text" class="form-control" id="phone" required>
+                                <label for="phone" class="form-label"><i class="bi bi-telephone"></i> Số điện thoại</label>
+                                <input type="text" class="form-control rounded-3" id="phone" placeholder="Nhập số điện thoại" required>
                             </div>
+
+                            <!-- Email -->
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email nhận đơn hàng</label>
-                                <input type="text" class="form-control" id="email" required>
+                                <label for="email" class="form-label"><i class="bi bi-envelope"></i> Email</label>
+                                <input type="email" class="form-control rounded-3" id="email" placeholder="Nhập email" required>
                             </div>
+
+                            <!-- Địa chỉ -->
                             <div class="mb-3">
-                                <label for="address_detail" class="form-label">Địa chỉ (số nhà, tên đường)</label>
-                                <input type="text" class="form-control" id="address_detail" required>
+                                <label for="address_detail" class="form-label"><i class="bi bi-geo-alt"></i> Địa chỉ</label>
+                                <input type="text" class="form-control rounded-3" id="address_detail" placeholder="Số nhà, đường..." required>
                             </div>
+
+                            <!-- Phường/Xã -->
                             <div class="mb-3">
-                                <label for="ward" class="form-label">Phường/Xã</label>
-                                <select id="ward" class="form-select" required>
+                                <label for="ward" class="form-label"><i class="bi bi-building"></i> Phường/Xã</label>
+                                <select id="ward" class="form-select rounded-3" required>
                                     <option value="">-- Chọn phường/xã --</option>
                                 </select>
                             </div>
-                            <div class="mb-3">
-                                <label for="district" class="form-label">Quận/Huyện</label>
-                                <input type="text" id="district" class="form-control" required placeholder="Nhập quận/huyện">
-                            </div>
 
+                            <!-- Tỉnh/Thành phố -->
                             <div class="mb-3">
-                                <label for="province" class="form-label">Tỉnh/Thành phố</label>
-                                <select id="province" class="form-select" required>
+                                <label for="province" class="form-label"><i class="bi bi-map"></i> Tỉnh/Thành phố</label>
+                                <select id="province" class="form-select rounded-3" required>
                                     <option value="">-- Chọn tỉnh --</option>
                                     @foreach($provinces as $province)
-                                    <option value="{{ $province->ten_tinh }}" data-id="{{ $province->id }}">{{ $province->ten_tinh }}</option>
+                                    <option value="{{ $province->ten_tinh }}" data-id="{{ $province->id }}">
+                                        {{ $province->ten_tinh }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
 
+                            <!-- Ghi chú -->
                             <div class="mb-3">
-                                <label for="note" class="form-label">Ghi chú</label>
-                                <input type="text" class="form-control" id="note">
+                                <label for="note" class="form-label"><i class="bi bi-pencil-square"></i> Ghi chú</label>
+                                <textarea class="form-control rounded-3" id="note" rows="2" placeholder="Ghi chú thêm (nếu có)"></textarea>
                             </div>
+
+                            <!-- Phương thức thanh toán -->
                             <div class="mb-3">
-                                <label class="form-label">Phương thức thanh toán</label>
-                                <div>
-                                    <div class="form-check">
+                                <label class="form-label"><i class="bi bi-credit-card"></i> Phương thức thanh toán</label>
+                                <div class="p-2 bg-light rounded-3 border">
+                                    <div class="form-check mb-2">
                                         <input class="form-check-input" type="radio" name="payment" id="cod" value="cod" checked>
-                                        <label class="form-check-label" for="cod">Thanh toán khi nhận hàng (COD)</label>
+                                        <label class="form-check-label fw-semibold" for="cod">
+                                            <i class="bi bi-cash-coin text-success"></i> Thanh toán khi nhận hàng (COD)
+                                        </label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="payment" id="vnpay" value="vnpay">
-                                        <label class="form-check-label" for="vnpay">Thanh toán online VNPAY</label>
+                                        <label class="form-check-label fw-semibold" for="vnpay">
+                                            <i class="bi bi-bank text-primary"></i> Thanh toán qua VNPAY
+                                        </label>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Thêm nút Đặt hàng ở dưới bảng giỏ hàng -->
-                            <div class="text-end mt-3">
-                                <button class="btn btn-lg btn-success" id="go-to-checkout" type="button">Đặt hàng</button>
+
+                            <!-- Nút đặt hàng -->
+                            <div class="d-grid mt-4">
+                                <button class="btn btn-success btn-lg rounded-3 shadow-sm" id="go-to-checkout" type="button">
+                                    <i class="bi bi-cart-check me-2"></i> Đặt hàng ngay
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
+
+
         </div>
     </div>
 </section>
+@endsection
+<style>
+    .btn-apply-voucher {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    height: 28px;
+    line-height: 1;
+}
+    .checkout-steps ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+    }
+
+    .checkout-steps .step-item {
+        display: block;
+        text-decoration: none;
+        color: #666;
+        position: relative;
+        padding: 10px;
+    }
+
+    .checkout-steps .step-number {
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        margin: 0 auto 8px;
+        border-radius: 50%;
+        background: #ddd;
+        font-weight: bold;
+        color: #fff;
+        transition: all 0.3s;
+    }
+
+    .checkout-steps .step-label {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .checkout-steps .step-item.active .step-number {
+        background: #28a745;
+        /* xanh lá */
+    }
+
+    .checkout-steps .step-item.active .step-label {
+        color: #28a745;
+    }
+
+    .checkout-steps .step-item::after {
+        content: "";
+        position: absolute;
+        top: 20px;
+        right: -50%;
+        width: 100%;
+        height: 3px;
+        background: #ddd;
+        z-index: -1;
+    }
+
+    .checkout-steps li:last-child .step-item::after {
+        display: none;
+    }
+
+    .checkout-steps .step-item.active::after {
+        background: #28a745;
+    }
+</style>
 <!-- End page content -->
 
-@endsection
 
 @section('script-client')
 <script>
@@ -178,7 +304,8 @@
     let cartData = [];
 
     function formatCurrency(num) {
-        return num.toLocaleString('vi-VN') + 'đ';
+        const number = Math.floor(Number(num)) || 0;
+        return number.toLocaleString('vi-VN') + 'đ';
     }
 
     function getCartTotal(cart) {
@@ -438,54 +565,7 @@
         window.location.href = '/checkout';
     };
 </script>
-<style>
-    /* Làm chữ trong các input rõ ràng, to, đậm */
-    #phone,
-    #voucher-input,
-    #cart-total,
-    #cart-shipping,
-    #cart-final,
-    #cart-discount {
-        font-size: 1.1rem !important;
-        font-weight: 600;
-        font-style: normal;
-        font-family: 'Arial', sans-serif;
-    }
 
-    .qty-btn-cart {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        border: none;
-        background: #eee;
-        color: #333;
-        font-size: 1.1em;
-        font-weight: bold;
-        margin: 0 2px;
-        padding: 0;
-        transition: background 0.2s;
-    }
-
-    .qty-btn-cart:hover {
-        background: #ccc;
-    }
-
-    .cart-qty-value {
-        display: inline-block;
-        min-width: 24px;
-        text-align: center;
-        font-weight: 500;
-    }
-
-    .cart-summary {
-        background: #fff;
-    }
-
-    .voucher-box {
-        border: 1.5px dashed #ccc;
-        transition: border 0.2s;
-    }
-</style>
 @endsection
 
 @push('head')

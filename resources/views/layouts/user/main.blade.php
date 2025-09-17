@@ -127,6 +127,147 @@
     <!-- END PAGE CONTENT -->
 @endsection
 
+<style>
+    /* ====== GLOBAL ====== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9f9f9;
+    color: #333;
+    line-height: 1.6;
+}
+
+.section {
+    padding: 60px 0;
+}
+
+/* ====== CATEGORY SLIDER ====== */
+.category-slider-section {
+    background: #fff;
+    padding: 30px 0;
+}
+
+.active-category-slider {
+    display: flex;
+    justify-content: center; /* căn giữa */
+    gap: 12px; /* khoảng cách đều nhau */
+    flex-wrap: wrap; /* nếu nhiều sẽ xuống dòng */
+}
+
+.category-slide-item {
+    flex: 0 0 auto;
+    width: 150px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px 10px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.category-slide-item img {
+    max-height: 60px;
+    object-fit: contain;
+    margin-bottom: 10px;
+    transition: transform 0.3s;
+}
+
+.category-slide-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.category-slide-item:hover img {
+    transform: scale(1.08);
+}
+
+.category-slide-item .category-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+}
+
+/* ====== BLOG SECTION ====== */
+.blog-section-2 {
+    background: #fff;
+    padding: 60px 0;
+}
+
+.blog-item-2 {
+    background: #fafafa;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 30px;
+    transition: box-shadow 0.3s ease;
+}
+
+.blog-item-2:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.blog-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px 0 0 12px;
+    object-fit: cover;
+}
+
+.blog-desc {
+    padding: 20px;
+}
+
+.blog-title-2 a {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+    text-decoration: none;
+}
+
+.blog-title-2 a:hover {
+    color: #007bff;
+}
+
+/* ====== NEWSLETTER ====== */
+.newsletter-section {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: #fff;
+    border-radius: 16px;
+}
+
+.newsletter-info .newsletter-title {
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.subcribe form {
+    display: flex;
+    margin-top: 20px;
+}
+
+.subcribe input[type="text"] {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px 0 0 8px;
+    font-size: 15px;
+}
+
+.subcribe .submit-btn-2 {
+    padding: 12px 20px;
+    border: none;
+    background: #ffdd57;
+    color: #222;
+    border-radius: 0 8px 8px 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.subcribe .submit-btn-2:hover {
+    background: #ffc107;
+}
+
+</style>
 
 @section('script-client')
 <script>

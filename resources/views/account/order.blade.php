@@ -7,49 +7,58 @@
         <div class="col-md-4">
             <div class="card mb-4 text-center shadow-sm border-0 rounded-4">
                 <div class="card-body">
-                    <h5 class="mb-3 fw-bold">Tài khoản của tôi</h5>
+                    <h5 class="mb-3 fw-bold">👤 Tài khoản của tôi</h5>
                     <div class="mb-3">
                         @if(Auth::user()->avatar)
-                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="rounded-circle img-thumbnail" width="150" height="150" alt="Avatar">
+                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}"
+                            class="rounded-circle img-thumbnail shadow-sm"
+                            width="120" height="120" alt="Avatar">
                         @else
-                        <img src="{{ asset('img/default-avatar.png') }}" class="rounded-circle img-thumbnail" width="150" height="150" alt="Avatar">
+                        <img src="{{ asset('img/default-avatar.png') }}"
+                            class="rounded-circle img-thumbnail shadow-sm"
+                            width="120" height="120" alt="Avatar">
                         @endif
                     </div>
                     <p class="fw-semibold">{{ Auth::user()->name }}</p>
                     <hr>
                     <ul class="list-unstyled text-start">
                         <li class="mb-2">
-                            <a href="{{ route('account.edit') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.edit')) bg-light fw-bold @endif">
+                            <a href="{{ route('account.edit') }}"
+                                class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.edit')) bg-primary text-white fw-bold @endif">
                                 ⚙️ Thông tin cá nhân
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="{{ route('account.address_list') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.address_list')) bg-light fw-bold text-primary @endif">
-                                <i class="fa-solid fa-location-dot me-2"></i> Địa chỉ
+                            <a href="{{ route('account.address_list') }}"
+                                class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.address_list')) bg-primary text-white fw-bold @endif">
+                                📍 Địa chỉ
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="{{ route('account.order') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.order')) bg-light fw-bold text-primary @endif">
+                            <a href="{{ route('account.order') }}"
+                                class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.order')) bg-primary text-white fw-bold @endif">
                                 🛒 Đơn hàng
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="{{ route('password.change') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('password.change')) bg-light fw-bold @endif">
+                            <a href="{{ route('password.change') }}"
+                                class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('password.change')) bg-primary text-white fw-bold @endif">
                                 🔑 Đổi mật khẩu
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="d-block px-3 py-2 rounded text-decoration-none text-danger">
+                            <a href="{{ route('logout') }}"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                                class="d-block px-3 py-2 rounded text-decoration-none text-danger fw-bold">
                                 🔒 Đăng xuất
                             </a>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
                         </li>
                     </ul>
-
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
                 </div>
             </div>
         </div>
+
 
         <!-- Nội dung bên phải -->
         <div class="col-md-8">
@@ -104,9 +113,10 @@
                                 <tr class="text-center align-middle">
                                     <td>
                                         <a href="{{ route('user.orders.show', $order->id) }}"
-                                            class="text-decoration-underline text-primary fw-semibold">
+                                            class="badge bg-light text-dark px-3 py-2 rounded-pill text-decoration-none fw-bold shadow-sm">
                                             {{ $order->order_code }}
                                         </a>
+
                                     </td>
                                     <td>{{ $order->created_at->format('d/m/Y') }}</td>
                                     <td>
@@ -116,31 +126,34 @@
                                     </td>
                                     <td>
                                         @if ($order->return_requested)
-                                        <span class="text-warning fw-semibold">Đã yêu cầu</span>
+                                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Đã yêu cầu</span>
                                         @elseif ($order->status == 0)
-                                        <form action="{{ route('order.cancel', $order->id) }}" method="POST">
+                                        <form action="{{ route('order.cancel', $order->id) }}" method="POST" class="d-flex flex-column align-items-center gap-2">
                                             @csrf
-                                            <select name="reason_select" class="form-control reason-select" required>
-                                                <option value="">-- Chọn lý do --</option>
-                                                <option value="Đổi địa chỉ nhận hàng">Đổi địa chỉ nhận hàng</option>
-                                                <option value="Thời gian giao hàng quá lâu">Thời gian giao hàng quá lâu</option>
-                                                <option value="Không còn nhu cầu sử dụng">Không còn nhu cầu sử dụng</option>
-                                                <option value="Tìm được giá tốt hơn">Tìm được giá tốt hơn</option>
+                                            <select name="reason_select" class="form-select form-select-sm rounded-3 shadow-sm w-auto" required>
+                                                <option value="">-- Lý do --</option>
+                                                <option value="Đổi địa chỉ nhận hàng">Đổi địa chỉ</option>
+                                                <option value="Thời gian giao hàng quá lâu">Giao hàng chậm</option>
+                                                <option value="Không còn nhu cầu sử dụng">Không cần nữa</option>
+                                                <option value="Tìm được giá tốt hơn">Giá tốt hơn</option>
                                                 <option value="Khác">Khác</option>
                                             </select>
 
-                                            <input type="text" name="reason_input" class="form-control mt-2 reason-input" placeholder="Nhập lý do khác nếu chọn 'Khác'" style="display: none;">
+                                            <input type="text"
+                                                name="reason_input"
+                                                class="form-control form-control-sm rounded-3 shadow-sm reason-input w-auto"
+                                                placeholder="Nhập lý do khác..."
+                                                style="display: none;">
 
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                Hủy đơn
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill shadow-sm px-3">
+                                                <i class="fa-solid fa-ban me-1"></i> Hủy đơn
                                             </button>
-
                                         </form>
-
                                         @else
                                         <span class="text-muted fst-italic">Không thể thực hiện</span>
                                         @endif
                                     </td>
+
                                 </tr>
                                 @empty
                                 <tr>
