@@ -160,7 +160,7 @@
         <div class="product-tabs-container">
             <div class="tabs-navigation">
                 <button class="tab-btn active" onclick="switchTab('description')">Mô tả sản phẩm</button>
-                <button class="tab-btn" onclick="switchTab('reviews')">Đánh giá (0)</button>
+                <button class="tab-btn" onclick="switchTab('comments')">Bình luận ({{ $comments->count() ?? 0 }})</button>
             </div>
             
             <div class="tab-content">
@@ -170,9 +170,65 @@
                     </div>
                 </div>
                 
-                <div id="reviews-tab" class="tab-panel">
-                    <div class="product-reviews">
-                        <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+                <div id="comments-tab" class="tab-panel">
+                    <div class="product-comments p-4">
+                        @if(session('success'))
+                            <div class="alert alert-success">{{ session('success') }}</div>
+                        @endif
+                        
+                        @php $comments = $comments ?? collect(); @endphp
+                        
+                        @if($comments->count() > 0)
+                            @foreach($comments as $comment)
+                                <div class="comment-item mb-3 p-3 border rounded">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <strong>{{ $comment->user->name ?? 'Khách' }}</strong>
+                                        <span class="text-muted small">{{ $comment->created_at->diffForHumans() }}</span>
+                                    </div>
+                                    <div class="comment-content">
+                                        {{ $comment->content }}
+                                    </div>
+                                    
+                                    @if($comment->replies && $comment->replies->count() > 0)
+                                        <div class="replies mt-3 ms-4">
+                                            @foreach($comment->replies as $reply)
+                                                <div class="reply-item mb-2 p-2 border-start border-3 ps-3">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <strong class="small">{{ $reply->user->name ?? 'Khách' }}</strong>
+                                                        <span class="text-muted small">{{ $reply->created_at->diffForHumans() }}</span>
+                                                    </div>
+                                                    <div class="small">
+                                                        {{ $reply->content }}
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        @else
+                            <p class="text-muted">Chưa có bình luận nào cho sản phẩm này.</p>
+                        @endif
+                        
+                        @auth
+                            <div class="mt-4">
+                                <h6>Thêm bình luận</h6>
+                                <form method="POST" action="{{ route('product.comments.store', $product->id) }}" class="mt-3">
+                                    @csrf
+                                    <input type="hidden" name="flash_sale_id" value="{{ $flashSale->id }}">
+                                    <div class="form-group">
+                                        <textarea name="content" class="form-control" rows="3" placeholder="Nhập bình luận của bạn..." required></textarea>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button type="submit" class="btn btn-primary btn-sm">Gửi bình luận</button>
+                                    </div>
+                                </form>
+                            </div>
+                        @else
+                            <div class="alert alert-info mt-3">
+                                Vui lòng <a href="{{ route('login') }}">đăng nhập</a> để bình luận.
+                            </div>
+                        @endauth
                     </div>
                 </div>
             </div>
@@ -914,14 +970,39 @@ function decreaseQuantity() {
 
 // Tab switching
 function switchTab(tabName) {
-    // Remove active class from all tabs and panels
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+    // Ẩn tất cả các tab panel
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
     
-    // Add active class to clicked tab and corresponding panel
-    event.target.classList.add('active');
+    // Bỏ active tất cả các nút tab
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Hiển thị tab được chọn
     document.getElementById(tabName + '-tab').classList.add('active');
+    
+    // Active nút tab được chọn
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.getAttribute('onclick').includes(tabName)) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Cập nhật URL với hash
+    window.location.hash = tabName;
 }
+
+// Kiểm tra hash URL khi tải trang
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.hash) {
+        const tabName = window.location.hash.substring(1);
+        if (tabName === 'comments') {
+            switchTab('comments');
+        }
+    }
+});
 
 // Get variant data from server via AJAX
 function getVariantData(colorId, capacityId) {

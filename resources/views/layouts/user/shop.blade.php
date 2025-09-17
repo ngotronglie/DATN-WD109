@@ -239,52 +239,39 @@
                 
                             <!-- widget-product -->
                             <aside class="widget widget-product box-shadow">
-                                <h6 class="widget-title border-left mb-20">recent products</h6>
+                                <h6 class="widget-title border-left mb-20">Sản phẩm gần đây </h6>
+                                @foreach($products->take(4) as $product)
+                                    @php
+                                        $variant = $product->mainVariant;
+                                    @endphp
+                                    <div class="product-item">
+                                        <div class="product-img">
+                                            <a href="{{ route('shop.show', $product->id) }}">
+                                                @if($variant && $variant->image)
+                                                    <img src="{{ asset($variant->image) }}" alt="{{ $product->name }}" />
+                                                @else
+                                                    <span>Chưa có ảnh</span>
+                                                @endif
+                                            </a>
+                                        </div>
+                                        <div class="product-info">
+                                            <h6 class="product-title">
+                                                <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
+                                            </h6>
+                                            <h3 class="pro-price" style="font-size:14px; bold; font-weight:600;">
+    @if($variant)
+        {{ number_format($variant->price) }} VNĐ
+    @else
+        Chưa có giá
+    @endif
+</h3>
+
+                                        </div>
+                                    </div>
+                                @endforeach
                                 <!-- product-item start -->
-                                <div class="product-item">
-                                    <div class="product-img">
-                                        <a href="single-product.html">
-                                          <img src="{{asset('frontend/img/product/4.jpg')}}" alt="" />
-                                        </a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h6 class="product-title">
-                                            <a href="single-product.html">Product Name</a>
-                                        </h6>
-                                        <h3 class="pro-price">$ 869.00</h3>
-                                    </div>
-                                </div>
-                                <!-- product-item end -->
-                                <!-- product-item start -->
-                                <div class="product-item">
-                                    <div class="product-img">
-                                        <a href="single-product.html">
-                                          <img src="{{asset('frontend/img/product/8.jpg')}}" alt="" />
-                                        </a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h6 class="product-title">
-                                            <a href="single-product.html">Product Name</a>
-                                        </h6>
-                                        <h3 class="pro-price">$ 869.00</h3>
-                                    </div>
-                                </div>
-                                <!-- product-item end -->
-                                <!-- product-item start -->
-                                <div class="product-item">
-                                    <div class="product-img">
-                                        <a href="single-product.html">
-                                          <img src="{{asset('frontend/img/product/12.jpg')}}" alt="" />
-                                        </a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h6 class="product-title">
-                                            <a href="single-product.html">Product Name</a>
-                                        </h6>
-                                        <h3 class="pro-price">$ 869.00</h3>
-                                    </div>
-                                </div>
-                                <!-- product-item end -->
+                                
+                              
                             </aside>
                         </div>
                     </div>

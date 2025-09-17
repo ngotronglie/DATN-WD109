@@ -42,15 +42,44 @@
             @endif
         </td>
     </tr>
-    @if($refund->proof_image)
-    <tr>
-        <th>Ảnh chuyển khoản đã hoàn (admin)</th>
-        <td>
-            <img src="{{ asset('storage/' . $refund->proof_image) }}" width="150">
-        </td>
-    </tr>
-    @endif
+    @if(!$refund->refund_completed_at)
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Tải lên ảnh xác nhận đã hoàn (admin)</h5>
+        <form action="{{ route('admin.refunds.uploadProof', $refund->id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <input type="file" name="proof_image" id="proof_image" class="form-control" accept="image/*" required>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Tải lên</button>
+                </div>
+            </div>
+        </form>
+    </div>
+ </div>
+@endif
 </table>
+
+@if(!$refund->refund_completed_at)
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Tải lên ảnh xác nhận đã hoàn (admin)</h5>
+        <form action="{{ route('admin.refunds.uploadProof', $refund->id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <input type="file" name="proof_image" id="proof_image" class="form-control" accept="image/*" required>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Tải lên</button>
+                </div>
+            </div>
+        </form>
+    </div>
+ </div>
+@endif
 
 @php
     $order = $refund->order;

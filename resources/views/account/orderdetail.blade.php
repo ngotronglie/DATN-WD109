@@ -1,9 +1,14 @@
 @extends('index.clientdashboard')
 
 @section('content')
+
 <div class="container py-5">
     <div class="card shadow p-4 border-0 rounded-4">
-        <h4 class="mb-4 fw-bold text-primary">Chi tiết đơn hàng: <span class="text-dark">{{ $order->order_code }}</span></h4>
+<div class="d-flex align-items-center mb-4">
+    <h4 class="fw-bold text-primary mb-0">Chi tiết đơn hàng:</h4>
+    <span class="ms-2 fs-3 fw-bold text-dark">{{ $order->order_code }}</span>
+</div>
+
 
         @php
         $statusLabels = [
@@ -46,11 +51,17 @@
             <p class="mb-1"><strong>Ngày đặt:</strong> {{ $order->created_at->format('d/m/Y') }}</p>
             <p class="mb-0"><strong>Trạng thái:</strong> <span class="badge {{ $badgeClass }} px-3 py-1 rounded-pill">{{ $statusText }}</span></p>
         </div>
-
         @if (in_array($order->status, [0,1]))
         <form action="{{ route('user.orders.cancel', $order->id) }}" method="POST" class="mb-4">
             @csrf
             <button type="submit" class="btn btn-outline-danger rounded-pill" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">Hủy đơn</button>
+        </form>
+        @endif
+
+        @if ((int)$order->status === 6 && strtolower((string)$order->payment_method) === 'vnpay')
+        <form action="{{ route('user.orders.reorder', $order->id) }}" method="POST" class="mb-4">
+            @csrf
+            <button type="submit" class="btn btn-primary rounded-pill" onclick="return confirm('Thêm lại các sản phẩm vào giỏ hàng?')">Đặt lại hàng</button>
         </form>
         @endif
 

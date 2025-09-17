@@ -83,7 +83,7 @@ class CategoryController extends Controller
             $result = $this->categories->updateData($data, $id);
 
             if ($result) {
-                return redirect()->route('categories.index')->with('success', 'Cập nhật danh mục thành công');
+                return redirect()->route('admin.categories.index')->with('success', 'Cập nhật danh mục thành công');
             } else {
                 return redirect()->back()->withInput()->with('error', 'Cập nhật danh mục thất bại');
             }
@@ -103,7 +103,7 @@ class CategoryController extends Controller
             $result = $this->categories->deleteData($id);
 
             if ($result) {
-                return redirect()->route('categories.index')->with('success', 'Xóa danh mục thành công');
+                return redirect()->route('admin.categories.index')->with('success', 'Xóa danh mục thành công');
             } else {
                 return redirect()->back()->with('error', 'Xóa danh mục thất bại');
             }

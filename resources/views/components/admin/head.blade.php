@@ -30,4 +30,25 @@
      <!-- Theme Config js (Require in all Page) -->
      <script src="{{ asset('dashboard/assets/js/config.min.js') }}"></script>
 
+     <style>
+          /* Admin typography overrides */
+          :root {
+               --admin-font-family: sans-serif;
+          }
+
+          body {
+               font-family: var(--admin-font-family);
+               -webkit-font-smoothing: antialiased;
+               -moz-osx-font-smoothing: grayscale;
+          }
+
+          h1, h2, h3, h4, h5, h6, .card-title, .fw-semibold {
+               letter-spacing: 0.2px;
+          }
+
+          .text-muted {
+               color: #6b7280 !important; /* neutral-500 */
+          }
+     </style>
+
 </head>

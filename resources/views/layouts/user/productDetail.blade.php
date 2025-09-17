@@ -176,6 +176,7 @@
                                         <div class="alert alert-success">{{ session('success') }}</div>
                                     @endif
                                     <div class="mb-4">
+                                        @php $comments = $comments ?? collect(); @endphp
                                         @forelse($comments as $cmt)
                                             <div class="mb-3 p-2 border rounded">
                                                 <strong>{{ $cmt->user->name ?? 'Khách' }}</strong>

@@ -37,4 +37,68 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     @yield('styles')
+
+    <style>
+        /* Client typography overrides */
+        :root {
+            --client-font-family: sans-serif;
+        }
+
+        body {
+            font-family: var(--client-font-family);
+            font-size: 17px;
+            color: #111;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            letter-spacing: 0.2px;
+            color: #111;
+        }
+
+        /* Emphasize product texts in black */
+        .product-info h6.product-title a { color: #111; }
+        .product-info .pro-price, .product-info .pro-price-sale { color: #111; }
+        .product-info { font-size: 1rem; }
+
+        /* Header navigation links in black */
+        header .nav .nav-link {
+            color: #111 !important;
+        }
+        header .nav .nav-link:hover,
+        header .nav .nav-link:focus {
+            color: #000 !important;
+        }
+
+        /* Use SF Pro Display for product blocks if available */
+        .product-item,
+        .product-info,
+        .product-info h6.product-title a,
+        .product-info .pro-price,
+        .product-info .pro-price-sale,
+        .product-views {
+            font-family: "SF Pro Display", -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* Price styling */
+        .product-info .pro-price {
+            font-weight: 700;
+            font-size: 2.1rem;
+            color: #111;
+        }
+        .product-info .pro-price-sale {
+            font-weight: 500;
+            font-size: 2rem;
+            color: #6b7280;
+        }
+
+        /* Add to cart hover: orange */
+        .action-button a.add-to-cart:hover,
+        .action-button a.add-to-cart:hover i,
+        .action-button a[title="Add to cart"]:hover,
+        .action-button a[title="Add to cart"]:hover i {
+            color: #ff7a00 !important;
+        }
+    </style>
 </head>

@@ -54,6 +54,7 @@ Route::get('/blog/{slug}', [ClientController::class, 'post'])->name('post');
 
 Route::get('/account/order', [UserOrderController::class, 'index'])->name(name: 'account.order');
 Route::get('/account/order/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
+Route::post('/account/order/{id}/reorder', [UserOrderController::class, 'reorder'])->name('user.orders.reorder');
 Route::post('/order/{id}/return', [UserOrderController::class, 'returnOrder'])->name('order.return');
 Route::post('/refund', [UserOrderController::class, 'store'])->name('refund.store');
 
@@ -69,10 +70,29 @@ Route::put('/{id}/update', [AddressController::class, 'update'])->name('account.
 Route::delete('/{id}', [AddressController::class, 'delete'])->name('account.address.delete');
 Route::post('/{id}/set-default', [AddressController::class, 'setDefault'])->name('account.address.setDefault');
 
-Route::get('/address/wards/{province_id}', [AddressController::class, 'getWards']);
-
 Route::get('/address/districts/{provinceId}', [ClientController::class, 'getDistricts']);
-Route::get('/address/wards/{districtId}', [ClientController::class, 'getWards']);
+Route::get('/address/wards/{districtId}', function($districtId) {
+    try {
+        $district = \DB::table('devvn_quanhuyen')->where('id', $districtId)->first();
+        if (!$district) {
+            return response()->json([]);
+        }
+        
+        $wards = \DB::table('devvn_xaphuongthitran')
+            ->where('maqh', $district->maqh)
+            ->get(['xaid as id', 'name as ten_phuong_xa']);
+        return response()->json($wards);
+    } catch (Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+
+// Vouchers
+Route::get('/vouchers/active', [ClientController::class, 'getActiveVouchers'])->name('vouchers.active');
+
+// Old route for backward compatibility
+Route::get('/address/wards-by-province/{province_id}', [AddressController::class, 'getWards']);
+
 // Blog Detail Routes
 Route::prefix('blog-detail')->name('blog.detail.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('index');

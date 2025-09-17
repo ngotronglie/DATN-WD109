@@ -65,3 +65,87 @@
           </div>
       </div>
   </header>
+
+  <style>
+    /* ===== HEADER ===== */
+header {
+    position: sticky; /* header dính khi scroll */
+    top: 0;
+    z-index: 1000;
+    background: #fff;
+}
+
+/* Logo */
+.logo img {
+    height: 40px; /* logo cao hơn 1 chút */
+    transition: transform 0.3s ease;
+}
+.logo img:hover {
+    transform: scale(1.05);
+}
+
+/* Menu chính */
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+nav .nav-link {
+    color: #333;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 15px 20px;
+    transition: color 0.3s, border-bottom 0.3s;
+}
+nav .nav-link:hover {
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+}
+
+/* Avatar dropdown */
+.dropdown-toggle img {
+    border: 2px solid #eee;
+    transition: transform 0.2s ease;
+}
+.dropdown-toggle img:hover {
+    transform: scale(1.1);
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    border-radius: 10px;
+    padding: 0;
+    overflow: hidden;
+}
+.dropdown-menu .dropdown-item {
+    font-size: 15px;
+    transition: background 0.2s;
+}
+.dropdown-menu .dropdown-item:hover {
+    background: #f8f9fa;
+}
+
+/* Auth links */
+header .fs-5 {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+header .fs-5:hover {
+    color: #007bff;
+}
+
+/* Icon yêu thích & giỏ hàng */
+header a[title="Yêu thích"],
+header a[title="Giỏ hàng"] {
+    color: #333;
+    transition: color 0.3s;
+}
+header a[title="Yêu thích"]:hover {
+    color: red;
+}
+header a[title="Giỏ hàng"]:hover {
+    color: #007bff;
+}
+
+  </style>

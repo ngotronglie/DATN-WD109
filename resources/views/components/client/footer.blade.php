@@ -16,10 +16,7 @@
                     </div>
                     <div class="col-lg-4 col-md-3">
                         <ul class="list-inline mb-0">
-                            <li class="list-inline-item"><img src="{{ asset('img/payment/1.jpg') }}" alt="" height="30"></li>
-                            <li class="list-inline-item"><img src="{{ asset('img/payment/2.jpg') }}" alt="" height="30"></li>
-                            <li class="list-inline-item"><img src="{{ asset('img/payment/3.jpg') }}" alt="" height="30"></li>
-                            <li class="list-inline-item"><img src="{{ asset('img/payment/4.jpg') }}" alt="" height="30"></li>
+
                         </ul>
                     </div>
                 </div>

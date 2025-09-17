@@ -26,20 +26,66 @@ use Illuminate\Support\Facades\Mail;
 
 class ClientController extends Controller
 {
-    public function index()
+
+   
+    /**
+     * Helper function to get proper image URL
+     */
+    private function getImageUrl($imagePath)
     {
-        // Get random products with their first available variant
-        $products = Product::where('is_active', 1)
+        if (!$imagePath) {
+            return null;
+        }
+        
+        // Nếu ảnh đã có URL đầy đủ, sử dụng trực tiếp
+        if (strpos($imagePath, 'http') === 0) {
+            return $imagePath;
+        }
+        
+        // Nếu chỉ có đường dẫn tương đối, sử dụng asset()
+        return asset($imagePath);
+    }
+    public function index()
+
+    {
+        // Get products split into discounted and popular (non-discounted)
+        $baseQuery = Product::where('is_active', 1)
             ->with(['variants' => function($query) {
-                $query->where('quantity', '>', 0)
-                      ->orderBy('id')
-                      ->limit(1);
-            }])
+                $query->orderBy('id');
+            }]);
+
+        // Discounted products: any variant with price_sale > 0
+        $discountedProducts = (clone $baseQuery)
+            ->whereHas('variants', function($q) {
+                $q->where('price_sale', '>', 0);
+            })
             ->inRandomOrder()
             ->limit(8)
             ->get()
             ->map(function($product) {
-                $variant = $product->variants->first();
+                // Prefer in-stock variant with sale > 0, else any sale > 0, else fallback
+                $variant = $product->variants->firstWhere('price_sale', '>', 0) ?? $product->variants->first();
+                return (object) [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'product_view' => $product->view_count,
+                    'product_slug' => $product->slug,
+                    'product_image' => $this->getImageUrl($variant ? $variant->image : null),
+                    'product_price' => $variant ? $variant->price : 0,
+                    'product_price_discount' => $variant && $variant->price_sale > 0 ? $variant->price_sale : 0,
+                ];
+            });
+
+        // Popular (non-discounted): products whose variants all have price_sale <= 0 or null
+        $popularProducts = (clone $baseQuery)
+            ->whereDoesntHave('variants', function($q) {
+                $q->where('price_sale', '>', 0);
+            })
+            ->inRandomOrder()
+            ->limit(8)
+            ->get()
+            ->map(function($product) {
+                $variant = $product->variants->firstWhere('quantity', '>', 0) ?? $product->variants->first();
                 return (object) [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
@@ -47,23 +93,73 @@ class ClientController extends Controller
                     'product_slug' => $product->slug,
                     'product_image' => $variant ? $variant->image : null,
                     'product_price' => $variant ? $variant->price : 0,
-                    'product_price_discount' => $variant ? $variant->price_sale : 0,
+                    'product_price_discount' => 0,
                 ];
             });
         $banners = \App\Models\Banner::where('is_active', 1)->orderByDesc('id')->get();
         $categories = \App\Models\Categories::whereNull('Parent_id')->where('Is_active', 1)->get();
-        
+
+        // Lấy danh sách sản phẩm mới nhất
+        $products = \App\Models\Product::with(['variants', 'variants.color', 'variants.capacity'])
+            ->where('Is_active', 1)
+            ->orderBy('created_at', 'desc')
+            ->take(12)
+            ->get();
+            
         // Lấy flash sales đang hoạt động
         $flashSales = FlashSale::getActiveFlashSales();
         
-        return view('layouts.user.main', compact('products', 'banners', 'categories', 'flashSales'));
+        return view('layouts.user.main', [
+            'categories' => $categories,
+            'banners' => $banners,
+            'products' => $products,
+            'flashSales' => $flashSales,
+            'discountedProducts' => $discountedProducts ?? [],
+            'popularProducts' => $popularProducts ?? []
+        ]);
+
     }
 
-    public function products()
+
+    public function products(Request $request)
+
     {
-        $categories = Categories::with('children')->whereNull('parent_id')->get();
+        $categories = Categories::with('children')->whereNull('Parent_id')->get();
         $allCategories = Categories::where('Is_active', 1)->get();
-        $products = Product::where('is_active', 1)->paginate(12);
+
+        $query = Product::with(['mainVariant', 'variants'])->where('is_active', 1);
+
+        // Lọc theo danh mục
+        $categoryId = $request->query('category');
+        if (!empty($categoryId)) {
+            $query->where('categories_id', (int) $categoryId);
+        }
+
+        // Lọc theo giá dựa trên biến thể
+        $minPrice = $request->query('min_price');
+        $maxPrice = $request->query('max_price');
+        if ($minPrice !== null || $maxPrice !== null) {
+            $query->whereHas('variants', function ($q) use ($minPrice, $maxPrice) {
+                if ($minPrice !== null && $minPrice !== '') {
+                    $q->where('price', '>=', (float) $minPrice);
+                }
+                if ($maxPrice !== null && $maxPrice !== '') {
+                    $q->where('price', '<=', (float) $maxPrice);
+                }
+            });
+        }
+
+        // Sắp xếp
+        $sort = $request->query('sort');
+        if ($sort === 'az') {
+            $query->orderBy('name', 'asc');
+        } elseif ($sort === 'za') {
+            $query->orderBy('name', 'desc');
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $products = $query->paginate(12)->appends($request->query());
 
         return view('layouts.user.shop', compact('categories', 'allCategories', 'products'));
     }
@@ -216,6 +312,14 @@ class ClientController extends Controller
         $capacities = Capacity::all();
         $categories = \App\Models\Categories::with('children')->whereNull('Parent_id')->get();
         
+        // Lấy danh sách bình luận của sản phẩm trong flash sale
+        $comments = \App\Models\ProductComment::with(['user', 'replies.user'])
+            ->where('product_id', $product->id)
+            ->where('flash_sale_id', $flashSale->id)
+            ->whereNull('parent_id')
+            ->latest()
+            ->get();
+        
         return view('layouts.user.flash-sale-product-detail', compact(
             'product', 
             'variants', 
@@ -223,7 +327,8 @@ class ClientController extends Controller
             'capacities', 
             'categories',
             'flashSale',
-            'flashSaleProduct'
+            'flashSaleProduct',
+            'comments'
         ));
     }
 
@@ -231,17 +336,28 @@ class ClientController extends Controller
     {
         $request->validate([
             'content' => 'required|string|max:1000',
-            'parent_id' => 'nullable|integer'
+            'parent_id' => 'nullable|integer',
+            'flash_sale_id' => 'nullable|exists:flash_sales,id'
         ]);
 
         $product = Product::findOrFail($productId);
-
-        ProductComment::create([
+        
+        $commentData = [
             'product_id' => $product->id,
             'user_id' => auth()->id(),
             'content' => $request->input('content'),
             'parent_id' => $request->input('parent_id')
-        ]);
+        ];
+        
+        // Nếu có flash_sale_id và sản phẩm đang trong flash sale
+        if ($request->has('flash_sale_id')) {
+            $flashSale = \App\Models\FlashSale::find($request->input('flash_sale_id'));
+            if ($flashSale && $flashSale->isActive()) {
+                $commentData['flash_sale_id'] = $flashSale->id;
+            }
+        }
+
+        ProductComment::create($commentData);
 
         return back()->with('success', 'Đã gửi bình luận');
     }
@@ -278,12 +394,21 @@ class ClientController extends Controller
 
             return response()->json([
                 'success' => true,
+
                 'variant' => [
                     'image' => asset($variant->image),
                     'sale_price' => $salePrice,
                     'original_price' => $originalPrice,
                     'quantity' => $quantity,
                 ],
+
+                'image' => $this->getImageUrl($variant->image),
+                'price' => $variant->price,
+                'price_sale' => $variant->price_sale,
+                'quantity' => $variant->quantity,
+                'product_name' => $product->name,
+                'category_name' => $category->Name ?? '',
+
             ]);
         }
 
@@ -317,6 +442,19 @@ class ClientController extends Controller
                 'message' => 'Mã không hợp lệ hoặc đã hết hạn',
             ]);
         }
+    }
+
+    public function getActiveVouchers()
+    {
+        $vouchers = Voucher::query()
+            ->where('is_active', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_time', '>=', now())
+            ->where('quantity', '>', 0)
+            ->orderByDesc('created_at')
+            ->get(['id', 'code', 'discount', 'min_money', 'max_money']);
+
+        return response()->json($vouchers);
     }
 
     public function apiAddToCart(Request $request)
@@ -563,6 +701,13 @@ class ClientController extends Controller
                     'original_price' => (float) $originalPrice,
                     'is_flash_sale' => $isFlashSale,
                     'image' => $variant->image,
+
+                    'name' => $item->productVariant->product->name ?? '',
+                    'color' => $item->productVariant->color->name ?? '',
+                    'capacity' => $item->productVariant->capacity->name ?? '',
+                    'price' => $item->productVariant->price,
+                    'image' => $this->getImageUrl($item->productVariant->image),
+
                 ];
             })->values();
         } else {
@@ -590,24 +735,35 @@ class ClientController extends Controller
                         'name' => $variant->product->name ?? '',
                         'color' => $variant->color->name ?? '',
                         'capacity' => $variant->capacity->name ?? '',
+
                         'price' => (float) $effectivePrice,
                         'original_price' => (float) $originalPrice,
                         'is_flash_sale' => $isFlashSale,
                         'image' => $variant->image,
+
+                        'price' => $variant->price,
+                        'image' => $this->getImageUrl($variant->image),
+
                     ];
                 }
             }
         }
         return response()->json(['success' => true, 'data' => $result]);
     }
-
     public function getDistricts($provinceId)
     {
-        if (!Schema::hasTable('devvn_quanhuyen')) {
+        if (!Schema::hasTable('devvn_quanhuyen') || !Schema::hasTable('tinhthanh')) {
             return response()->json([]);
         }
+        
+        // Lấy mã tỉnh từ ID
+        $province = DB::table('tinhthanh')->where('id', $provinceId)->first();
+        if (!$province) {
+            return response()->json([]);
+        }
+        
         $districts = DB::table('devvn_quanhuyen')
-            ->where('matp', $provinceId)
+            ->where('matp', $province->ma_tinh)
             ->get(['maqh as id', 'name as ten_quan_huyen']);
         return response()->json($districts);
     }
@@ -617,8 +773,18 @@ class ClientController extends Controller
         if (!Schema::hasTable('devvn_xaphuongthitran')) {
             return response()->json([]);
         }
+        
+        // Lấy maqh từ bảng devvn_quanhuyen dựa trên districtId
+        $district = DB::table('devvn_quanhuyen')
+            ->where('id', $districtId)
+            ->first();
+            
+        if (!$district) {
+            return response()->json([]);
+        }
+        
         $wards = DB::table('devvn_xaphuongthitran')
-            ->where('maqh', $districtId)
+            ->where('maqh', $district->maqh)
             ->get(['xaid as id', 'name as ten_phuong_xa']);
         return response()->json($wards);
     }
@@ -1005,6 +1171,30 @@ class ClientController extends Controller
 
             return view('layouts.user.vnpay_success', ['order' => $order]);
         } else {
+            // Đánh dấu đơn hàng thất bại và khôi phục tồn kho, voucher
+            if ($order) {
+                // Cập nhật trạng thái đơn và phương thức thanh toán
+                $order->status = 6; // Đã hủy
+                $order->payment_method = 'vnpay';
+                $order->status_method = 0; // chưa thanh toán
+                $order->save();
+
+                // Khôi phục tồn kho các sản phẩm trong đơn
+                foreach ($order->orderDetails as $detail) {
+                    if ($detail->productVariant) {
+                        $detail->productVariant->increment('quantity', (int) $detail->quantity);
+                    }
+                }
+
+                // Khôi phục số lượng voucher nếu có
+                if (!empty($order->voucher_id)) {
+                    $voucher = \App\Models\Voucher::find($order->voucher_id);
+                    if ($voucher) {
+                        $voucher->increment('quantity', 1);
+                    }
+                }
+            }
+
             return view('layouts.user.vnpay_fail', ['order' => $order]);
         }
     }
