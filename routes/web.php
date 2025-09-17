@@ -69,6 +69,7 @@ Route::post('/{id}/set-default', [AddressController::class, 'setDefault'])->name
 
 Route::get('/address/districts/{provinceId}', [ClientController::class, 'getDistricts']);
 Route::get('/address/wards/{districtId}', [ClientController::class, 'getWards']);
+Route::get('/address/provinces', [ClientController::class, 'getProvinces']);
 
 // Vouchers
 Route::get('/vouchers/active', [ClientController::class, 'getActiveVouchers'])->name('vouchers.active');
