@@ -76,6 +76,11 @@ class UserOrderController extends Controller
     {
         $order = Order::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
+        // Chỉ cho phép yêu cầu hoàn hàng khi đơn đang giao đến
+        if ((int)$order->status !== 4) {
+            return redirect()->route('user.orders.show', $order->id)->with('error', 'Chỉ có thể yêu cầu hoàn hàng khi đơn đang giao đến.');
+        }
+
         $request->validate([
             'reason' => 'required|string|max:1000',
             'reason_input' => 'nullable|string|max:1000',
@@ -174,6 +179,46 @@ class UserOrderController extends Controller
         $order->save();
 
         return redirect()->route('user.orders.show', $order->id)->with('success', 'Đã xác nhận nhận hàng. Cảm ơn bạn!');
+    }
+
+    // Đặt lại hàng: đưa toàn bộ sản phẩm từ đơn cũ vào giỏ hàng hiện tại
+    public function reorder($id)
+    {
+        $order = Order::where('id', $id)->where('user_id', auth()->id())->with('orderDetails')->firstOrFail();
+
+        // Chỉ cho phép đặt lại khi đơn đã hủy
+        if ((int)$order->status !== 6) {
+            return redirect()->back()->with('error', 'Chỉ có thể đặt lại hàng cho đơn đã hủy.');
+        }
+
+        // Nếu đăng nhập: đồng bộ vào giỏ hàng DB; nếu chưa: session cart
+        if (auth()->check()) {
+            $cart = \App\Models\Cart::firstOrCreate(['user_id' => auth()->id()]);
+            foreach ($order->orderDetails as $detail) {
+                \App\Models\CartItem::updateOrCreate(
+                    [
+                        'cart_id' => $cart->id,
+                        'product_variant_id' => $detail->product_variant_id,
+                    ],
+                    [
+                        'quantity' => \DB::raw('COALESCE(quantity,0) + ' . (int)$detail->quantity),
+                        'price' => $detail->price,
+                    ]
+                );
+            }
+        } else {
+            $sessionCart = session()->get('cart', []);
+            foreach ($order->orderDetails as $detail) {
+                $sessionCart[] = [
+                    'product_variant_id' => $detail->product_variant_id,
+                    'quantity' => (int)$detail->quantity,
+                    'price' => $detail->price,
+                ];
+            }
+            session()->put('cart', $sessionCart);
+        }
+
+        return redirect()->route('cart')->with('success', 'Đã thêm lại sản phẩm vào giỏ hàng.');
     }
 
 

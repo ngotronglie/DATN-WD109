@@ -65,6 +65,7 @@
                                     <th>Ngày đặt</th>
                                     <th>Trạng thái</th>
                                     <th>Yêu cầu</th>
+                                    <th>Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -117,7 +118,9 @@
                                     <td>
                                         @if ($order->return_requested)
                                         <span class="text-warning fw-semibold">Đã yêu cầu</span>
-                                        @elseif (in_array($order->status, [0,1]))
+
+                                        @elseif(in_array($order->status, [0,1]))
+
                                         <form action="{{ route('order.cancel', $order->id) }}" method="POST">
                                             @csrf
                                             <select name="reason_select" class="form-control reason-select" required>
@@ -139,6 +142,16 @@
 
                                         @else
                                         <span class="text-muted fst-italic">Không thể thực hiện</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ((int)$order->status === 6 && strtolower((string)$order->payment_method) === 'vnpay')
+                                        <form action="{{ route('user.orders.reorder', $order->id) }}" method="POST" onsubmit="return confirm('Thêm lại các sản phẩm vào giỏ hàng?')">
+                                            @csrf
+                                            <button class="btn btn-sm btn-primary">Đặt lại hàng</button>
+                                        </form>
+                                        @else
+                                        <span class="text-muted">—</span>
                                         @endif
                                     </td>
                                 </tr>

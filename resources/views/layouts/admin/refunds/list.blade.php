@@ -1,7 +1,7 @@
 @extends('index.admindashboard')
 
 @section('content')
-<h2>Yêu cầu hoàn tiền</h2>
+<h2>Yêu cầu hoàn tiền (thanh toán online)</h2>
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -12,6 +12,7 @@
             <th>Ảnh</th>
             <th>Ngày yêu cầu</th>
             <th>Trạng thái</th>
+            <th>Minh chứng</th>
             <th>Hành động</th>
         </tr>
     </thead>
@@ -25,6 +26,13 @@
             <td>
                 @if($refund->image)
                 <img src="{{ asset('storage/' . $refund->image) }}" width="80">
+                @endif
+            </td>
+            <td>
+                @if($refund->proof_image)
+                    <a href="{{ asset('storage/' . $refund->proof_image) }}" target="_blank">Xem</a>
+                @else
+                    <span class="text-muted">Chưa có</span>
                 @endif
             </td>
             <td>{{ $refund->refund_requested_at }}</td>

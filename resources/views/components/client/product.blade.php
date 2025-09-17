@@ -15,7 +15,9 @@
                                 <div class="product-item">
                                     <div class="product-img">
                                         <a href="{{ url('product/' . $product->product_slug) }}">
+
                                             <img src="{{ \Illuminate\Support\Str::startsWith($product->product_image, ['http://','https://','/']) ? $product->product_image : asset($product->product_image) }}"
+
                                                 alt="{{ $product->product_name }}" />
                                         </a>
                                     </div>

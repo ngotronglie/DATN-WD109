@@ -23,6 +23,9 @@ class DatabaseSeeder extends Seeder
         \App\Models\Role::factory()->create(['name' => 'admin']);
         $this->call([
             BlogSeeder::class,
+            TinhThanhSeeder::class,
+            QuanHuyenSeeder::class,
+            PhuongXaSeeder::class,
         ]);
     }
 }
