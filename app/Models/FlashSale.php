@@ -111,16 +111,16 @@ class FlashSale extends Model
     }
 
     /**
-     * Lấy Flash Sale đang hoạt động
+     * Lấy Flash Sale đang hoạt động và sắp diễn ra
      */
     public static function getActiveFlashSales()
     {
         return self::where('is_active', true)
-                   ->where('start_time', '<=', now())
                    ->where('end_time', '>', now())
                    ->with(['flashSaleProductsByPriority.productVariant.product', 
                           'flashSaleProductsByPriority.productVariant.color',
                           'flashSaleProductsByPriority.productVariant.capacity'])
+                   ->orderBy('start_time')
                    ->get();
     }
 

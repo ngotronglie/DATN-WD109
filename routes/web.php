@@ -209,7 +209,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::get('/{id}', [\App\Http\Controllers\Admin\FlashSalesController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [\App\Http\Controllers\Admin\FlashSalesController::class, 'edit'])->name('edit');
         Route::put('/{id}/update', [\App\Http\Controllers\Admin\FlashSalesController::class, 'update'])->name('update');
-        Route::delete('/{id}/delete', [\App\Http\Controllers\Admin\FlashSalesController::class, 'destroy'])->name('destroy');
+        Route::match(['delete', 'post'], '/{id}/delete', [\App\Http\Controllers\Admin\FlashSalesController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/toggle-status', [\App\Http\Controllers\Admin\FlashSalesController::class, 'toggleStatus'])->name('toggle-status');
         Route::get('/statistics', [\App\Http\Controllers\Admin\FlashSalesController::class, 'statistics'])->name('statistics');
         Route::get('/api/products/by-category', [\App\Http\Controllers\Admin\FlashSalesController::class, 'getByCategory'])->name('products.byCategory');

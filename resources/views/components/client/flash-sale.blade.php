@@ -10,12 +10,38 @@
                 <div class="d-flex align-items-center">
                     <div class="flash-icon me-2">⚡</div>
                     <h3 class="section-title mb-0">FLASH SALE</h3>
-                    @if($flashSales->first())
-                        <div class="countdown-compact ms-3" data-end-time="{{ $flashSales->first()->end_time->toISOString() }}">
+                    @php
+                        $upcomingFlashSales = $flashSales->filter(function($flashSale) {
+                            return $flashSale->start_time > now();
+                        });
+                        
+                        $ongoingFlashSales = $flashSales->filter(function($flashSale) {
+                            return $flashSale->isActive();
+                        })->first();
+                    @endphp
+                    
+                    @if($ongoingFlashSales)
+                        <div class="countdown-compact ms-3" data-end-time="{{ $ongoingFlashSales->end_time->toISOString() }}">
                             <span class="countdown-text">Kết thúc sau</span>
                             <span class="timer-compact">
                                 <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
                             </span>
+                        </div>
+                    @elseif($upcomingFlashSales->isNotEmpty())
+                        @php
+                            $nextFlashSale = $upcomingFlashSales->sortBy('start_time')->first();
+                            $startTime = $nextFlashSale->start_time;
+                            $hours = $startTime->diffInHours(now());
+                            $minutes = $startTime->diffInMinutes(now()) % 60;
+                            $seconds = $startTime->diffInSeconds(now()) % 60;
+                            $timeString = '';
+                            if ($hours > 0) {
+                                $timeString .= $hours . ' giờ ';
+                            }
+                            $timeString .= $minutes . ' phút ' . $seconds . ' giây';
+                        @endphp
+                        <div class="upcoming-badge ms-3">
+                            <span class="badge bg-warning text-dark">Bắt đầu sau {{ $timeString }}</span>
                         </div>
                     @endif
                 </div>
@@ -53,15 +79,37 @@
                                              class="product-img"
                                              onerror="this.src='{{ asset('images/no-image.png') }}'">
                                         <div class="discount-tag">-{{ $flashProduct->getDiscountPercentage() }}%</div>
+                                        @if($flashSale->start_time > now())
+                                            <div class="upcoming-overlay">Sắp diễn ra</div>
+                                        @endif
                                     </div>
 
                                     {{-- Product Info --}}
                                     <div class="product-details">
                                         <div class="product-name" title="{{ $flashProduct->productVariant->product->name }}">{{ $flashProduct->productVariant->product->name }}</div>
-                                        <div class="product-price">
-                                            <span class="sale-price">₫{{ number_format($flashProduct->sale_price, 0, ',', '.') }}</span>
-                                            <span class="original-price">₫{{ number_format($flashProduct->original_price, 0, ',', '.') }}</span>
-                                        </div>
+                                        @if($flashSale->start_time > now())
+                                            <div class="upcoming-price">
+                                                <div class="original-price">
+                                                    <span class="original-price-value">₫{{ number_format($flashProduct->original_price, 0, ',', '.') }}</span>
+                                                    <div class="sale-price-placeholder">
+                                                        <span class="price-char">?</span>
+                                                        <span class="price-char">?</span>
+                                                        <span class="price-char">?</span>
+                                                        <span class="price-char">?</span>
+                                                        <span class="price-char">đ</span>
+                                                    </div>
+                                                    <span class="discount-badge">-{{ $flashProduct->getDiscountPercentage() }}%</span>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="product-price">
+                                                <div class="sale-price">₫{{ number_format($flashProduct->sale_price, 0, ',', '.') }}</div>
+                                                <div class="original-price">
+                                                    <span>₫{{ number_format($flashProduct->original_price, 0, ',', '.') }}</span>
+                                                    <span class="discount-badge">-{{ number_format((($flashProduct->original_price - $flashProduct->sale_price) / $flashProduct->original_price) * 100, 0) }}%</span>
+                                                </div>
+                                            </div>
+                                        @endif
                                         
                                     </div>
                                 </a>
@@ -71,7 +119,46 @@
                 @endforeach
             @endforeach
         </div>
-
+        
+        @if($upcomingFlashSales->isNotEmpty())
+            @php
+                $nextFlashSale = $upcomingFlashSales->sortBy('start_time')->first();
+            @endphp
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const startTime = new Date('{{ $nextFlashSale->start_time->toIso8601String() }}').getTime();
+                    const countdownElement = document.querySelector('.upcoming-badge .badge');
+                    
+                    function updateCountdown() {
+                        const now = new Date().getTime();
+                        const distance = startTime - now;
+                        
+                        if (distance < 0) {
+                            window.location.reload();
+                            return;
+                        }
+                        
+                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                        
+                        let timeString = 'Bắt đầu sau ';
+                        if (hours > 0) {
+                            timeString += hours + ' giờ ';
+                        }
+                        if (minutes > 0 || hours > 0) {
+                            timeString += minutes + ' phút ';
+                        }
+                        timeString += seconds + ' giây';
+                        
+                        countdownElement.textContent = timeString;
+                    }
+                    
+                    updateCountdown();
+                    setInterval(updateCountdown, 1000);
+                });
+            </script>
+        @endif
     </div>
 </section>
 
@@ -133,12 +220,15 @@
 
 /* Product Cards - Shopee Style */
 .flash-product-card {
-    background: white;
-    border: 1px solid #f5f5f5;
-    border-radius: 4px;
+    background: #fff;
+    border-radius: 8px;
     overflow: hidden;
-    transition: all 0.2s ease;
+    transition: transform 0.2s, box-shadow 0.2s;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #f5f5f5;
+    position: relative;
 }
 
 .flash-product-card:hover {
@@ -148,9 +238,48 @@
 
 .product-image-container {
     position: relative;
-    width: 100%;
-    /* wider, shorter ratio like Shopee */
-    aspect-ratio: 1.2 / 1;
+    padding-top: 100%;
+    background: #f5f5f5;
+    overflow: hidden;
+}
+
+.upcoming-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 193, 7, 0.9);
+    color: #000;
+    text-align: center;
+    padding: 4px 0;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.upcoming-badge .badge {
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* Làm mờ sản phẩm sắp diễn ra */
+.flash-product-card .product-img {
+    transition: opacity 0.3s;
+}
+
+.flash-sale-section .upcoming .product-img {
+    opacity: 0.7;
+}
+
+/* Hiệu ứng khi di chuột vào sản phẩm sắp diễn ra */
+.flash-product-card:hover .product-img {
+    opacity: 1;
+}
+
+.product-image-container { 
+    aspect-ratio: 1.2 / 1; 
     overflow: hidden;
     border-radius: 6px;
     margin: 0 auto;
@@ -198,29 +327,147 @@
     font-weight: 600;
 }
 
+/* Kiểu giá thông thường */
 .product-price {
-    margin-bottom: 2px;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 8px;
 }
 
 .sale-price {
     color: #ee4d2d;
     font-size: 16px;
-    font-weight: 800;
-    display: block;
-    text-align: center;
-    margin-bottom: 2px;
-    text-shadow: 0 1px 2px rgba(238, 77, 45, 0.2);
+    font-weight: 600;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.discount-badge {
+    background: #ee4d2d;
+    color: white;
+    font-size: 11px;
+    padding: 0 4px;
+    border-radius: 2px;
+    font-weight: 500;
+    line-height: 1.4;
 }
 
 .original-price {
-    color: #929292;
-    font-size: 10px;
+    color: #9e9e9e;
+    font-size: 13px;
     text-decoration: line-through;
-    text-align: center;
-    display: block;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
+/* Kiểu giá khi chưa đến giờ flash sale */
+.upcoming-price {
+    text-align: center;
+    padding: 8px 0 4px;
+}
+
+.upcoming-price .original-price {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin-bottom: 6px;
+}
+
+.original-price-value {
+    color: #666;
+    font-size: 13px;
+    text-decoration: line-through;
+}
+
+.sale-price-placeholder {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+    height: 24px;
+    align-items: center;
+}
+
+.price-char {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 20px;
+    background: #f5f5f5;
+    border-radius: 2px;
+    margin: 0 1px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #999;
+    position: relative;
+    overflow: hidden;
+}
+
+.price-char:last-child {
+    background: none;
+    color: #ee4d2d;
+    font-weight: 400;
+    margin-left: 2px;
+}
+
+.upcoming-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fff0e6;
+    border: 1px solid #ffd2b8;
+    color: #ff6b00;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.upcoming-badge i {
+    color: #ff6b00;
+    font-size: 12px;
+}
+
+
+/* Hiệu ứng khi hover vào sản phẩm */
+.flash-product-card:hover .sale-price {
+    color: #ff1a2b;
+    text-shadow: 0 0 6px rgba(255, 26, 43, 0.3);
+}
+
+.flash-product-card:hover .sale-price::before {
+    background: rgba(255, 66, 79, 0.15);
+    transform: translateY(-50%) skewX(-15deg) scaleX(1.05);
+}
+
+.flash-product-card:hover .original-price {
+    opacity: 1;
+    background: #ebebeb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+/* Thêm hiệu ứng nhấp nháy nhẹ cho giá sale */
+@keyframes pricePulse {
+    0% { opacity: 0.9; }
+    50% { opacity: 1; }
+    100% { opacity: 0.9; }
+}
+
+.sale-price {
+    animation: pricePulse 2s infinite ease-in-out;
+}
+
+.flash-product-card:hover .sale-price {
+    animation: none;
+}
 
 /* Responsive */
 @media (max-width: 768px) {

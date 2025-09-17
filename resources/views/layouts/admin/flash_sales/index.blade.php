@@ -1,6 +1,9 @@
 @extends('index.admindashboard')
 
 @section('content')
+<!-- SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -125,7 +128,21 @@
 @endsection
 
 @section('scripts')
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+// Initialize SweetAlert2 with custom defaults
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+});
 function toggleStatus(flashSaleId) {
     const form = document.createElement('form');
     form.method = 'POST';
@@ -143,27 +160,63 @@ function toggleStatus(flashSaleId) {
 }
 
 function deleteFlashSale(flashSaleId) {
-    if (confirm('Bạn có chắc chắn muốn xóa flash sale này?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/admin/flash-sales/${flashSaleId}/delete`;
-        form.style.display = 'none';
-        
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = '_token';
-        csrfToken.value = '{{ csrf_token() }}';
-        
-        const methodField = document.createElement('input');
-        methodField.type = 'hidden';
-        methodField.name = '_method';
-        methodField.value = 'DELETE';
-        
-        form.appendChild(csrfToken);
-        form.appendChild(methodField);
-        document.body.appendChild(form);
-        form.submit();
-    }
+    Swal.fire({
+        title: 'Xác nhận xóa',
+        text: 'Bạn có chắc chắn muốn xóa Flash Sale này? Hành động này không thể hoàn tác!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Có, xóa ngay!',
+        cancelButtonText: 'Hủy bỏ',
+        customClass: {
+            confirmButton: 'btn btn-danger me-2',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Create a form to submit the DELETE request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/flash-sales/${flashSaleId}/delete`;
+            form.style.display = 'none';
+            
+            // Add CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            
+            // Add method spoofing for DELETE
+            const methodField = document.createElement('input');
+            methodField.type = 'hidden';
+            methodField.name = '_method';
+            methodField.value = 'DELETE';
+            
+            // Append all fields and submit
+            form.appendChild(csrfToken);
+            form.appendChild(methodField);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
 }
+
+// Show success message if there's a success message in session
+@if(session('success'))
+    Toast.fire({
+        icon: 'success',
+        title: '{{ session('success') }}'
+    });
+@endif
+
+// Show error message if there's an error message in session
+@if(session('error'))
+    Toast.fire({
+        icon: 'error',
+        title: '{{ session('error') }}'
+    });
+@endif
 </script>
 @endsection
