@@ -58,7 +58,9 @@
                                         </form>
                                     </div>
                                     <!-- showing -->
-                                   
+                                    <div class="showing f-right text-end">
+                                        <span>Showing : 01-09 of 17.</span>
+                                    </div>
                                 </div>
                                 <!-- shop-option end -->
                                 <!-- Tab Content start -->
@@ -85,7 +87,13 @@
                                                             <h6 class="product-title">
                                                                 <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
                                                             </h6>
-                                                           
+                                                            <div class="pro-rating">
+                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                <a href="#"><i class="zmdi zmdi-star-half"></i></a>
+                                                                <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
+                                                            </div>
                                                             <h3 class="pro-price">
                                                                 @if($variant)
                                                                     {{ number_format($variant->price) }} VNĐ
@@ -101,7 +109,14 @@
                                                                     <a href="#" title="Wishlist"><i
                                                                             class="zmdi zmdi-favorite"></i></a>
                                                                 </li>
-                                                               
+                                                                <li>
+                                                                    <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
+                                                                        title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="#" title="Compare"><i
+                                                                            class="zmdi zmdi-refresh"></i></a>
+                                                                </li>
                                                                 <li>
                                                                     <a href="#" title="Add to cart"><i
                                                                             class="zmdi zmdi-shopping-cart-plus"></i></a>
@@ -136,7 +151,13 @@
                                                                 <h6 class="product-title f-left">
                                                                     <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
                                                                 </h6>
-                                                                
+                                                                <div class="pro-rating f-right">
+                                                                    <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                    <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                    <a href="#"><i class="zmdi zmdi-star"></i></a>
+                                                                    <a href="#"><i class="zmdi zmdi-star-half"></i></a>
+                                                                    <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
+                                                                </div>
                                                             </div>
                                                             <h6 class="brand-name mb-30">Brand Name</h6>
                                                             <h3 class="pro-price">
@@ -186,26 +207,17 @@
                         <div class="col-lg-3 order-lg-1 order-2">
                             <!-- widget-categories -->
                             <aside class="widget widget-categories box-shadow mb-30">
-                                <h6 class="widget-title border-left mb-20"> Sản phẩm theo danh mục</h6>
+                                <h6 class="widget-title border-left mb-20">Danh mục</h6>
                                 <div id="cat-treeview" class="product-cat">
                                     <ul>
-                                        <li>
-                                            <a href="{{ route('shop.index', request()->except('category','page')) }}" class="{{ request()->filled('category') ? '' : 'fw-bold text-primary' }}">
-                                                Tất cả
-                                            </a>
-                                        </li>
                                         @foreach($allCategories as $cat)
                                             <li>
-
-                                               
-
-                                                <a href="{{ route('shop.index', array_merge(request()->except('page'), ['category' => $cat->ID])) }}" class="{{ (string)request('category') === (string)$cat->ID ? 'fw-bold text-primary' : '' }}">
-
+                                                <span>ID: {{ $cat->id }}</span>
+                                                <a href="{{ url('shop') . '?category=' . $cat->ID }}">
                                                     {{ $cat->Name }}
                                                 </a>
                                             </li>
-                                        @endforeach 
-                                            
+                                        @endforeach
                                     </ul>
                                 </div>
                             </aside>
@@ -213,20 +225,12 @@
                             <aside class="widget shop-filter box-shadow mb-30">
                                 <h6 class="widget-title border-left mb-20">Giá</h6>
                                 <form method="GET" action="{{ route('shop.index') }}">
-                                    <div class="mb-2 small text-muted">Khoảng giá: <span id="price-range-text">—</span></div>
-                                    <div id="slider-range" class="mb-3"></div>
                                     <div class="input-group mb-2">
-                                        <input id="min_price" type="number" name="min_price" class="form-control" placeholder="Giá từ" value="{{ request('min_price') }}" min="0">
+                                        <input type="number" name="min_price" class="form-control" placeholder="Giá từ" value="{{ request('min_price') }}" min="0">
                                         <span class="input-group-text">-</span>
-                                        <input id="max_price" type="number" name="max_price" class="form-control" placeholder="Giá đến" value="{{ request('max_price') }}" min="0">
+                                        <input type="number" name="max_price" class="form-control" placeholder="Giá đến" value="{{ request('max_price') }}" min="0">
                                     </div>
-                                    @foreach(request()->except('min_price','max_price','page') as $key => $value)
-                                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                                    @endforeach
                                     <button type="submit" class="btn btn-warning btn-block w-100">Lọc</button>
-                                    @if(request()->filled('min_price') || request()->filled('max_price'))
-                                        <a href="{{ route('shop.index', request()->except('min_price','max_price','page')) }}" class="btn btn-link w-100 mt-2 p-0">Xóa lọc giá</a>
-                                    @endif
                                 </form>
                             </aside>
                             <!-- widget-color -->
@@ -280,30 +284,6 @@
 
 @endsection
 
-<style>
-/* Khung ảnh */
-.product-img {
-    width: 100%;
-    height: 250px; /* chỉnh chiều cao mong muốn */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: #fff;
-    border: 1px solid #eee;
-    border-radius: 8px;
-}
-
-/* Ảnh bên trong khung */
-.product-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover !important; /* bắt buộc cắt ảnh đều */
-    display: block;
-}
-
-
-</style>
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -330,4 +310,3 @@ $(document).ready(function() {
 });
 </script>
 @endpush
-<style></style>

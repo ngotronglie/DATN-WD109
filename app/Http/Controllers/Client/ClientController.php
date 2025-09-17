@@ -481,7 +481,6 @@ class ClientController extends Controller
         }
         return response()->json(['success' => true, 'data' => $result]);
     }
-
     public function getDistricts($provinceId)
     {
         if (!Schema::hasTable('devvn_quanhuyen') || !Schema::hasTable('tinhthanh')) {

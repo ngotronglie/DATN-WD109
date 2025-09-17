@@ -1,4 +1,3 @@
-
 @extends('index.clientdashboard')
 
 @section('content')
@@ -9,18 +8,14 @@
     <!-- START PAGE CONTENT -->
     <section id="page-content" class="page-wrapper section">
 
-        <!-- SẢN PHẨM ĐANG GIẢM GIÁ -->
-        <div class="container ">
-        <h2 class="mb-3 font-bold">Sản phẩm phổ biến</h2>
-            @include('components.client.product', ['products' => $discountedProducts])
-     
+      <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+     @include('components.client.product', ['products' => $discountedProducts])
+                </div>
+            </div>
 
-        <!-- SẢN PHẨM PHỔ BIẾN (KHÔNG GIẢM GIÁ) -->
-        
-            <h2 class="mb-3 font-bold">Sản phẩm phổ biến</h2>
-            @include('components.client.product', ['products' => $popularProducts])
-        </div>
-
+      </div>
 
 
         <!-- BLOG SECTION START -->
@@ -140,11 +135,14 @@
 
 <style>
     /* ====== GLOBAL ====== */
+/* ====== GLOBAL ====== */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f9f9f9;
     color: #333;
     line-height: 1.6;
+    margin: 0;
+    padding: 0;
 }
 
 .section {
@@ -155,31 +153,41 @@ body {
 .category-slider-section {
     background: #fff;
     padding: 30px 0;
+    overflow: hidden; /* tránh bị tràn */
 }
 
 .active-category-slider {
     display: flex;
-    justify-content: center; /* căn giữa */
-    gap: 12px; /* khoảng cách đều nhau */
-    flex-wrap: wrap; /* nếu nhiều sẽ xuống dòng */
+    justify-content: center; /* căn giữa nội dung */
+    align-items: center;
+    gap: 20px; /* khoảng cách đều nhau */
+    flex-wrap: nowrap; /* giữ các item trên 1 hàng */
+    overflow-x: auto; /* cho phép kéo ngang khi nhiều item */
+    scroll-behavior: smooth;
+    padding: 10px 0;
+}
+
+.active-category-slider::-webkit-scrollbar {
+    display: none; /* Ẩn thanh scroll để gọn gàng */
 }
 
 .category-slide-item {
-    flex: 0 0 auto;
-    width: 150px;
+    flex: 0 0 150px;
     background: #fff;
     border-radius: 12px;
     padding: 15px 10px;
     text-align: center;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .category-slide-item img {
-    max-height: 60px;
+    width: 100%;
+    max-height: 80px;
     object-fit: contain;
     margin-bottom: 10px;
-    transition: transform 0.3s;
+    transition: transform 0.3s ease;
 }
 
 .category-slide-item:hover {
@@ -195,6 +203,7 @@ body {
     font-size: 14px;
     font-weight: 600;
     color: #222;
+    white-space: nowrap; /* giữ text trên 1 dòng */
 }
 
 /* ====== BLOG SECTION ====== */
@@ -218,7 +227,7 @@ body {
 .blog-image img {
     width: 100%;
     height: auto;
-    border-radius: 12px 0 0 12px;
+    border-radius: 12px 12px 0 0;
     object-fit: cover;
 }
 
@@ -242,6 +251,7 @@ body {
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: #fff;
     border-radius: 16px;
+    padding: 20px;
 }
 
 .newsletter-info .newsletter-title {
