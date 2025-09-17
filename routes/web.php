@@ -68,21 +68,7 @@ Route::delete('/{id}', [AddressController::class, 'delete'])->name('account.addr
 Route::post('/{id}/set-default', [AddressController::class, 'setDefault'])->name('account.address.setDefault');
 
 Route::get('/address/districts/{provinceId}', [ClientController::class, 'getDistricts']);
-Route::get('/address/wards/{districtId}', function($districtId) {
-    try {
-        $district = \DB::table('devvn_quanhuyen')->where('id', $districtId)->first();
-        if (!$district) {
-            return response()->json([]);
-        }
-        
-        $wards = \DB::table('devvn_xaphuongthitran')
-            ->where('maqh', $district->maqh)
-            ->get(['xaid as id', 'name as ten_phuong_xa']);
-        return response()->json($wards);
-    } catch (Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-});
+Route::get('/address/wards/{districtId}', [ClientController::class, 'getWards']);
 
 // Vouchers
 Route::get('/vouchers/active', [ClientController::class, 'getActiveVouchers'])->name('vouchers.active');

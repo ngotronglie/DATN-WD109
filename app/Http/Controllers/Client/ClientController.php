@@ -495,7 +495,7 @@ class ClientController extends Controller
         
         $districts = DB::table('devvn_quanhuyen')
             ->where('matp', $province->ma_tinh)
-            ->get(['maqh as id', 'name as ten_quan_huyen']);
+            ->get(['id', 'name as ten_quan_huyen']);
         return response()->json($districts);
     }
 
@@ -508,6 +508,7 @@ class ClientController extends Controller
         // Lấy maqh từ bảng devvn_quanhuyen dựa trên districtId
         $district = DB::table('devvn_quanhuyen')
             ->where('id', $districtId)
+            ->orWhere('maqh', $districtId)
             ->first();
             
         if (!$district) {

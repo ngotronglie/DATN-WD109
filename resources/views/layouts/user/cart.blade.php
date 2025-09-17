@@ -146,13 +146,7 @@
                             </div>
 
                             <!-- Địa chỉ -->
-                            <div class="mb-3">
-
-                                <label for="address_detail" class="form-label">Địa chỉ (số nhà, tên đường) <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="address_detail" name="address_detail" required 
-                                       placeholder="Nhập số nhà, tên đường">
-                                <div class="invalid-feedback" id="address_detail-error"></div>
-                            </div>
+                     
                             
                             <div class="mb-3">
                                 <label for="province" class="form-label">Tỉnh/Thành phố <span class="text-danger">*</span></label>
@@ -184,7 +178,14 @@
                                 <div class="invalid-feedback" id="ward-error"></div>
                             </div>
 
-                            <!-- Ghi chú -->
+                            <div class="mb-3">
+
+                            <label for="address_detail" class="form-label">Địa chỉ (số nhà, tên đường) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="address_detail" name="address_detail" required 
+                                placeholder="Nhập số nhà, tên đường">
+                            <div class="invalid-feedback" id="address_detail-error"></div>
+                            </div>
+<!-- Ghi chú -->
                             <div class="mb-3">
 
                                 <label for="note" class="form-label">Ghi chú</label>
