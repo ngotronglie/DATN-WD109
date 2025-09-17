@@ -45,15 +45,50 @@
     overflow: hidden;
     border-radius: 16px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    margin: 20px auto 10px;
+    max-width: 100%;
+    width: 100%;
+    height: 300px; /* Giảm chiều cao banner */
+}
+
+.carousel-inner, 
+.carousel-item, 
+.carousel-item.active {
+    height: 100%;
 }
 
 .carousel-inner .carousel-item img {
-    width: auto;
-    height: auto; /* khung chuẩn */
-    object-fit: contain; /* hiển thị toàn bộ ảnh */
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Phủ kín khung hình */
     object-position: center;
-    background-color: #fff; /* nền trắng cho phần trống */
+    background-color: #fff;
     border-radius: 16px;
+}
+
+/* Điều chỉnh nút điều hướng */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 5%;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    opacity: 1;
+}
+
+/* Điều chỉnh chỉ số carousel */
+.carousel-indicators {
+    bottom: 10px;
+}
+
+.carousel-indicators [data-bs-target] {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin: 0 5px;
 }
 
 
