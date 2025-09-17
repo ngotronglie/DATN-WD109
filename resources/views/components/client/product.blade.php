@@ -2,7 +2,7 @@
 <div class="product-tab-section section-bg-tb pt-80 pb-55">
     <div class="container">
         <div class="row">
-            <h2 class="mb-3 font-bold">Sản phẩm phổ biến </h2>
+
             <div class="col-lg-12">
                 <!-- Tab panes -->
                 <div class="tab-content">
@@ -14,11 +14,10 @@
                             <div class="col-lg-3 col-md-4">
                                 <div class="product-item">
                                     <div class="product-img">
-                                    <a href="{{ url('product/' . $product->product_slug) }}">
-    <img src="{{ $product->product_image }}" 
-         alt="{{ $product->product_name }}" />
-</a>
-
+                                        <a href="{{ url('product/' . $product->product_slug) }}">
+                                            <img src="{{ \Illuminate\Support\Str::startsWith($product->product_image, ['http://','https://','/']) ? $product->product_image : asset($product->product_image) }}"
+                                                alt="{{ $product->product_name }}" />
+                                        </a>
                                     </div>
                                     <div class="product-info">
                                         <h6 class="product-title">
@@ -28,7 +27,7 @@
                                         <div class="product-views mb-1 text-muted" style="font-size: 0.9em;">
                                             <i class="zmdi zmdi-eye"></i> {{ $product->product_view }} lượt xem
                                         </div>
-                                        @if ($product->product_price_discount)
+                                        @if ($product->product_price_discount > 0)
                                         <h3 class="pro-price-sale text-danger text-decoration-line-through">
                                             {{ number_format($product->product_price_discount) }} đ
                                         </h3>

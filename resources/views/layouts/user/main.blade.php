@@ -1,3 +1,4 @@
+
 @extends('index.clientdashboard')
 
 @section('content')
@@ -11,9 +12,13 @@
         <!-- SẢN PHẨM ĐANG GIẢM GIÁ -->
         <div class="container ">
         <h2 class="mb-3 font-bold">Sản phẩm phổ biến</h2>
+            @include('components.client.product', ['products' => $discountedProducts])
      
-            @include('components.client.product', ['products' => $products])
+
+        <!-- SẢN PHẨM PHỔ BIẾN (KHÔNG GIẢM GIÁ) -->
         
+            <h2 class="mb-3 font-bold">Sản phẩm phổ biến</h2>
+            @include('components.client.product', ['products' => $popularProducts])
         </div>
 
 

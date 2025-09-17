@@ -58,9 +58,7 @@
                                         </form>
                                     </div>
                                     <!-- showing -->
-                                    <div class="showing f-right text-end">
-                                        <span>Showing : 01-09 of 17.</span>
-                                    </div>
+                                   
                                 </div>
                                 <!-- shop-option end -->
                                 <!-- Tab Content start -->
@@ -87,13 +85,7 @@
                                                             <h6 class="product-title">
                                                                 <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
                                                             </h6>
-                                                            <div class="pro-rating">
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                                <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                            </div>
+                                                           
                                                             <h3 class="pro-price">
                                                                 @if($variant)
                                                                     {{ number_format($variant->price) }} VNĐ
@@ -109,14 +101,7 @@
                                                                     <a href="#" title="Wishlist"><i
                                                                             class="zmdi zmdi-favorite"></i></a>
                                                                 </li>
-                                                                <li>
-                                                                    <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
-                                                                        title="Quickview"><i class="zmdi zmdi-zoom-in"></i></a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#" title="Compare"><i
-                                                                            class="zmdi zmdi-refresh"></i></a>
-                                                                </li>
+                                                               
                                                                 <li>
                                                                     <a href="#" title="Add to cart"><i
                                                                             class="zmdi zmdi-shopping-cart-plus"></i></a>
@@ -151,13 +136,7 @@
                                                                 <h6 class="product-title f-left">
                                                                     <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
                                                                 </h6>
-                                                                <div class="pro-rating f-right">
-                                                                    <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                    <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                    <a href="#"><i class="zmdi zmdi-star"></i></a>
-                                                                    <a href="#"><i class="zmdi zmdi-star-half"></i></a>
-                                                                    <a href="#"><i class="zmdi zmdi-star-outline"></i></a>
-                                                                </div>
+                                                                
                                                             </div>
                                                             <h6 class="brand-name mb-30">Brand Name</h6>
                                                             <h3 class="pro-price">
@@ -207,17 +186,17 @@
                         <div class="col-lg-3 order-lg-1 order-2">
                             <!-- widget-categories -->
                             <aside class="widget widget-categories box-shadow mb-30">
-                                <h6 class="widget-title border-left mb-20">Danh mục</h6>
+                                <h6 class="widget-title border-left mb-20"> Sản phẩm theo danh mục</h6>
                                 <div id="cat-treeview" class="product-cat">
                                     <ul>
                                         @foreach($allCategories as $cat)
                                             <li>
-                                                <span>ID: {{ $cat->id }}</span>
                                                 <a href="{{ url('shop') . '?category=' . $cat->ID }}">
                                                     {{ $cat->Name }}
                                                 </a>
                                             </li>
-                                        @endforeach
+                                        @endforeach 
+                                            
                                     </ul>
                                 </div>
                             </aside>
@@ -239,52 +218,39 @@
                 
                             <!-- widget-product -->
                             <aside class="widget widget-product box-shadow">
-                                <h6 class="widget-title border-left mb-20">recent products</h6>
+                                <h6 class="widget-title border-left mb-20">Sản phẩm gần đây </h6>
+                                @foreach($products->take(4) as $product)
+                                    @php
+                                        $variant = $product->mainVariant;
+                                    @endphp
+                                    <div class="product-item">
+                                        <div class="product-img">
+                                            <a href="{{ route('shop.show', $product->id) }}">
+                                                @if($variant && $variant->image)
+                                                    <img src="{{ asset($variant->image) }}" alt="{{ $product->name }}" />
+                                                @else
+                                                    <span>Chưa có ảnh</span>
+                                                @endif
+                                            </a>
+                                        </div>
+                                        <div class="product-info">
+                                            <h6 class="product-title">
+                                                <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
+                                            </h6>
+                                            <h3 class="pro-price" style="font-size:14px; bold; font-weight:600;">
+    @if($variant)
+        {{ number_format($variant->price) }} VNĐ
+    @else
+        Chưa có giá
+    @endif
+</h3>
+
+                                        </div>
+                                    </div>
+                                @endforeach
                                 <!-- product-item start -->
-                                <div class="product-item">
-                                    <div class="product-img">
-                                        <a href="single-product.html">
-                                          <img src="{{asset('frontend/img/product/4.jpg')}}" alt="" />
-                                        </a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h6 class="product-title">
-                                            <a href="single-product.html">Product Name</a>
-                                        </h6>
-                                        <h3 class="pro-price">$ 869.00</h3>
-                                    </div>
-                                </div>
-                                <!-- product-item end -->
-                                <!-- product-item start -->
-                                <div class="product-item">
-                                    <div class="product-img">
-                                        <a href="single-product.html">
-                                          <img src="{{asset('frontend/img/product/8.jpg')}}" alt="" />
-                                        </a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h6 class="product-title">
-                                            <a href="single-product.html">Product Name</a>
-                                        </h6>
-                                        <h3 class="pro-price">$ 869.00</h3>
-                                    </div>
-                                </div>
-                                <!-- product-item end -->
-                                <!-- product-item start -->
-                                <div class="product-item">
-                                    <div class="product-img">
-                                        <a href="single-product.html">
-                                          <img src="{{asset('frontend/img/product/12.jpg')}}" alt="" />
-                                        </a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h6 class="product-title">
-                                            <a href="single-product.html">Product Name</a>
-                                        </h6>
-                                        <h3 class="pro-price">$ 869.00</h3>
-                                    </div>
-                                </div>
-                                <!-- product-item end -->
+                                
+                              
                             </aside>
                         </div>
                     </div>
@@ -323,3 +289,4 @@ $(document).ready(function() {
 });
 </script>
 @endpush
+<style></style>

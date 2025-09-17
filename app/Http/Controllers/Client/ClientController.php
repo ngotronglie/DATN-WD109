@@ -25,43 +25,66 @@ use Illuminate\Support\Facades\Mail;
 
 class ClientController extends Controller
 {
-    public function index()
+   public function index()
     {
-        // Get random products with their first available variant
-        $products = Product::where('is_active', 1)
+        // Get products split into discounted and popular (non-discounted)
+        $baseQuery = Product::where('is_active', 1)
             ->with(['variants' => function($query) {
-                $query->where('quantity', '>', 0)
-                      ->orderBy('id')
-                      ->limit(1);
-            }])
+                $query->orderBy('id');
+            }]);
+
+        // Discounted products: any variant with price_sale > 0
+        $discountedProducts = (clone $baseQuery)
+            ->whereHas('variants', function($q) {
+                $q->where('price_sale', '>', 0);
+            })
             ->inRandomOrder()
             ->limit(8)
             ->get()
             ->map(function($product) {
-                $variant = $product->variants->first();
-                // Prefer variant image; fallback to product image uploaded from admin
-                $resolvedImage = $variant && !empty($variant->image)
-                    ? $variant->image
-                    : ($product->image ?? null);
-                // Prefer variant prices; fallback to product base price if set
-                $resolvedPrice = $variant ? $variant->price : ($product->price ?? 0);
-                $resolvedPriceSale = $variant ? $variant->price_sale : 0;
+                // Prefer in-stock variant with sale > 0, else any sale > 0, else fallback
+                $variant = $product->variants->firstWhere('price_sale', '>', 0) ?? $product->variants->first();
                 return (object) [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'product_view' => $product->view_count,
                     'product_slug' => $product->slug,
-                    'product_image' => $resolvedImage,
-                    'product_price' => $resolvedPrice,
-                    'product_price_discount' => $resolvedPriceSale,
+                    'product_image' => $variant ? $variant->image : null,
+                    'product_price' => $variant ? $variant->price : 0,
+                    'product_price_discount' => $variant && $variant->price_sale > 0 ? $variant->price_sale : 0,
+                ];
+            });
+
+        // Popular (non-discounted): products whose variants all have price_sale <= 0 or null
+        $popularProducts = (clone $baseQuery)
+            ->whereDoesntHave('variants', function($q) {
+                $q->where('price_sale', '>', 0);
+            })
+            ->inRandomOrder()
+            ->limit(8)
+            ->get()
+            ->map(function($product) {
+                $variant = $product->variants->firstWhere('quantity', '>', 0) ?? $product->variants->first();
+                return (object) [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'product_view' => $product->view_count,
+                    'product_slug' => $product->slug,
+                    'product_image' => $variant ? $variant->image : null,
+                    'product_price' => $variant ? $variant->price : 0,
+                    'product_price_discount' => 0,
                 ];
             });
             
         $banners = \App\Models\Banner::where('is_active', 1)->orderByDesc('id')->get();
         $categories = \App\Models\Categories::whereNull('Parent_id')->where('Is_active', 1)->get();
-        return view('layouts.user.main', compact('products', 'banners', 'categories'));
+        return view('layouts.user.main', [
+            'categories' => $categories,
+            'banners' => $banners,
+            'discountedProducts' => $discountedProducts,
+            'popularProducts' => $popularProducts,
+        ]);
     }
-
     public function products()
     {
         $categories = Categories::with('children')->whereNull('parent_id')->get();
