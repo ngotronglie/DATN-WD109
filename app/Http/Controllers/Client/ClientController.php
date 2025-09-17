@@ -364,58 +364,89 @@ class ClientController extends Controller
 
     public function getVariant(Request $request)
     {
-        $product_id = $request->input('product_id');
-        $color_id = $request->input('color_id');
-        $capacity_id = $request->input('capacity_id');
+        try {
+            // Validate request
+            $validated = $request->validate([
+                'product_id' => 'required|exists:products,id',
+                'color_id' => 'required|exists:colors,id',
+                'capacity_id' => 'required|exists:capacities,id'
+            ]);
 
-        $variant = ProductVariant::where('product_id', $product_id)
-            ->where('color_id', $color_id)
-            ->where('capacity_id', $capacity_id)
-            ->first();
+            // Lấy thông tin sản phẩm
+            $product = Product::findOrFail($validated['product_id']);
+            
+            // Tìm biến thể phù hợp
+            $variant = ProductVariant::with(['color', 'capacity', 'product.category'])
+                ->where('product_id', $validated['product_id'])
+                ->where('color_id', $validated['color_id'])
+                ->where('capacity_id', $validated['capacity_id'])
+                ->first();
 
-        if ($variant) {
-            // Prefer flash sale pricing if the variant is in an ongoing flash sale
-            $flashSaleProduct = \App\Models\FlashSaleProduct::where('product_variant_id', $variant->id)
-                ->whereHas('flashSale', function ($q) {
-                    $q->ongoing();
+            if (!$variant) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Biến thể không tồn tại',
+                    'code' => 404
+                ], 404);
+            }
+
+            // Kiểm tra flash sale
+            $flashSaleProduct = \App\Models\FlashSaleProduct::with('flashSale')
+                ->where('product_variant_id', $variant->id)
+                ->whereHas('flashSale', function($query) {
+                    $query->where('start_time', '<=', now())
+                          ->where('end_time', '>=', now())
+                          ->where('status', 'active');
                 })
                 ->first();
 
+            // Xây dựng dữ liệu trả về
+            $response = [
+                'success' => true,
+                'id' => $variant->id,
+                'product_id' => $variant->product_id,
+                'product_name' => $product->name,
+                'category_name' => $variant->product->category->Name ?? '',
+                'color_id' => $variant->color_id,
+                'capacity_id' => $variant->capacity_id,
+                'price' => (float) $variant->price,
+                'price_sale' => $variant->price_sale ? (float) $variant->price_sale : null,
+                'stock' => (int) $variant->quantity,
+                'image' => $variant->image 
+                    ? (str_starts_with($variant->image, 'http') 
+                        ? $variant->image 
+                        : asset('storage/' . $variant->image))
+                    : asset('images/no-image.png'),
+                'is_flash_sale' => (bool) $flashSaleProduct,
+            ];
+
+            // Nếu có trong flash sale
             if ($flashSaleProduct) {
-                $salePrice = (float) $flashSaleProduct->sale_price;
-                $originalPrice = (float) ($flashSaleProduct->original_price ?? $variant->price ?? $variant->price_sale ?? $salePrice);
-                $quantity = (int) ($flashSaleProduct->remaining_stock ?? $variant->quantity);
+                $response['flash_sale_price'] = (float) $flashSaleProduct->sale_price;
+                $response['original_price'] = (float) $variant->price;
+                $response['is_flash_sale'] = true;
             } else {
-                // Fall back to variant pricing
-                $salePrice = (float) ($variant->price_sale ?? $variant->price);
-                $originalPrice = (float) ($variant->price ?? $salePrice);
-                $quantity = (int) $variant->quantity;
+                $response['is_flash_sale'] = false;
             }
 
+            return response()->json($response);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'success' => true,
-
-                'variant' => [
-                    'image' => asset($variant->image),
-                    'sale_price' => $salePrice,
-                    'original_price' => $originalPrice,
-                    'quantity' => $quantity,
-                ],
-
-                'image' => $this->getImageUrl($variant->image),
-                'price' => $variant->price,
-                'price_sale' => $variant->price_sale,
-                'quantity' => $variant->quantity,
-                'product_name' => $product->name,
-                'category_name' => $category->Name ?? '',
-
-            ]);
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $e->errors(),
+                'code' => 422
+            ], 422);
+            
+        } catch (\Exception $e) {
+            \Log::error('Lỗi khi lấy thông tin biến thể: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi hệ thống: ' . $e->getMessage(),
+                'code' => 500
+            ], 500);
         }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Variant not found'
-        ]);
 
     }
 

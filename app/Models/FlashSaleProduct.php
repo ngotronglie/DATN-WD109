@@ -95,6 +95,16 @@ class FlashSaleProduct extends Model
     /**
      * Giảm stock khi có người mua
      */
+    /**
+     * Lấy số lượng đã bán từ order_details
+     */
+    public function getSoldQuantityAttribute()
+    {
+        return \App\Models\OrderDetail::where('flash_sale_id', $this->flash_sale_id)
+            ->where('product_variant_id', $this->product_variant_id)
+            ->sum('quantity');
+    }
+
     public function decreaseStock($quantity = 1)
     {
         if ($this->remaining_stock >= $quantity) {

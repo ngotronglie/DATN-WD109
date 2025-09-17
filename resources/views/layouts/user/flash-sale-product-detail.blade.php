@@ -1012,11 +1012,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Get variant data from server via AJAX
 function getVariantData(colorId, capacityId) {
+    console.log('Fetching variant data for:', { colorId, capacityId });
+    
     return fetch('{{ route("get.variant") }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
         },
         body: JSON.stringify({
             product_id: {{ $product->id }},
@@ -1024,20 +1027,41 @@ function getVariantData(colorId, capacityId) {
             capacity_id: capacityId
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            return {
-                image: data.variant.image,
-                price: data.variant.sale_price || {{ $flashSaleProduct->sale_price }},
-                originalPrice: data.variant.original_price || {{ $flashSaleProduct->original_price }},
-                stock: data.variant.quantity || {{ $flashSaleProduct->remaining_stock }}
-            };
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return null;
+        return response.json();
+    })
+    .then(data => {
+        console.log('Variant API response:', data);
+        
+        if (!data) {
+            throw new Error('No data received from server');
+        }
+        
+        if (data.success === false) {
+            console.error('API Error:', data.message || 'Unknown error');
+            return null;
+        }
+        
+        // Map the response to match the expected format
+        const variantData = {
+            id: data.id,
+            image: data.image || '{{ asset("images/no-image.png") }}',
+            price: parseFloat(data.price) || 0,
+            price_sale: data.price_sale ? parseFloat(data.price_sale) : null,
+            original_price: data.original_price ? parseFloat(data.original_price) : parseFloat(data.price) || 0,
+            stock: parseInt(data.stock) || 0,
+            is_flash_sale: data.is_flash_sale || false,
+            flash_sale_price: data.flash_sale_price ? parseFloat(data.flash_sale_price) : null
+        };
+        
+        console.log('Processed variant data:', variantData);
+        return variantData;
     })
     .catch(error => {
-        console.error('Error fetching variant:', error);
+        console.error('Error in getVariantData:', error);
         return null;
     });
 }
@@ -1059,17 +1083,25 @@ const variantIdMap = {
 // Flash sale combinations map (only combos included in this flash sale)
 const flashSaleCombinations = {
     @if(isset($flashSale))
+        @php
+            $processed = [];
+        @endphp
         @foreach(($flashSale->flashSaleProducts ?? []) as $fsp)
             @php
                 $pv = $fsp->productVariant;
+                $key = $pv ? ($pv->color_id . '_' . $pv->capacity_id) : '';
+                if ($pv && $pv->product_id === $product->id && !in_array($key, $processed)) {
+                    $processed[] = $key;
             @endphp
-            @if($pv && $pv->product_id === $product->id)
-            '{{ $pv->color_id }}_{{ $pv->capacity_id }}': {
+            '{{ $key }}': {
                 variant_id: {{ $pv->id }},
                 sale_price: {{ (float) $fsp->sale_price }},
-                original_price: {{ (float) ($fsp->original_price ?? $pv->price ?? $pv->price_sale ?? $fsp->sale_price) }}
+                original_price: {{ (float) ($fsp->original_price ?? $pv->price ?? $pv->price_sale ?? $fsp->sale_price) }},
+                remaining_stock: {{ (int) ($fsp->remaining_stock ?? $fsp->sale_quantity ?? 0) }}
             },
-            @endif
+            @php
+                }
+            @endphp
         @endforeach
     @endif
 };
@@ -1184,29 +1216,184 @@ async function updateProductVariant() {
         return;
     }
     
-    console.log('Fetching variant for:', selectedColor.value, selectedCapacity.value);
+    const colorId = selectedColor.value;
+    const capacityId = selectedCapacity.value;
+    const combinationKey = `${colorId}_${capacityId}`;
+    const flashSaleVariant = flashSaleCombinations[combinationKey];
+    
+    console.log('Updating variant for:', combinationKey, 'Flash sale data:', flashSaleVariant);
     
     try {
-        const variant = await getVariantData(selectedColor.value, selectedCapacity.value);
+        const variant = await getVariantData(colorId, capacityId);
         
-        if (variant) {
-            console.log('Found variant:', variant);
+        if (!variant) {
+            console.error('Variant not found for:', { colorId, capacityId });
+            return;
+        }
+        
+        console.log('Variant data:', variant);
+        
+        // Update image
+        const mainImage = document.getElementById('product-image');
+        if (mainImage && variant.image) {
+            mainImage.src = variant.image;
+            mainImage.onerror = function() {
+                this.src = '{{ asset("images/no-image.png") }}';
+            };
+        }
+        
+        // Xác định giá hiển thị
+        let displayPrice, originalPrice;
+        
+        // Nếu có trong flash sale
+        if (flashSaleVariant || variant.is_flash_sale) {
+            displayPrice = parseFloat(flashSaleVariant?.sale_price || variant.flash_sale_price || variant.price);
+            originalPrice = parseFloat(flashSaleVariant?.original_price || variant.original_price || variant.price);
+            console.log('Using flash sale price:', { displayPrice, originalPrice });
+        } 
+        // Nếu có giá khuyến mãi
+        else if (variant.price_sale && variant.price_sale < variant.price) {
+            displayPrice = parseFloat(variant.price_sale);
+            originalPrice = parseFloat(variant.price);
+            console.log('Using sale price:', { displayPrice, originalPrice });
+        }
+        // Giá thường
+        else {
+            displayPrice = parseFloat(variant.price);
+            originalPrice = displayPrice;
+            console.log('Using regular price:', { displayPrice });
+        }
             
-            // Update image
-            document.getElementById('product-image').src = variant.image;
+            console.log('Price calculation:', {displayPrice, originalPrice, isFlashSale: !!(flashSaleVariant || variant.is_flash_sale)});
             
-            // Update price
-            document.getElementById('current-price').textContent = '₫' + (variant.price ?? variant.sale_price).toLocaleString('vi-VN');
-            document.getElementById('original-price').textContent = '₫' + (variant.originalPrice ?? variant.price ?? variant.sale_price).toLocaleString('vi-VN');
+            // Update price display
+            const currentPriceElement = document.getElementById('current-price');
+            const originalPriceElement = document.getElementById('original-price');
+            const savingsBadge = document.getElementById('savings-badge');
             
-            // Update savings
-            const vPrice = (variant.price ?? variant.sale_price) * 1;
-            const vOriginal = (variant.originalPrice ?? variant.price ?? variant.sale_price) * 1;
-            const savings = Math.max(0, vOriginal - vPrice);
-            document.getElementById('savings-badge').textContent = 'Tiết kiệm ₫' + savings.toLocaleString('vi-VN');
+            if (currentPriceElement) {
+                // Format và hiển thị giá hiện tại
+                currentPriceElement.textContent = '₫' + Math.round(displayPrice).toLocaleString('vi-VN');
+                
+                // Hiển thị giá gốc và % giảm giá nếu có khác biệt
+                if (displayPrice < originalPrice) {
+                    if (originalPriceElement) {
+                        originalPriceElement.textContent = '₫' + Math.round(originalPrice).toLocaleString('vi-VN');
+                        originalPriceElement.style.display = 'inline';
+                        originalPriceElement.classList.add('text-decoration-line-through', 'text-muted', 'ms-2');
+                    }
+                    if (savingsBadge) {
+                        const savingsPercent = Math.round(((originalPrice - displayPrice) / originalPrice) * 100);
+                        savingsBadge.textContent = `Tiết kiệm ${savingsPercent}%`;
+                        savingsBadge.style.display = 'inline-block';
+                        
+                        // Thay đổi màu sắc dựa trên loại sản phẩm
+                        if (flashSaleVariant || variant.is_flash_sale) {
+                            // Màu đỏ cho flash sale
+                            savingsBadge.className = 'ms-2 badge bg-danger';
+                        } else {
+                            // Màu xanh lá cho sản phẩm thường
+                            savingsBadge.className = 'ms-2 badge bg-success';
+                        }
+                    }
+                } else {
+                    if (originalPriceElement) {
+                        originalPriceElement.style.display = 'none';
+                        originalPriceElement.classList.remove('text-decoration-line-through', 'text-muted', 'ms-2');
+                    }
+                    if (savingsBadge) {
+                        savingsBadge.style.display = 'none';
+                        savingsBadge.classList.remove('ms-2', 'badge', 'bg-danger');
+                    }
+                }
+                
+                // Thêm class cho flash sale
+                if (flashSaleVariant || variant.is_flash_sale) {
+                    currentPriceElement.classList.add('text-danger', 'fw-bold');
+                } else {
+                    currentPriceElement.classList.remove('text-danger', 'fw-bold');
+                }
             
-            // Update quantity input max value
-            document.getElementById('quantity').setAttribute('max', variant.stock);
+            // Update stock and quantity
+            let stock = variant.stock || 0;
+            if (flashSaleVariant && flashSaleVariant.remaining_stock !== undefined) {
+                stock = Math.min(stock, parseInt(flashSaleVariant.remaining_stock) || 0);
+            }
+            
+            const quantityInput = document.getElementById('quantity');
+            if (quantityInput) {
+                quantityInput.setAttribute('max', Math.max(1, stock));
+                
+                // Reset quantity if current value exceeds max
+                if (parseInt(quantityInput.value) > stock) {
+                    quantityInput.value = Math.min(1, stock);
+                }
+                
+                // Enable/disable quantity controls
+                const minusBtn = document.querySelector('.quantity-minus');
+                const plusBtn = document.querySelector('.quantity-plus');
+                
+                if (minusBtn) minusBtn.disabled = parseInt(quantityInput.value) <= 1;
+                if (plusBtn) plusBtn.disabled = parseInt(quantityInput.value) >= stock;
+            }
+            
+            // Update stock status
+            const stockStatus = document.getElementById('stock-status');
+            if (stockStatus) {
+                if (stock > 5) {
+                    stockStatus.textContent = 'Còn hàng (' + stock + ' sản phẩm)';
+                    stockStatus.className = 'text-success';
+                } else if (stock > 0) {
+                    stockStatus.textContent = 'Sắp hết hàng (chỉ còn ' + stock + ' sản phẩm)';
+                    stockStatus.className = 'text-warning';
+                } else {
+                    stockStatus.textContent = 'Tạm hết hàng';
+                    stockStatus.className = 'text-danger';
+                }
+            }
+            
+            // Update add to cart button
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            if (addToCartBtn) {
+                if (stock > 0) {
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.textContent = 'Thêm vào giỏ hàng';
+                    addToCartBtn.classList.remove('btn-secondary');
+                    addToCartBtn.classList.add('btn-primary');
+                } else {
+                    addToCartBtn.disabled = true;
+                    addToCartBtn.textContent = 'Hết hàng';
+                    addToCartBtn.classList.remove('btn-primary');
+                    addToCartBtn.classList.add('btn-secondary');
+                }
+            }
+            
+            // Update buy now button
+            const buyNowBtn = document.getElementById('buy-now-btn');
+            if (buyNowBtn) {
+                if (stock > 0) {
+                    buyNowBtn.disabled = false;
+                    buyNowBtn.classList.remove('btn-secondary');
+                    buyNowBtn.classList.add('btn-danger');
+                } else {
+                    buyNowBtn.disabled = true;
+                    buyNowBtn.classList.remove('btn-danger');
+                    buyNowBtn.classList.add('btn-secondary');
+                }
+            }
+            
+            // Update variant ID in form
+            const variantIdInput = document.getElementById('variant-id');
+            if (variantIdInput) {
+                variantIdInput.value = variant.id;
+            }
+            
+            // Update URL with variant ID without page reload
+            if (history.pushState) {
+                const url = new URL(window.location);
+                url.searchParams.set('variant', variant.id);
+                window.history.pushState({}, '', url);
+            }    
         } else {
             console.log('Variant not found');
         }
@@ -1220,8 +1407,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Color change
     document.querySelectorAll('input[name="color"]').forEach(radio => {
         radio.addEventListener('change', function() {
+            console.log('Color changed to:', this.value);
             updateCapacityOptions();
             updateColorOptions();
+            
+            // Find the first available capacity for the selected color
+            const selectedColor = this.value;
+            const capacities = Array.from(document.querySelectorAll('input[name="capacity"]:not(:disabled)'));
+            
+            // Only auto-select capacity if no capacity is selected or if the current one is disabled
+            const currentCapacity = document.querySelector('input[name="capacity"]:checked');
+            if (!currentCapacity || currentCapacity.disabled) {
+                const firstAvailable = capacities[0];
+                if (firstAvailable) {
+                    firstAvailable.checked = true;
+                    console.log('Auto-selected capacity:', firstAvailable.value);
+                }
+            }
+            
             updateProductVariant();
         });
     });
@@ -1229,6 +1432,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Capacity change
     document.querySelectorAll('input[name="capacity"]').forEach(radio => {
         radio.addEventListener('change', function() {
+            console.log('Capacity changed to:', this.value);
             updateColorOptions();
             updateProductVariant();
         });
@@ -1239,8 +1443,28 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCapacityOptions();
     updateColorOptions();
     
+    // Auto-select first available color and capacity
+    const firstAvailableColor = document.querySelector('input[name="color"]:not(:disabled)');
+    if (firstAvailableColor) {
+        firstAvailableColor.checked = true;
+        console.log('Initial color selected:', firstAvailableColor.value);
+        
+        // Update capacities based on selected color
+        updateCapacityOptions();
+        
+        // Select first available capacity
+        const firstAvailableCapacity = document.querySelector('input[name="capacity"]:not(:disabled)');
+        if (firstAvailableCapacity) {
+            firstAvailableCapacity.checked = true;
+            console.log('Initial capacity selected:', firstAvailableCapacity.value);
+        }
+    }
+    
     // Initialize product variant on page load
     updateProductVariant();
+    
+    // Debug: Log all flash sale combinations
+    console.log('Flash sale combinations:', flashSaleCombinations);
 
     // Auto-add favorite after login if flagged
     try {

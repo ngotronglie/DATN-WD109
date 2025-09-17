@@ -8,14 +8,6 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Chi tiết Flash Sale: {{ $flashSale->name }}</h3>
                     <div class="card-tools">
-                        <button type="button" class="btn btn-info btn-sm" onclick="window.location.reload()">
-                            <i class="fas fa-sync"></i> Làm mới
-                        </button>
-                        @if(!$flashSale->isOngoing())
-                        <a href="{{ route('admin.flash-sales.edit', $flashSale->id) }}" class="btn btn-warning btn-sm">
-                            <i class="fas fa-edit"></i> Chỉnh sửa
-                        </a>
-                        @endif
                         <a href="{{ route('admin.flash-sales.index') }}" class="btn btn-secondary btn-sm">
                             <i class="fas fa-arrow-left"></i> Quay lại
                         </a>
@@ -151,7 +143,6 @@
                                             <th width="7%" class="text-center">Ảnh</th>
                                             <th width="9%" class="text-center">Giá gốc</th>
                                             <th width="10%" class="text-center">Giá Flash Sale</th>
-                                            <th width="8%" class="text-center">Ưu tiên</th>
                                             <th width="9%" class="text-center">Trạng thái</th>
                                             <th width="9%" class="text-center">Tiết kiệm</th>
                                             <th width="8%" class="text-center">Số lượng</th>
@@ -189,11 +180,8 @@
                                             </td>
                                             <td class="text-center">
                                                 <strong class="text-danger">
-                                                    {{ number_format($flashSaleProduct->sale_price) }}đ
+                                                    {{ number_format($flashSaleProduct->sale_price) }}₫
                                                 </strong>
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge bg-primary">{{ $flashSaleProduct->priority ?? 0 }}</span>
                                             </td>
                                             <td class="text-center">
                                                 @php
@@ -226,7 +214,7 @@
                                                 <span class="badge bg-info">{{ $flashSaleProduct->sale_quantity }}</span>
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge bg-warning">{{ $flashSaleProduct->initial_stock - $flashSaleProduct->remaining_stock }}</span>
+                                                <span class="badge bg-warning">{{ $flashSaleProduct->sold_quantity }}</span>
                                             </td>
                                             <td class="text-center">
                                                 <span class="badge bg-success">{{ $flashSaleProduct->remaining_stock }}</span>
@@ -234,7 +222,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="10" class="text-center">Chưa có sản phẩm nào trong flash sale này</td>
+                                            <td colspan="9" class="text-center">Chưa có sản phẩm nào trong flash sale này</td>
                                         </tr>
                                         @endforelse
                                     </tbody>

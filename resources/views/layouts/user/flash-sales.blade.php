@@ -611,11 +611,32 @@ function addToCart(variantId, quantity = 1, price = null) {
 
 // Buy now function
 function buyNow(variantId, price) {
-    addToCart(variantId, 1, price);
-    
-    setTimeout(() => {
-        window.location.href = '/checkout';
-    }, 1000);
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            variant_id: variantId,
+            quantity: 1,
+            flash_price: price,
+            redirect_to: 'cart' // Add this parameter to indicate we want to redirect to cart
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Redirect to cart page immediately after successful addition
+            window.location.href = '{{ route('cart.index') }}';
+        } else {
+            showNotification(data.message || 'Có lỗi xảy ra!', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
+    });
 }
 
 // Notification function

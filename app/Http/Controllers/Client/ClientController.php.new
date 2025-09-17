@@ -1,0 +1,135 @@
+<?php
+
+namespace App\Http\Controllers\Client;
+
+use App\Http\Controllers\Controller;
+use App\Models\Banner;
+use App\Models\Blog;
+use App\Models\Categories;
+use App\Models\Product;
+use App\Models\Color;
+use App\Models\Capacity;
+use App\Models\ProductVariant;
+use App\Models\Voucher;
+use App\Models\FlashSale;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\ProductComment;
+use App\Http\Requests\ContactRequest;
+use App\Models\Contact;
+use Illuminate\Support\Facades\Mail;
+
+class ClientController extends Controller
+{
+    /**
+     * Helper function to get proper image URL
+     */
+    private function getImageUrl($imagePath)
+    {
+        if (!$imagePath) {
+            return null;
+        }
+        
+        if (strpos($imagePath, 'http') === 0) {
+            return $imagePath;
+        }
+        
+        return asset($imagePath);
+    }
+
+    // ... (các phương thức khác vẫn giữ nguyên)
+
+    public function getVariant(Request $request)
+    {
+        try {
+            // Validate request
+            $validated = $request->validate([
+                'product_id' => 'required|exists:products,id',
+                'color_id' => 'required|exists:colors,id',
+                'capacity_id' => 'required|exists:capacities,id'
+            ]);
+
+            // Lấy thông tin sản phẩm
+            $product = Product::findOrFail($validated['product_id']);
+            
+            // Tìm biến thể phù hợp
+            $variant = ProductVariant::with(['color', 'capacity', 'product.category'])
+                ->where('product_id', $validated['product_id'])
+                ->where('color_id', $validated['color_id'])
+                ->where('capacity_id', $validated['capacity_id'])
+                ->first();
+
+            if (!$variant) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Biến thể không tồn tại',
+                    'code' => 404
+                ], 404);
+            }
+
+            // Kiểm tra flash sale
+            $flashSaleProduct = \App\Models\FlashSaleProduct::with('flashSale')
+                ->where('product_variant_id', $variant->id)
+                ->whereHas('flashSale', function($query) {
+                    $query->where('start_time', '<=', now())
+                          ->where('end_time', '>=', now())
+                          ->where('status', 'active');
+                })
+                ->first();
+
+            // Xây dựng dữ liệu trả về
+            $response = [
+                'success' => true,
+                'id' => $variant->id,
+                'product_id' => $variant->product_id,
+                'product_name' => $product->name,
+                'category_name' => $variant->product->category->Name ?? '',
+                'color_id' => $variant->color_id,
+                'capacity_id' => $variant->capacity_id,
+                'price' => (float) $variant->price,
+                'price_sale' => $variant->price_sale ? (float) $variant->price_sale : null,
+                'stock' => (int) $variant->quantity,
+                'image' => $variant->image 
+                    ? (str_starts_with($variant->image, 'http') 
+                        ? $variant->image 
+                        : asset('storage/' . $variant->image))
+                    : asset('images/no-image.png'),
+                'is_flash_sale' => (bool) $flashSaleProduct,
+            ];
+
+            // Nếu có trong flash sale
+            if ($flashSaleProduct) {
+                $response['flash_sale_price'] = (float) $flashSaleProduct->sale_price;
+                $response['original_price'] = (float) $variant->price;
+                $response['is_flash_sale'] = true;
+            } else {
+                $response['is_flash_sale'] = false;
+            }
+
+            return response()->json($response);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $e->errors(),
+                'code' => 422
+            ], 422);
+            
+        } catch (\Exception $e) {
+            \Log::error('Lỗi khi lấy thông tin biến thể: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi hệ thống: ' . $e->getMessage(),
+                'code' => 500
+            ], 500);
+        }
+    }
+    
+    // ... (các phương thức khác vẫn giữ nguyên)
+}
