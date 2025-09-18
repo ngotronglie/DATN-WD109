@@ -33,6 +33,16 @@
         </td>
     </tr>
     <tr>
+        <th>Ảnh minh chứng admin</th>
+        <td>
+            @if($refund->proof_image)
+            <img src="{{ asset('storage/' . $refund->proof_image) }}" width="150">
+            @else
+            Chưa có
+            @endif
+        </td>
+    </tr>
+    <tr>
         <th>Trạng thái</th>
         <td>
             @if($refund->refund_completed_at)

@@ -114,6 +114,11 @@ class OrderController extends Controller
             // Cập nhật trạng thái đơn hàng
             $order->status = $newStatus;
 
+            // Nếu chuyển sang Đang vận chuyển (4) hoặc Đã giao/hoàn thành (5), xóa yêu cầu hoàn tiền nếu có
+            if (in_array($newStatus, [4, 5]) && $order->refundRequest) {
+                $order->refundRequest->delete();
+            }
+
             // Nếu đơn hàng được đánh dấu là "Đã giao hàng" (status = 5)
             if ($newStatus === 5) {
                 // Nếu là COD thì đánh dấu đã thu tiền COD, nếu là VNPAY thì đã thanh toán trước đó (2)
@@ -147,8 +152,8 @@ class OrderController extends Controller
             return back()->with('error', 'Hoàn tiền chỉ áp dụng cho đơn thanh toán online. Đơn COD không hỗ trợ hoàn tiền.');
         }
 
-        if (!in_array((int)$order->status, [1, 2])) {
-            return back()->with('error', 'Chỉ có thể khởi tạo hoàn tiền khi đơn đang ở bước Đã xác nhận/Đang xử lý.');
+        if (!in_array((int)$order->status, [1, 2, 13])) {
+            return back()->with('error', 'Chỉ có thể khởi tạo hoàn tiền khi đơn đang ở bước Đã xác nhận/Đang xử lý/Giao hàng thất bại.');
         }
 
         $request->validate([
@@ -318,5 +323,94 @@ class OrderController extends Controller
         $order->save();
 
         return back()->with('success', 'Xác nhận duyệt hoàn hàng thành công.');
+    }
+
+    // Giao hàng thành công - chuyển từ đang vận chuyển sang đã giao hàng
+    public function deliverySuccess($id)
+    {
+        \DB::beginTransaction();
+        
+        try {
+            $order = Order::findOrFail($id);
+            
+            // Chỉ cho phép khi đơn hàng đang ở trạng thái "Đang vận chuyển" (4)
+            if ((int)$order->status !== 4) {
+                return back()->with('error', 'Chỉ có thể đánh dấu giao thành công khi đơn hàng đang vận chuyển.');
+            }
+            
+            // Cập nhật trạng thái sang "Đã giao hàng" (5)
+            $order->status = 5;
+            
+            // Nếu là COD thì đánh dấu đã thu tiền COD
+            if ((int)$order->status_method === 0) {
+                $order->status_method = 1; // thu COD khi giao
+            }
+            if (!$order->payment_method) {
+                $order->payment_method = 'cod';
+            }
+            
+            $order->save();
+            \DB::commit();
+            
+            return back()->with('success', 'Đã đánh dấu giao hàng thành công.');
+            
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return back()->with('error', 'Lỗi khi cập nhật trạng thái: ' . $e->getMessage());
+        }
+    }
+    
+    // Giao hàng thất bại - chuyển sang trạng thái giao hàng thất bại
+    public function deliveryFailed($id)
+    {
+        \DB::beginTransaction();
+        
+        try {
+            $order = Order::findOrFail($id);
+            
+            // Chỉ cho phép khi đơn hàng đang ở trạng thái "Đang giao hàng" (4)
+            if ((int)$order->status !== 4) {
+                return back()->with('error', 'Chỉ có thể đánh dấu giao thất bại khi đơn hàng đang giao hàng.');
+            }
+            
+            // Cập nhật trạng thái sang "Giao hàng thất bại" (13)
+            $order->status = 13;
+            $order->save();
+            
+            \DB::commit();
+            
+            return back()->with('success', 'Đã đánh dấu giao hàng thất bại.');
+            
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return back()->with('error', 'Lỗi khi cập nhật trạng thái: ' . $e->getMessage());
+        }
+    }
+    
+    // Giao hàng lại - chuyển từ giao hàng thất bại về đang giao hàng
+    public function redeliver($id)
+    {
+        \DB::beginTransaction();
+        
+        try {
+            $order = Order::findOrFail($id);
+            
+            // Chỉ cho phép khi đơn hàng đang ở trạng thái "Giao hàng thất bại" (13)
+            if ((int)$order->status !== 13) {
+                return back()->with('error', 'Chỉ có thể giao hàng lại khi đơn hàng ở trạng thái giao hàng thất bại.');
+            }
+            
+            // Cập nhật trạng thái sang "Đang giao hàng" (4)
+            $order->status = 4;
+            $order->save();
+            
+            \DB::commit();
+            
+            return back()->with('success', 'Đã chuyển đơn hàng sang trạng thái đang giao hàng để giao lại.');
+            
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return back()->with('error', 'Lỗi khi cập nhật trạng thái: ' . $e->getMessage());
+        }
     }
 }

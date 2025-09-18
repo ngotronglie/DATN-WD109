@@ -1246,6 +1246,8 @@ class ClientController extends Controller
             // Đánh dấu đã thanh toán online (2 = chuyển khoản)
             $order->status_method = 2;
             $order->payment_method = 'vnpay';
+            // Xác nhận đơn hàng
+            $order->status = 1; // 1 = đã xác nhận
             $order->save();
 
             // Gửi mail xác nhận
@@ -1264,28 +1266,15 @@ class ClientController extends Controller
 
             return view('layouts.user.vnpay_success', ['order' => $order]);
         } else {
-            // Đánh dấu đơn hàng thất bại và khôi phục tồn kho, voucher
+            // Không thành công: Để trạng thái chờ thanh toán và lên lịch hủy sau 30s nếu vẫn chưa thanh toán
             if ($order) {
-                // Cập nhật trạng thái đơn và phương thức thanh toán
-                $order->status = 6; // Đã hủy
                 $order->payment_method = 'vnpay';
                 $order->status_method = 0; // chưa thanh toán
+                $order->status = 0; // chờ thanh toán
                 $order->save();
 
-                // Khôi phục tồn kho các sản phẩm trong đơn
-                foreach ($order->orderDetails as $detail) {
-                    if ($detail->productVariant) {
-                        $detail->productVariant->increment('quantity', (int) $detail->quantity);
-                    }
-                }
-
-                // Khôi phục số lượng voucher nếu có
-                if (!empty($order->voucher_id)) {
-                    $voucher = \App\Models\Voucher::find($order->voucher_id);
-                    if ($voucher) {
-                        $voucher->increment('quantity', 1);
-                    }
-                }
+                // Lên lịch auto-cancel sau 30 giây nếu vẫn chưa thanh toán
+                \App\Jobs\AutoCancelUnpaidOrder::dispatch($order->id)->delay(now()->addSeconds(30));
             }
 
             return view('layouts.user.vnpay_fail', ['order' => $order]);
