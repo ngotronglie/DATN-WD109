@@ -304,6 +304,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::prefix('thongke')->name('thongke.')->group(function () {
         Route::get('/sanpham', [\App\Http\Controllers\Admin\StatisticController::class, 'sanpham'])->name('sanpham');
         Route::get('/donhang', [\App\Http\Controllers\Admin\StatisticController::class, 'donhang'])->name('donhang');
+        Route::get('/donhang/revenue-orders', [\App\Http\Controllers\Admin\StatisticController::class, 'revenueOrders'])->name('donhang.revenue-orders');
         Route::get('/nguoidung', [\App\Http\Controllers\Admin\StatisticController::class, 'nguoidung'])->name('nguoidung');
       
         Route::get('/', function() { return view('layouts.admin.thongke.index'); })->name('index');

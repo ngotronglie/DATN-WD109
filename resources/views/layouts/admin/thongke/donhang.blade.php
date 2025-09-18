@@ -23,13 +23,17 @@
     <!-- Revenue Overview Cards -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card">
+            <div class="card clickable-card" style="cursor: pointer; transition: all 0.3s ease;" 
+                 onclick="window.location.href='{{ route('admin.thongke.donhang.revenue-orders', ['filter' => $filter]) }}'">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <iconify-icon icon="solar:dollar-minimalistic-bold-duotone" class="fs-32 text-success avatar-title me-3"></iconify-icon>
                         <div>
                             <p class="text-muted mb-0">Tổng doanh thu</p>
-                            <h3 class="text-dark mb-0">{{ number_format($totalRevenue ?? 0, 0, ',', '.') }}₫</h3>
+                            <h3 class="text-dark mb-0">
+                                {{ number_format($totalRevenue ?? 0, 0, ',', '.') }}₫
+                                <i class="fas fa-external-link-alt ms-2 text-muted" style="font-size: 0.8em;"></i>
+                            </h3>
                         </div>
                     </div>
                 </div>
@@ -190,6 +194,65 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="detailedOrdersModal" tabindex="-1" aria-labelledby="detailedOrdersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailedOrdersModalLabel">Chi tiết đơn hàng theo phương thức thanh toán</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Bộ lọc -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Lọc theo phương thức thanh toán:</label>
+                        <select class="form-select" id="paymentMethodFilter" onchange="fetchFilteredOrders()">
+                            <option value="">Tất cả</option>
+                            <option value="cod">COD</option>
+                            <option value="vnpay">VNPay</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Lọc theo trạng thái:</label>
+                        <select class="form-select" id="statusFilter" onchange="fetchFilteredOrders()">
+                            <option value="">Tất cả</option>
+                            <option value="5">Đã giao hàng</option>
+                            <option value="6">Đã hủy</option>
+                            <option value="14">Đã hoàn thành (khách xác nhận)</option>
+                            <option value="15">Tự động hoàn thành</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bảng dữ liệu -->
+                <div class="table-responsive">
+                    <table class="table table-striped" id="detailedOrdersTable">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Phương thức</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end">Tổng tiền</th>
+                                <th>Ngày đặt</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dữ liệu sẽ được JS render -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
         
         <!-- Top Customers -->
         <div class="col-lg-6">
@@ -226,6 +289,18 @@
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+.clickable-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.clickable-card:hover .text-success {
+    color: #198754 !important;
+}
+.clickable-card:hover .text-dark {
+    color: #0d6efd !important;
+}
+</style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Monthly Revenue Chart
@@ -299,5 +374,81 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+function showDetailedOrders() {
+        const modal = new bootstrap.Modal(document.getElementById('detailedOrdersModal'));
+        modal.show();
+        fetchFilteredOrders(); // load dữ liệu khi mở modal
+    }
+
+    /**
+     * Hàm gọi API backend để lấy dữ liệu đơn hàng đã lọc
+     */
+    function fetchFilteredOrders() {
+        const paymentMethod = document.getElementById('paymentMethodFilter').value;
+        const status = document.getElementById('statusFilter').value;
+
+        // Gọi API
+        fetch(`/admin/orders/filter?payment_method=${paymentMethod}&status=${status}`)
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    console.log("Dữ liệu từ server:", result.data);
+                    const tbody = document.querySelector('#detailedOrdersTable tbody');
+                    tbody.innerHTML = '';
+
+                    // Render dữ liệu mới
+                    result.data.forEach(order => {
+                        const row = `
+                            <tr data-payment-method="${order.payment_method}" data-status="${order.status}">
+                                <td>
+                                    <a href="/admin/orders/${order.id}" class="text-decoration-none">${order.order_code}</a>
+                                </td>
+                                <td>${order.customer ? order.customer.name : ''}</td>
+                                <td>
+                                    <span class="badge bg-${order.payment_method === 'cod' ? 'warning' : 'success'}">
+                                        ${order.payment_method.toUpperCase()}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-${order.status == 5 ? 'success' : (order.status == 6 ? 'danger' : 'info')}">
+                                        ${getStatusName(order.status)}
+                                    </span>
+                                </td>
+                                <td class="text-end">${Number(order.total_amount).toLocaleString('vi-VN')}₫</td>
+                                <td>${formatDate(order.created_at)}</td>
+                                <td><span class="text-success">Đã giao thành công</span></td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                } else {
+                    alert("Không lấy được dữ liệu từ server!");
+                }
+            })
+            .catch(error => {
+                console.error("Lỗi khi lấy dữ liệu:", error);
+            });
+    }
+
+    /**
+     * Hàm đổi status code thành tên trạng thái
+     */
+    function getStatusName(status) {
+        const statusNames = {
+            5: 'Đã giao hàng',
+            6: 'Đã hủy',
+            14: 'Đã hoàn thành (khách xác nhận)',
+            15: 'Tự động hoàn thành'
+        };
+        return statusNames[status] || 'Không xác định';
+    }
+
+    /**
+     * Hàm format ngày giờ
+     */
+    function formatDate(datetime) {
+        const date = new Date(datetime);
+        return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
 </script>
 @endsection 

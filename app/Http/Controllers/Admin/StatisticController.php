@@ -234,4 +234,49 @@ class StatisticController extends Controller
             'monthlyLabels', 'monthlyData', 'statusLabels', 'statusData'
         ));
     }
+
+    public function revenueOrders(Request $request)
+    {
+        $filter = $request->get('filter', 'all'); // all, today, week, month, year
+        
+        // Query orders that contribute to revenue
+        $query = Order::with(['user', 'orderDetails.product'])
+            ->whereIn('status', [1, 2, 3, 4, 5]) // Completed orders
+            ->where('status_method', '>', 0); // Paid orders
+        
+        // Apply time filter
+        switch($filter) {
+            case 'today':
+                $query->whereDate('created_at', today());
+                break;
+            case 'week':
+                $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                break;
+            case 'month':
+                $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+                break;
+            case 'year':
+                $query->whereYear('created_at', now()->year);
+                break;
+        }
+        
+        // Get orders with pagination
+        $orders = $query->orderBy('created_at', 'desc')->paginate(20);
+        
+        // Calculate total revenue for this filter
+        $totalRevenue = $query->clone()->sum('total_amount');
+        
+        // Get filter options for display
+        $filterOptions = [
+            'all' => 'Tất cả',
+            'today' => 'Hôm nay',
+            'week' => 'Tuần này', 
+            'month' => 'Tháng này',
+            'year' => 'Năm nay'
+        ];
+        
+        return view('layouts.admin.thongke.revenue-orders', compact(
+            'orders', 'totalRevenue', 'filter', 'filterOptions'
+        ));
+    }
 } 
