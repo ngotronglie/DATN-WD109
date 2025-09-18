@@ -260,6 +260,12 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::get('orders/{order}/detail', [OrderController::class, 'show'])->name('orders.detail');
     Route::post('/admin/orders/{refund}/confirm-receive-back', [OrderController::class, 'confirmReceiveBack'])->name('orders.confirmReceiveBack');
+    
+    // Delivery actions
+    Route::post('/orders/{id}/delivery-success', [OrderController::class, 'deliverySuccess'])->name('orders.deliverySuccess');
+    Route::post('/orders/{id}/delivery-failed', [OrderController::class, 'deliveryFailed'])->name('orders.deliveryFailed');
+    Route::post('/orders/{id}/redeliver', [OrderController::class, 'redeliver'])->name('orders.redeliver');
+    Route::post('/orders/{id}/cod-not-received', [OrderController::class, 'codNotReceived'])->name('orders.codNotReceived');
 
 
     // Refund Requests

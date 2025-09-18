@@ -107,10 +107,8 @@
                         <span class="badge bg-primary">Đã xác nhận</span>
                         @elseif($stt === 2)
                         <span class="badge bg-info">Đang xử lý</span>
-                        @elseif($stt === 3)
-                        <span class="badge bg-secondary">Đã giao cho đơn vị vận chuyển</span>
                         @elseif($stt === 4)
-                        <span class="badge bg-dark">Đang vận chuyển</span>
+                        <span class="badge bg-dark">Đang giao hàng</span>
                         @elseif($stt === 5)
                         <span class="badge bg-success">Đã giao hàng</span>
                         @elseif($stt === 6)
@@ -123,6 +121,10 @@
                         <span class="badge bg-success text-dark">Hoàn tiền thành công</span>
                         @elseif($stt === 10)
                         <span class="badge bg-success text-dark">Không xác nhận yêu cầu hoàn hàng</span>
+                        @elseif($stt === 13)
+                        <span class="badge bg-danger">Giao hàng thất bại</span>
+                        @elseif($stt === 14)
+                        <span class="badge bg-warning text-dark">COD không nhận hàng</span>
                         @else
                         <span class="badge bg-secondary">Không xác định</span>
                         @endif
@@ -130,9 +132,108 @@
                     <div><strong>Ngày đặt:</strong> {{ $order->created_at ? $order->created_at->format('d/m/Y H:i') : '-' }}</div>
                     <div><strong>Phương thức thanh toán:</strong> {{ $order->payment_method }}</div>
                     <div><strong>Ghi chú:</strong> {{ $order->note }}</div>
+                    
+                    @if($stt === 4)
+                    <div class="mt-3">
+                        <h6>Hành động:</h6>
+                        <form action="{{ route('admin.orders.deliverySuccess', $order->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-success btn-sm me-2" onclick="return confirm('Xác nhận giao hàng thành công?')">
+                                <i class="fas fa-check"></i> Giao thành công
+                            </button>
+                        </form>
+                        <form action="{{ route('admin.orders.deliveryFailed', $order->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-danger btn-sm me-2" onclick="return confirm('Xác nhận giao hàng thất bại?')">
+                                <i class="fas fa-times"></i> Giao thất bại
+                            </button>
+                        </form>
+                        @if (strtolower((string)$order->payment_method) === 'cod')
+                        <form action="{{ route('admin.orders.codNotReceived', $order->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Xác nhận COD không nhận hàng?')">
+                                <i class="fas fa-user-times"></i> Khách không nhận hàng
+                            </button>
+                        </form>
+                        @endif
+                    </div>
+                    @elseif($stt === 13)
+                    <div class="mt-3">
+                        <h6>Hành động:</h6>
+                        <form action="{{ route('admin.orders.redeliver', $order->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-primary btn-sm me-2" onclick="return confirm('Xác nhận giao hàng lại?')">
+                                <i class="fas fa-redo"></i> Giao hàng lại
+                            </button>
+                        </form>
+                        @if (strtolower((string)$order->payment_method) === 'vnpay')
+                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#initiateRefundModal-{{ $order->id }}">
+                            <i class="fas fa-money-bill-wave"></i> Hoàn tiền
+                        </button>
+                        @endif
+                    </div>
+                    @elseif($stt === 14)
+                    <div class="mt-3">
+                        <h6>Hành động:</h6>
+                        <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <input type="hidden" name="status" value="6">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận hủy đơn hàng COD không nhận?')">
+                                <i class="fas fa-times"></i> Hủy đơn
+                            </button>
+                        </form>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@if (strtolower((string)$order->payment_method) === 'vnpay' && $stt === 13)
+<div class="modal fade" id="initiateRefundModal-{{ $order->id }}" tabindex="-1" aria-labelledby="initiateRefundLabel-{{ $order->id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="modal-content" method="POST" action="{{ route('admin.orders.refund.initiate', $order->id) }}">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title" id="initiateRefundLabel-{{ $order->id }}">Khởi tạo hoàn tiền - Đơn #{{ $order->order_code }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Lý do hoàn tiền</label>
+                    <select class="form-select" id="refund-reason-select-{{ $order->id }}" name="reason" required>
+                        <option value="">-- Chọn lý do --</option>
+                        <option value="Giao hàng thất bại">Giao hàng thất bại</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                    <input type="text" class="form-control mt-2" id="refund-reason-input-{{ $order->id }}" name="reason_other" placeholder="Nhập lý do khác" style="display:none;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-warning">Tạo yêu cầu hoàn</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var select = document.getElementById('refund-reason-select-{{ $order->id }}');
+        var input = document.getElementById('refund-reason-input-{{ $order->id }}');
+        if (select && input) {
+            select.addEventListener('change', function() {
+                if (this.value === 'Khác') {
+                    input.style.display = '';
+                    input.setAttribute('name','reason');
+                } else {
+                    input.style.display = 'none';
+                    input.removeAttribute('name');
+                    input.value = '';
+                }
+            });
+        }
+    });
+</script>
+@endif
 @endsection

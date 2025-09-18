@@ -15,8 +15,7 @@
         0 => 'Chờ xác nhận',
         1 => 'Đã xác nhận',
         2 => 'Đang chuẩn bị',
-        3 => 'Đã đến tay shiper',
-        4 => 'đang giao đến',
+        4 => 'Đang giao hàng',
         5 => 'Đã giao',
         6 => 'Đã hủy',
         7 => 'xác nhận yêu cầu Hoàn tiền',
@@ -25,13 +24,13 @@
         10 => 'không xác nhận yêu cầu hoàn tiền',
         11 => 'Đang yêu cầu hoàn hàng',
         12 => 'Không hoàn hàng',
+        13 => 'Giao hàng thất bại',
         ];
         $statusColors = [
         0 => 'bg-warning text-dark', // Chờ xác nhận
         1 => 'bg-info text-dark', // Đã xác nhận
         2 => 'bg-primary text-white', // Đang chuẩn bị
-        3 => 'bg-primary text-white', // Đã đến tay shiper
-        4 => 'bg-warning text-dark', // Đang giao đến
+        4 => 'bg-warning text-dark', // Đang giao hàng
         5 => 'bg-success text-white', // Đã giao
         6 => 'bg-danger text-white', // Đã hủy
         7 => 'bg-secondary text-white', // Xác nhận yêu cầu hoàn tiền
@@ -40,6 +39,7 @@
         10 => 'bg-dark text-white', // Không xác nhận yêu cầu hoàn tiền
         11 => 'bg-warning text-dark', // Đang yêu cầu hoàn hàng
         12 => 'bg-dark text-white', // Không hoàn hàng
+        13 => 'bg-danger text-white', // Giao hàng thất bại
         ];
 
         $status = $order->status;
@@ -131,7 +131,7 @@
         @if (in_array($order->status, [4, 5]) && strtolower((string)$order->payment_method) === 'vnpay')
         @if ($order->refundRequest == null)
         <div class="text-end mt-4">
-           
+
         </div>
         @else
         <div class="alert alert-warning mt-4 rounded-4">
@@ -169,6 +169,27 @@
             <a href="{{ route('account.fillinfo', $refund->id) }}" class="btn btn-primary btn-sm rounded-pill">
                 Cung cấp thông tin ngân hàng
             </a>
+        </div>
+        @endif
+        @endif
+
+        {{-- Nếu đơn giao hàng thất bại (status = 13) và có yêu cầu hoàn tiền --}}
+        @if ($order->status == 13 && $order->refundRequest)
+        @php
+        $refund = $order->refundRequest;
+        $missingInfo = !$refund->bank_name || !$refund->bank_number || !$refund->account_name;
+        @endphp
+
+        @if ($missingInfo)
+        <div class="alert alert-warning mt-4 rounded-4 d-flex justify-content-between align-items-center">
+            <span>Đơn hàng giao thất bại. Bạn cần cung cấp thông tin tài khoản ngân hàng để nhận hoàn tiền.</span>
+            <a href="{{ route('account.fillinfo', $refund->id) }}" class="btn btn-primary btn-sm rounded-pill">
+                Cung cấp thông tin ngân hàng
+            </a>
+        </div>
+        @else
+        <div class="alert alert-info mt-4 rounded-4">
+            <span>Đơn hàng giao thất bại. Thông tin ngân hàng đã được cung cấp, đang chờ admin xử lý hoàn tiền.</span>
         </div>
         @endif
         @endif

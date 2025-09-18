@@ -48,8 +48,11 @@ class UserOrderController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
 
-        // Chỉ cho phép yêu cầu hoàn tiền cho đơn thanh toán online
+        // Chỉ cho phép yêu cầu hoàn tiền cho đơn thanh toán online và không ở trạng thái đang vận chuyển/đã hoàn thành
         $order = Order::where('id', $request->order_id)->where('user_id', Auth::id())->firstOrFail();
+        if (in_array((int) $order->status, [4, 5])) {
+            return back()->with('error', 'Không thể yêu cầu hoàn tiền khi đơn đang vận chuyển hoặc đã hoàn thành.');
+        }
         $paymentMethod = strtolower((string) $order->payment_method);
         if (!in_array($paymentMethod, ['vnpay', 'online'])) {
             return back()->with('error', 'Hoàn tiền chỉ áp dụng cho đơn thanh toán online. Đơn COD không hỗ trợ hoàn tiền.');
@@ -76,9 +79,9 @@ class UserOrderController extends Controller
     {
         $order = Order::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
-        // Chỉ cho phép yêu cầu hoàn hàng khi đơn đang giao đến
-        if ((int)$order->status !== 4) {
-            return redirect()->route('user.orders.show', $order->id)->with('error', 'Chỉ có thể yêu cầu hoàn hàng khi đơn đang giao đến.');
+        // Không cho phép yêu cầu hoàn hàng khi đang vận chuyển hoặc đã hoàn thành
+        if (in_array((int)$order->status, [4, 5])) {
+            return redirect()->route('user.orders.show', $order->id)->with('error', 'Không thể yêu cầu hoàn hàng khi đơn đang vận chuyển hoặc đã hoàn thành.');
         }
 
         $request->validate([
