@@ -59,10 +59,18 @@
                                         <span class="badge bg-info">{{ $flashSale->flashSaleProducts->count() }}</span>
                                     </td>
                                     <td class="text-center">
-                                        @if($flashSale->isOngoing())
-                                            <span class="badge bg-warning text-dark">Đang diễn ra</span>
-                                        @elseif($flashSale->isExpired())
+                                        @if($flashSale->isExpired())
                                             <span class="badge bg-danger">Đã kết thúc</span>
+                                        @elseif(!$flashSale->is_active)
+                                            @if(now() >= $flashSale->start_time && now() <= $flashSale->end_time)
+                                                <span class="badge bg-secondary">Tạm dừng (trong giờ)</span>
+                                            @elseif(now() < $flashSale->start_time)
+                                                <span class="badge bg-secondary">Tạm dừng (chưa tới giờ)</span>
+                                            @else
+                                                <span class="badge bg-secondary">Tạm dừng</span>
+                                            @endif
+                                        @elseif($flashSale->isOngoing())
+                                            <span class="badge bg-warning text-dark">Đang diễn ra</span>
                                         @else
                                             <span class="badge bg-primary">Sắp diễn ra</span>
                                         @endif

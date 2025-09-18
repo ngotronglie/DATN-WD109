@@ -63,15 +63,15 @@
                                                 <div class="product-image-container">
                                                             <a href="{{ route('shop.show', $product->id) }}">
                                                                 @if($variant && $variant->image)
-                                                            <img src="{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}" 
-                                                                 alt="{{ $product->name }}" 
+                                                            <img src="{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}"
+                                                                 alt="{{ $product->name }}"
                                                                  class="product-image"
                                                                  onerror="this.src='{{ asset('images/no-image.png') }}'">
                                                                 @else
                                                             <img src="{{ asset('images/no-image.png') }}" alt="{{ $product->name }}" class="product-image">
                                                                 @endif
                                                             </a>
-                                                    
+
                                                     <!-- Action Buttons -->
                                                     <div class="product-actions">
                                                         <button class="action-btn wishlist-btn" onclick="addToWishlist({{ $product->id }})" title="Yêu thích">
@@ -85,12 +85,12 @@
                                                         </button>
                                                     </div>
                                                         </div>
-                                                
+
                                                 <div class="product-content">
                                                     <h5 class="product-title text-center">
                                                                 <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
                                                     </h5>
-                                                    
+
                                                     <!-- Price -->
                                                     <div class="price-info text-center">
                                                                 @if($variant)
@@ -129,7 +129,7 @@
                                         <ul class="category-list">
                                             @foreach($allCategories as $cat)
                                                 <li class="category-item">
-                                                    <a href="{{ url('shop') . '?category=' . $cat->ID }}" 
+                                                    <a href="{{ url('shop') . '?category=' . $cat->ID }}"
                                                        class="category-link {{ request('category') == $cat->ID ? 'active' : '' }}">
                                                         {{ $cat->Name }}
                                                     </a>
@@ -145,10 +145,10 @@
                                     <div class="filter-content">
                                         <form method="GET" action="{{ route('shop.index') }}" class="price-filter-form">
                                             <div class="price-inputs">
-                                                <input type="number" name="min_price" class="form-control" 
+                                                <input type="number" name="min_price" class="form-control"
                                                        placeholder="Từ" value="{{ request('min_price') }}" min="0">
                                                 <span class="price-separator">-</span>
-                                                <input type="number" name="max_price" class="form-control" 
+                                                <input type="number" name="max_price" class="form-control"
                                                        placeholder="Đến" value="{{ request('max_price') }}" min="0">
                                         </div>
                                             @foreach(request()->except('min_price', 'max_price', 'page') as $key => $value)
@@ -172,7 +172,7 @@
                                                     <div class="recent-product-image">
                                                             <a href="{{ route('shop.show', $product->id) }}">
                                                                 @if($variant && $variant->image)
-                                                                <img src="{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}" 
+                                                                <img src="{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}"
                                                                      alt="{{ $product->name }}"
                                                                      onerror="this.src='{{ asset('images/no-image.png') }}'">
                                                                 @else
@@ -269,7 +269,7 @@ async function addToCart(productId) {
                 quantity: 1
             })
         });
-        
+
         const data = await res.json();
         if (data && data.success) {
             showCenterNotice('Đã thêm vào giỏ hàng!', 'success');
@@ -298,7 +298,7 @@ async function addToWishlist(productId) {
             },
             body: JSON.stringify({ product_id: productId })
         });
-        
+
         const data = await res.json();
         if (data && data.success) {
             showCenterNotice('Đã thêm vào danh sách yêu thích!', 'success');
@@ -321,14 +321,14 @@ function quickView(productId) {
 document.addEventListener('DOMContentLoaded', function() {
     const viewTabs = document.querySelectorAll('.view-tab');
     const productsGrid = document.getElementById('products-grid');
-    
+
     viewTabs.forEach(tab => {
         tab.addEventListener('click', function() {
             // Remove active class from all tabs
             viewTabs.forEach(t => t.classList.remove('active'));
             // Add active class to clicked tab
             this.classList.add('active');
-            
+
             const view = this.dataset.view;
             if (view === 'list') {
                 productsGrid.classList.add('list-view');
@@ -750,29 +750,29 @@ document.addEventListener('DOMContentLoaded', function() {
     .shop-options {
         padding: 15px;
     }
-    
+
     .view-tabs {
         justify-content: center;
         margin-bottom: 15px;
     }
-    
+
     .shop-controls {
         text-align: center;
     }
-    
+
     .product-image-container {
         height: 180px;
     }
-    
+
     .shop-sidebar {
         margin-top: 20px;
         padding: 15px;
     }
-    
+
     .products-container.list-view .product-card {
         flex-direction: column;
     }
-    
+
     .products-container.list-view .product-image-container {
         width: 100%;
         height: 200px;

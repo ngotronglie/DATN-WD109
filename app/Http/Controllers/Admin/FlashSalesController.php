@@ -54,24 +54,21 @@ class FlashSalesController extends Controller
             'products.*.status' => 'nullable|in:active,inactive,featured',
         ]);
 
-        // Cấm trùng thời gian toàn cục: tại bất kỳ thời điểm chỉ có 1 Flash Sale đang diễn ra
-        // Chỉ áp dụng kiểm tra khi tạo sale ở trạng thái hoạt động
-        if ((int) $request->is_active === 1) {
-            $start = Carbon::parse($request->start_time);
-            $end = Carbon::parse($request->end_time);
+        // Cấm trùng thời gian toàn cục: không cho phép tạo flash sale trong khung giờ đã có flash sale khác
+        // (bất kể flash sale đó đang active hay tạm dừng)
+        $start = Carbon::parse($request->start_time);
+        $end = Carbon::parse($request->end_time);
 
-            $overlap = FlashSale::where('is_active', 1)
-                ->where(function($q) use ($start, $end) {
-                    $q->where('start_time', '<', $end)
-                      ->where('end_time', '>', $start);
-                })
-                ->exists();
+        $overlap = FlashSale::where(function($q) use ($start, $end) {
+                $q->where('start_time', '<', $end)
+                  ->where('end_time', '>', $start);
+            })
+            ->exists();
 
-            if ($overlap) {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['time' => 'Đã có Flash Sale khác đang (hoặc sẽ) diễn ra trong khoảng thời gian này.']);
-            }
+        if ($overlap) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['time' => 'Đã có Flash Sale khác trong khoảng thời gian này. Vui lòng chọn khung giờ khác hoặc xóa Flash Sale cũ trước.']);
         }
 
         DB::beginTransaction();
@@ -182,23 +179,20 @@ class FlashSalesController extends Controller
         ]);
 
         // Cấm trùng thời gian toàn cục khi cập nhật (loại trừ chính bản ghi đang sửa)
-        if ((int) $request->is_active === 1) {
-            $start = Carbon::parse($request->start_time);
-            $end = Carbon::parse($request->end_time);
+        $start = Carbon::parse($request->start_time);
+        $end = Carbon::parse($request->end_time);
 
-            $overlap = FlashSale::where('id', '!=', $flashSale->id)
-                ->where('is_active', 1)
-                ->where(function($q) use ($start, $end) {
-                    $q->where('start_time', '<', $end)
-                      ->where('end_time', '>', $start);
-                })
-                ->exists();
+        $overlap = FlashSale::where('id', '!=', $flashSale->id)
+            ->where(function($q) use ($start, $end) {
+                $q->where('start_time', '<', $end)
+                  ->where('end_time', '>', $start);
+            })
+            ->exists();
 
-            if ($overlap) {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['time' => 'Khoảng thời gian bị trùng với một Flash Sale khác đang hoạt động.']);
-            }
+        if ($overlap) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['time' => 'Đã có Flash Sale khác trong khoảng thời gian này. Vui lòng chọn khung giờ khác hoặc xóa Flash Sale cũ trước.']);
         }
 
         DB::beginTransaction();
@@ -280,10 +274,29 @@ class FlashSalesController extends Controller
     {
         try {
             $flashSale = FlashSale::findOrFail($id);
+            
+            // Nếu đang tắt và muốn bật lại, kiểm tra trùng lặp thời gian
+            if (!$flashSale->is_active) {
+                $start = $flashSale->start_time;
+                $end = $flashSale->end_time;
+
+                $overlap = FlashSale::where('id', '!=', $flashSale->id)
+                    ->where('is_active', 1)
+                    ->where(function($q) use ($start, $end) {
+                        $q->where('start_time', '<', $end)
+                          ->where('end_time', '>', $start);
+                    })
+                    ->exists();
+
+                if ($overlap) {
+                    return redirect()->back()->with('error', 'Không thể kích hoạt Flash Sale này vì đã có Flash Sale khác đang hoạt động trong cùng khung giờ!');
+                }
+            }
+            
             $flashSale->is_active = !$flashSale->is_active;
             $flashSale->save();
 
-            $status = $flashSale->is_active ? 'kích hoạt' : 'tắt';
+            $status = $flashSale->is_active ? 'kích hoạt' : 'tạm dừng';
             return redirect()->back()->with('success', "Flash sale đã được {$status} thành công!");
 
         } catch (\Exception $e) {
