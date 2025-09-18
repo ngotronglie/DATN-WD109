@@ -1,24 +1,19 @@
 @extends('index.clientdashboard')
 
 @section('content')
-        <!-- BREADCRUMBS SETCTION START -->
-        <div class="favorite-breadcrumb">
+        <!-- Shopee-style Breadcrumbs -->
+        <div class="shopee-breadcrumbs">
             <div class="container">
-                <div class="breadcrumb-content">
-                    <div class="breadcrumb-left">
-                        <i class="zmdi zmdi-favorite"></i>
-                        <h1>Sản phẩm yêu thích</h1>
-                        <span class="favorites-count">(<span id="favorites-display">0</span> sản phẩm)</span>
-                    </div>
-                    <div class="breadcrumb-right">
-                        <a href="{{ route('home') }}">Trang chủ</a>
-                        <span>/</span>
-                        <span>Yêu thích</span>
-                    </div>
+                <div class="breadcrumb-nav">
+                    <a href="{{ route('home') }}" class="breadcrumb-link">
+                        <i class="zmdi zmdi-home"></i>
+                        Trang chủ
+                    </a>
+                    <i class="zmdi zmdi-chevron-right breadcrumb-arrow"></i>
+                    <span class="breadcrumb-current">Sản phẩm yêu thích (<span id="favorites-display">0</span> sản phẩm)</span>
                 </div>
             </div>
         </div>
-        <!-- BREADCRUMBS SETCTION END -->
 
         <!-- Start page content -->
         <div id="page-content" class="page-wrapper section">
@@ -115,32 +110,28 @@
                                                                 @endphp
                                                                 
                                                                 @if($flashSaleProduct)
-                                                                    <span class="current-price flash-sale-price">₫{{ number_format($flashSaleProduct->sale_price, 0, ',', '.') }}</span>
-                                                                    <span class="old-price">₫{{ number_format($flashSaleProduct->original_price, 0, ',', '.') }}</span>
+                                                                    <div class="flash-sale-price">₫{{ number_format($flashSaleProduct->sale_price, 0, ',', '.') }}</div>
+                                                                    <div class="original-price">₫{{ number_format($flashSaleProduct->original_price, 0, ',', '.') }}</div>
                                                                     <div class="flash-sale-discount">
                                                                         -{{ round((($flashSaleProduct->original_price - $flashSaleProduct->sale_price) / $flashSaleProduct->original_price) * 100) }}%
                                                                     </div>
                                                                 @elseif($variant->price_sale && $variant->price_sale < $variant->price)
-                                                                    <span class="current-price">₫{{ number_format($variant->price_sale, 0, ',', '.') }}</span>
-                                                                    <span class="old-price">₫{{ number_format($variant->price, 0, ',', '.') }}</span>
+                                                                    <div class="current-price">₫{{ number_format($variant->price_sale, 0, ',', '.') }}</div>
+                                                                    <div class="old-price">₫{{ number_format($variant->price, 0, ',', '.') }}</div>
                                                                 @else
-                                                                    <span class="current-price">₫{{ number_format($variant->price, 0, ',', '.') }}</span>
+                                                                    <div class="current-price">₫{{ number_format($variant->price, 0, ',', '.') }}</div>
                                                                 @endif
                                                             @else
                                                                 <span class="current-price">Liên hệ</span>
                                                             @endif
                                                         </div>
-                                                        <div class="card-actions">
-                                                            @php
-                                                                // Tính tổng số lượng đã bán từ order_detail
-                                                                $totalSold = \DB::table('order_detail')
-                                                                    ->join('product_variants', 'order_detail.product_variant_id', '=', 'product_variants.id')
-                                                                    ->where('product_variants.product_id', $favorite->product->id)
-                                                                    ->sum('order_detail.quantity');
-                                                            @endphp
-                                                            <div class="sales-info">
-                                                                Đã bán {{ $totalSold }}
-                                                            </div>
+                                                        <div class="product-actions">
+                                                            @if($favorite->product->variants && $favorite->product->variants->first())
+                                                                @php $variant = $favorite->product->variants->first(); @endphp
+                                                                <a href="{{ url('cart/add/' . $variant->id) }}" class="action-btn add-to-cart" title="Thêm vào giỏ hàng">
+                                                                    <i class="zmdi zmdi-shopping-cart"></i>
+                                                                </a>
+                                                            @endif
                                                         </div>
                                                     </div>
                                                 </div>
@@ -172,57 +163,94 @@
 
 @section('script-client')
 <style>
-/* Favorite Breadcrumb */
-.favorite-breadcrumb {
-    background: #f8f9fa;
-    padding: 20px 0;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.breadcrumb-content {
+/* Product Actions */
+.product-actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    padding: 8px 0;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 10px;
+}
+
+.action-btn {
+    display: inline-flex;
     align-items: center;
-}
-
-.breadcrumb-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.breadcrumb-left i {
-    font-size: 24px;
-    color: #ee4d2d;
-}
-
-.breadcrumb-left h1 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-}
-
-.favorites-count {
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     color: #666;
-    font-size: 14px;
+    background-color: #f5f5f5;
+    margin: 0 4px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
 }
 
-.breadcrumb-right {
+.action-btn:hover {
+    background-color: #ee4d2d;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.action-btn i {
+    font-size: 18px;
+}
+
+.add-to-cart:hover {
+    background-color: #ee4d2d;
+}
+
+/* Shopee-style Breadcrumbs */
+.shopee-breadcrumbs {
+    background: #fff;
+    padding: 16px 0;
+    border-bottom: 1px solid #f0f0f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.breadcrumb-nav {
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: #666;
 }
 
-.breadcrumb-right a {
+.breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     color: #ee4d2d;
     text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-weight: 500;
 }
 
-.breadcrumb-right a:hover {
-    text-decoration: underline;
+.breadcrumb-link:hover {
+    background: #fff5f5;
+    color: #d73502;
+}
+
+.breadcrumb-arrow {
+    color: #ccc;
+    font-size: 16px;
+    margin: 0 4px;
+}
+
+.breadcrumb-current {
+    color: #333;
+    font-weight: 600;
+    padding: 4px 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Favorites Grid */
@@ -323,6 +351,7 @@
     cursor: pointer;
     opacity: 0;
     transition: all 0.3s ease;
+    z-index: 10;
 }
 
 .favorite-card:hover .remove-favorite-btn {
@@ -364,24 +393,23 @@
     font-size: 16px;
     font-weight: 600;
     color: #ee4d2d;
+    margin-bottom: 4px;
 }
 
-.old-price {
+.flash-sale-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ff6b6b;
+    margin-bottom: 4px;
+}
+
+.old-price, .original-price {
     font-size: 12px;
     color: #999;
     text-decoration: line-through;
-    margin-left: 6px;
+    margin-bottom: 4px;
 }
 
-.sales-info {
-    text-align: center;
-    color: #666;
-    font-size: 12px;
-    padding: 8px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    font-weight: 500;
-}
 
 /* Flash Sale Styles */
 .flash-sale-badge {
@@ -394,12 +422,12 @@
     border-radius: 12px;
     font-size: 10px;
     font-weight: 600;
-    z-index: 3;
     display: flex;
     align-items: center;
     gap: 3px;
     box-shadow: 0 2px 8px rgba(238, 90, 36, 0.3);
     animation: flashPulse 2s infinite;
+    z-index: 10;
 }
 
 .flash-sale-badge i {

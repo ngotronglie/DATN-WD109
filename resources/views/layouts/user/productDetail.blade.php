@@ -4,7 +4,7 @@
 
 <!-- Shopee-style Breadcrumbs -->
 <div class="shopee-breadcrumbs">
-    <div class="container">
+        <div class="container">
         <div class="breadcrumb-nav">
             <a href="{{ route('home') }}" class="breadcrumb-link">
                 <i class="zmdi zmdi-home"></i>
@@ -18,7 +18,7 @@
 
 <!-- Main Product Section -->
 <section class="product-detail-section">
-    <div class="container">
+        <div class="container">
         <div class="product-detail-container">
             <div class="row">
 
@@ -31,12 +31,12 @@
                                  alt="{{ $product->name }}" 
                                  class="main-product-image"
                                  onerror="this.src='{{ asset('images/no-image.png') }}'">
-                        </div>
+                                    </div>
                         
                         <!-- Thumbnail Images -->
                         <div class="thumbnail-gallery">
                             @php $seenColorIds = []; @endphp
-                            @foreach($variants as $variant)
+                                        @foreach($variants as $variant)
                                 @if(!in_array($variant->color_id, $seenColorIds))
                                     @php $seenColorIds[] = $variant->color_id; @endphp
                                     <div class="thumbnail-item" onclick="changeMainImage('{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}')">
@@ -44,12 +44,12 @@
                                              alt="Thumbnail" 
                                              class="thumbnail-image"
                                              onerror="this.src='{{ asset('images/no-image.png') }}'">
-                                    </div>
+                                        </div>
                                 @endif
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                            </div>
                 <!-- Product Info -->
                 <div class="col-lg-7">
                     <div class="product-info-container">
@@ -60,9 +60,9 @@
                         <div class="product-meta">
                             <div class="brand-badge">{{ $product->category->Name ?? 'Thương hiệu' }}</div>
                             <div class="view-count">
-                                <i class="zmdi zmdi-eye"></i> {{ $product->view_count }} lượt xem
-                            </div>
-                        </div>
+                                                <i class="zmdi zmdi-eye"></i> {{ $product->view_count }} lượt xem
+                                            </div>
+                                        </div>
 
                         <!-- Price Section -->
                         <div class="price-section">
@@ -78,28 +78,28 @@
                             <div class="variant-group">
                                 <label class="variant-label">Màu sắc:</label>
                                 <div class="variant-options">
-                                    @foreach($colors as $color)
+                                                    @foreach($colors as $color)
                                     <label class="variant-option">
-                                        <input type="radio" name="color" value="{{ $color->id }}" @if($loop->first) checked @endif>
+                                                        <input type="radio" name="color" value="{{ $color->id }}" @if($loop->first) checked @endif>
                                         <span class="option-text">{{ $color->name }}</span>
-                                    </label>
-                                    @endforeach
-                                </div>
-                            </div>
+                                                    </label>
+                                                    @endforeach
+                                                </div>
+                                            </div>
 
                             <!-- Capacity Selection -->
                             <div class="variant-group">
                                 <label class="variant-label">Dung lượng:</label>
                                 <div class="variant-options">
-                                    @foreach($capacities as $capacity)
+                                                    @foreach($capacities as $capacity)
                                     <label class="variant-option">
-                                        <input type="radio" name="capacity" value="{{ $capacity->id }}" @if($loop->first) checked @endif>
+                                                        <input type="radio" name="capacity" value="{{ $capacity->id }}" @if($loop->first) checked @endif>
                                         <span class="option-text">{{ $capacity->name }}</span>
-                                    </label>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
+                                                    </label>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
 
                         <!-- Quantity Selection -->
                         <div class="quantity-section">
@@ -108,8 +108,8 @@
                                 <button type="button" class="qty-btn" onclick="decreaseQuantity()">-</button>
                                 <input type="number" id="quantity" name="quantity" value="1" min="1" max="999" class="qty-input">
                                 <button type="button" class="qty-btn" onclick="increaseQuantity()">+</button>
-                            </div>
-                        </div>
+                                            </div>
+                                        </div>
                         <!-- Action Buttons -->
                         <div class="action-buttons">
                             <button type="button" class="btn-buy-now" onclick="buyNow()">
@@ -123,7 +123,7 @@
                             <button type="button" class="btn-favorite" onclick="addToWishlist()">
                                 <i class="zmdi zmdi-favorite"></i>
                             </button>
-                        </div>
+                                            </div>
 
                         <!-- Social Share -->
                         <div class="social-share">
@@ -133,11 +133,11 @@
                                 <a href="#" class="share-btn twitter"><i class="zmdi zmdi-twitter"></i></a>
                                 <a href="#" class="share-btn pinterest"><i class="zmdi zmdi-pinterest"></i></a>
                                 <a href="#" class="share-btn instagram"><i class="zmdi zmdi-instagram"></i></a>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </section>
@@ -151,20 +151,20 @@
                 <button class="tab-btn" onclick="switchTab('comments')">Bình luận ({{ $comments->count() ?? 0 }})</button>
             </div>
             
-            <div class="tab-content">
+                                    <div class="tab-content">
                 <div id="description-tab" class="tab-panel active">
                     <div class="product-description">
                         {!! $product->description !!}
-                    </div>
-                </div>
+                                        </div>
+                                    </div>
                 
                 <div id="comments-tab" class="tab-panel">
                     <div class="product-comments p-4">
-                        @if(session('success'))
-                            <div class="alert alert-success">{{ session('success') }}</div>
-                        @endif
+                                    @if(session('success'))
+                                        <div class="alert alert-success">{{ session('success') }}</div>
+                                    @endif
                         
-                        @php $comments = $comments ?? collect(); @endphp
+                                        @php $comments = $comments ?? collect(); @endphp
                         
                         @if($comments->count() > 0)
                             @foreach($comments as $comment)
@@ -172,10 +172,10 @@
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <strong>{{ $comment->user->name ?? 'Khách' }}</strong>
                                         <span class="text-muted small">{{ $comment->created_at->diffForHumans() }}</span>
-                                    </div>
+                                                            </div>
                                     <div class="comment-content">
                                         {{ $comment->content }}
-                                    </div>
+                                                    </div>
                                     
                                     @if($comment->replies && $comment->replies->count() > 0)
                                         <div class="replies mt-3 ms-4">
@@ -184,19 +184,19 @@
                                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                                         <strong class="small">{{ $reply->user->name ?? 'Khách' }}</strong>
                                                         <span class="text-muted small">{{ $reply->created_at->diffForHumans() }}</span>
-                                                    </div>
+                                            </div>
                                                     <div class="small">
                                                         {{ $reply->content }}
-                                                    </div>
-                                                </div>
+                                    </div>
+                                            </div>
                                             @endforeach
-                                        </div>
-                                    @endif
                                 </div>
-                            @endforeach
+                                    @endif
+                            </div>
+                                                    @endforeach
                         @else
                             <p class="text-muted">Chưa có bình luận nào cho sản phẩm này.</p>
-                        @endif
+                                                @endif
                         @auth
                             <div class="mt-4">
                                 <h6>Thêm bình luận</h6>
@@ -207,19 +207,19 @@
                                     </div>
                                     <div class="mt-2">
                                         <button type="submit" class="btn btn-primary btn-sm">Gửi bình luận</button>
-                                    </div>
-                                </form>
                             </div>
+                                </form>
+                                                </div>
                         @else
                             <div class="alert alert-info mt-3">
                                 Vui lòng <a href="{{ route('login') }}">đăng nhập</a> để bình luận.
-                            </div>
+                                                </div>
                         @endauth
+                                            </div>
+                                    </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </section>
 
 
@@ -420,7 +420,7 @@ function getVariantData(colorId, capacityId) {
         }
         return response.json();
     })
-    .then(data => {
+            .then(data => {
         console.log('Variant API response:', data);
         
         if (!data) {
@@ -492,7 +492,7 @@ function updateCapacityOptions() {
             label.classList.remove('disabled');
             if (wrapper) wrapper.classList.remove('hidden');
             hasAvailableCapacity = true;
-        } else {
+                    } else {
             input.disabled = true;
             label.style.opacity = '0.4';
             label.style.cursor = 'not-allowed';
@@ -614,7 +614,7 @@ async function updateProductVariant() {
                     savingsBadge.style.display = 'inline-block';
                     savingsBadge.className = 'ms-2 badge bg-success';
                 }
-            } else {
+                } else {
                 if (originalPriceElement) {
                     originalPriceElement.style.display = 'none';
                     originalPriceElement.classList.remove('text-decoration-line-through', 'text-muted', 'ms-2');
@@ -733,8 +733,8 @@ async function addToCart() {
     const cartData = {
         product_id: {{ $product->id }},
         product_variant_id: variantId,
-        color_id: colorId,
-        capacity_id: capacityId,
+            color_id: colorId,
+            capacity_id: capacityId,
         quantity: quantity
     };
 
@@ -936,9 +936,9 @@ async function buyNow() {
 
 .product-detail-container {
     background: #fff;
-    border-radius: 8px;
+        border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    overflow: hidden;
+        overflow: hidden;
 }
 
 /* Product Images */
@@ -972,19 +972,19 @@ async function buyNow() {
     height: 60px;
     border-radius: 6px;
     overflow: hidden;
-    cursor: pointer;
+        cursor: pointer;
     border: 2px solid transparent;
     transition: border-color 0.2s;
-}
+    }
 
 .thumbnail-item:hover {
     border-color: #ee4d2d;
-}
+    }
 
 .thumbnail-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
 }
 
 /* Product Info */
