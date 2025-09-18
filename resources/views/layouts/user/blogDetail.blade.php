@@ -192,56 +192,24 @@
 
                         <!-- Comments List -->
                         <div class="comments-list">
-                                @foreach($blog->comments()->whereNull('parent_id')->latest()->get() as $comment)
-                                <div class="comment-item">
-                                    <div class="comment-header">
-                                        <div class="comment-author">
-                                            <strong>{{ $comment->user->name ?? 'Khách' }}</strong>
-                                        </div>
-                                        <div class="comment-date">
-                                            {{ $comment->created_at->diffForHumans() }}
-                                        </div>
-                                    </div>
-                                    <div class="comment-content">
-                                        {{ $comment->content }}
-                                    </div>
-
-                                    <!-- Replies -->
-                                        @foreach($comment->replies as $reply)
-                                        <div class="comment-reply">
-                                            <div class="comment-header">
-                                                <div class="comment-author">
-                                                    <strong>{{ $reply->user->name ?? 'Khách' }}</strong>
-                                                </div>
-                                                <div class="comment-date">
-                                                    {{ $reply->created_at->diffForHumans() }}
-                                                </div>
-                                            </div>
-                                            <div class="comment-content">
-                                                {{ $reply->content }}
-                                            </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @endforeach
+                            <div class="no-comments">
+                                <p>Tính năng bình luận đang được cập nhật. Vui lòng quay lại sau!</p>
                             </div>
+                        </div>
 
                         <!-- Comment Form -->
-                            @if(Auth::check())
+                        @if(Auth::check())
                         <div class="comment-form">
                             <h5 class="form-title">Viết bình luận</h5>
-                            <form action="{{ route('comments.store', $blog->id) }}" method="POST">
-                                @csrf
-                                <div class="form-group">
-                                    <textarea name="content" class="form-control" rows="4" placeholder="Nhập bình luận của bạn..."></textarea>
-                                </div>
-                                <button type="submit" class="btn-submit">
-                                    <i class="zmdi zmdi-mail-send"></i>
-                                    Gửi bình luận
-                                </button>
-                            </form>
+                            <div class="form-group">
+                                <textarea class="form-control" rows="4" placeholder="Tính năng bình luận đang được cập nhật..." disabled></textarea>
+                            </div>
+                            <button type="button" class="btn-submit" disabled>
+                                <i class="zmdi zmdi-mail-send"></i>
+                                Gửi bình luận
+                            </button>
                         </div>
-                            @else
+                        @else
                         <div class="login-required">
                             <i class="zmdi zmdi-account-circle"></i>
                             <p>Bạn cần <a href="{{ route('login') }}">đăng nhập</a> để bình luận.</p>

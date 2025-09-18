@@ -18,15 +18,15 @@ class BlogDetailController extends Controller
             ->where('is_active', true)
             ->orderBy('created_at', 'desc')
             ->paginate(9);
-        
+
         $recentBlogs = Blog::with('user')
             ->where('is_active', true)
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
-            
+
         $tags = TagBlog::withCount('blogs')->get();
-        
+
         return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags'));
     }
       /**
@@ -34,7 +34,7 @@ class BlogDetailController extends Controller
      */
     public function show($slug)
     {
-        $blog = \App\Models\Blog::with(['user', 'tags', 'comments.user', 'comments.replies.user'])
+        $blog = \App\Models\Blog::with(['user', 'tags'])
             ->where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
@@ -59,7 +59,7 @@ class BlogDetailController extends Controller
         if (!Auth::check() || !Auth::user()->is_admin) {
             abort(403);
         }
-        
+
         $tags = TagBlog::all();
         return view('layouts.user.blog.create', compact('tags'));
     }
@@ -71,7 +71,7 @@ class BlogDetailController extends Controller
        if (!Auth::check() || !Auth::user()->is_admin) {
            abort(403);
        }
-       
+
        $request->validate([
            'slug' => 'required|string|max:255|unique:blogs,slug',
            'content' => 'required|string',
@@ -105,10 +105,10 @@ class BlogDetailController extends Controller
         if (!Auth::check() || !Auth::user()->is_admin) {
             abort(403);
         }
-        
+
         $blog = Blog::where('slug', $slug)->firstOrFail();
         $tags = TagBlog::all();
-        
+
         return view('layouts.user.blog.edit', compact('blog', 'tags'));
     }
 
@@ -120,9 +120,9 @@ class BlogDetailController extends Controller
         if (!Auth::check() || !Auth::user()->is_admin) {
             abort(403);
         }
-        
+
         $blog = Blog::where('slug', $slug)->firstOrFail();
-        
+
         $request->validate([
             'slug' => 'required|string|max:255|unique:blogs,slug,' . $blog->id,
             'content' => 'required|string',
@@ -156,16 +156,16 @@ class BlogDetailController extends Controller
         if (!Auth::check() || !Auth::user()->is_admin) {
             abort(403);
         }
-        
+
         $blog = Blog::where('slug', $slug)->firstOrFail();
-        
+
         if ($blog->image) {
             \Illuminate\Support\Facades\Storage::delete(str_replace('/storage', 'public', $blog->image));
         }
-        
+
         $blog->tags()->detach();
         $blog->delete();
-        
+
         return redirect()->route('blog.detail.index')->with('success', 'Bài viết đã được xóa thành công.');
     }
 
@@ -182,15 +182,15 @@ class BlogDetailController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->paginate(9);
-            
+
         $recentBlogs = Blog::with('user')
             ->where('is_active', true)
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
-            
+
         $tags = TagBlog::withCount('blogs')->get();
-        
+
         return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags', 'tag'));
     }
      /**
@@ -199,7 +199,7 @@ class BlogDetailController extends Controller
     public function search(Request $request)
     {
         $keyword = $request->get('keyword');
-        
+
         $blogs = Blog::with(['user', 'tags'])
             ->where('is_active', true)
             ->where(function($query) use ($keyword) {
@@ -208,15 +208,15 @@ class BlogDetailController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->paginate(9);
-            
+
         $recentBlogs = Blog::with('user')
             ->where('is_active', true)
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
-            
+
         $tags = TagBlog::withCount('blogs')->get();
-        
+
         return view('layouts.user.blog', compact('blogs', 'recentBlogs', 'tags', 'keyword'));
     }
 }
