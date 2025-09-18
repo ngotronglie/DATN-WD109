@@ -1,6 +1,13 @@
-<div class="category-section py-4">
-  <div class="container-fluid px-3">
-    <h4 class="section-title text-center mb-3 px-3">Danh Mục Sản Phẩm</h4>
+<div class="category-section py-5 bg-light">
+  <div class="container">
+    <div class="section-title text-center mb-5">
+      <h2 class="mb-3">DANH MỤC SẢN PHẨM</h2>
+      <div class="title-divider">
+        <span class="divider-line"></span>
+        <i class="zmdi zmdi-apps"></i>
+        <span class="divider-line"></span>
+      </div>
+    </div>
     <div class="category-scroll-container">
       <div class="category-scroll">
         @foreach($categories as $category)
@@ -22,18 +29,23 @@
   </div>
 </div>
 
-
 <style>
+/* Category Section Styling */
+.category-section {
+  padding: 2rem 0;
+  background: #fff;
+  border-top: 1px solid #f5f5f5;
+  border-bottom: 1px solid #f5f5f5;
+}
 .category-scroll-container {
   width: 100%;
   overflow-x: auto;
-  padding: 10px 0;
+  padding: 15px 0 30px;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Ẩn thanh cuộn trên Firefox */
-  margin-left: -15px;
-  margin-right: -15px;
-  padding-left: 15px;
-  padding-right: 15px;
+  scrollbar-width: none;
+  margin: 0 -15px;
+  padding: 15px;
+  position: relative;
 }
 
 .category-scroll-container::-webkit-scrollbar {
@@ -124,17 +136,18 @@
 }
 
 .category-title {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 14px;
   color: #333;
-  text-align: center;
-  line-height: 1.4;
-  max-width: 140px;
-  margin: 0 auto;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-weight: 600;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 8px;
+  transition: color 0.3s ease;
+}
+
+.category-item:hover .category-title {
+  color: #ff6b00;
 }
 
 /* Mobile */

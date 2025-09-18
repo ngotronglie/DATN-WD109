@@ -1,15 +1,16 @@
   <!-- Header -->
   <header class="bg-dark shadow" style="padding: 0; min-height: 30px;">
-      <div class="container-fluid d-flex align-items-center justify-content-between px-2">
-          <!-- Logo -->
-          <div class="logo">
-              <a href="{{ route('home') }}">
-                  <img src="{{ asset('frontend/img/logo/logo.png') }}" alt="Logo" height="25">
-              </a>
-          </div>
-          <!-- Menu -->
-          <nav class="d-none d-lg-block">
-              <ul class="nav justify-content-center">
+      <div class="container-fluid">
+          <div class="d-flex align-items-center">
+              <!-- Logo -->
+              <div class="logo me-auto">
+                  <a href="{{ route('home') }}">
+                      <img src="{{ asset('frontend/img/logo/logo.png') }}" alt="Logo" height="25">
+                  </a>
+              </div>
+              <!-- Menu -->
+              <nav class="d-none d-lg-block position-absolute start-50 translate-middle-x">
+                  <ul class="nav">
                   <li class="nav-item"><a class="nav-link" href="{{ route('home') }}" style="color: #ffffff !important;">Trang chủ</a></li>
                   <li class="nav-item"><a class="nav-link" href="{{ route('shop.index') }}" style="color: #ffffff !important;">Sản phẩm</a></li>
                   <li class="nav-item"><a class="nav-link" href="{{ route('blog') }}" style="color: #ffffff !important;">Bài viết</a></li>
@@ -23,7 +24,7 @@
               </ul>
           </nav>
           <!-- Auth Links -->
-          <div class="d-flex align-items-center gap-3">
+          <div class="ms-auto d-flex align-items-center gap-3">
 
               @auth
               <!-- Avatar dropdown -->

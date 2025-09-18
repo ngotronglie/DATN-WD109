@@ -2,10 +2,10 @@
 @props(['flashSales' => collect(), 'limit' => 6])
 
 @if($flashSales->isNotEmpty())
-<section class="flash-sale-section py-3">
-    <div class="container">
+<section class="flash-sale-section py-3 px-0">
+    <div class="container-fluid px-0">
         {{-- Compact Header --}}
-        <div class="flash-sale-header mb-3">
+        <div class="flash-sale-header mb-3 px-3">
             <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center">
                     <div class="flash-icon me-2">⚡</div>
@@ -50,7 +50,7 @@
         </div>
 
         {{-- Products Grid --}}
-        <div class="row g-1">
+        <div class="row g-0">
             @foreach($flashSales as $flashSale)
                 @php
                     // Group items by product to avoid duplicate cards for different variants
@@ -106,7 +106,7 @@
                                                 <div class="sale-price">₫{{ number_format($flashProduct->sale_price, 0, ',', '.') }}</div>
                                                 <div class="original-price">
                                                     <span>₫{{ number_format($flashProduct->original_price, 0, ',', '.') }}</span>
-                                                    <span class="discount-badge">-{{ number_format((($flashProduct->original_price - $flashProduct->sale_price) / $flashProduct->original_price) * 100, 0) }}%</span>
+                                                    <!-- <span class="discount-badge">-{{ number_format((($flashProduct->original_price - $flashProduct->sale_price) / $flashProduct->original_price) * 100, 0) }}%</span> -->
                                                 </div>
                                             </div>
                                         @endif
@@ -165,6 +165,7 @@
 {{-- Shopee Style CSS --}}
 <style>
 .flash-sale-section {
+    margin: 20px 0 10px;
     background: #fff;
     border-top: 1px solid #f5f5f5;
     border-bottom: 1px solid #f5f5f5;
@@ -223,12 +224,20 @@
     background: #fff;
     border-radius: 8px;
     overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     height: 100%;
     display: flex;
     flex-direction: column;
-    border: 1px solid #f5f5f5;
+    border: 1px solid #f0f0f0;
     position: relative;
+    padding: 10px;
+    margin: 2px;
+}
+
+.flash-product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    z-index: 1;
 }
 
 .flash-product-card:hover {
@@ -238,9 +247,27 @@
 
 .product-image-container {
     position: relative;
-    padding-top: 100%;
+    width: 100%;
+    padding-top: 100%; /* 1:1 Aspect Ratio */
     background: #f5f5f5;
     overflow: hidden;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.product-image-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+    transition: transform 0.3s ease;
+}
+
+.flash-product-card:hover .product-image-container img {
+    transform: scale(1.05);
 }
 
 .upcoming-overlay {
@@ -299,14 +326,15 @@
 
 .discount-tag {
     position: absolute;
-    top: 0;
-    right: 0;
-    background: #ee4d2d;
+    top: 8px;
+    right: 8px;
+    background: #ff6b00;
     color: white;
-    padding: 0 3px;
-    font-size: 8px;
+    font-size: 12px;
     font-weight: 600;
-    border-bottom-left-radius: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    z-index: 2;
 }
 
 .product-details {

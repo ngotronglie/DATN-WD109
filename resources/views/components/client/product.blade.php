@@ -1,12 +1,17 @@
-<!-- PRODUCT TAB SECTION START -->
-<div class="product-tab-section section-bg-tb pt-80 pb-55">
+<!-- FEATURED PRODUCTS SECTION START -->
+<div class="featured-products-section section-bg-tb pt-80 pb-55">
     <div class="container">
+        <div class="section-title text-center mb-5">
+            <h2 class="mb-3">SẢN PHẨM NỔI BẬT</h2>
+            <div class="title-divider">
+                <span class="divider-line"></span>
+                <i class="zmdi zmdi-star"></i>
+                <span class="divider-line"></span>
+            </div>
+        </div>
         <div class="row">
-
             <div class="col-lg-12">
-                <!-- Tab panes -->
                 <div class="tab-content">
-                    <!-- popular-product start -->
                     <div id="popular-product" class="tab-pane active show">
                         <div class="row">
                             @foreach ($products as $product)
@@ -21,32 +26,32 @@
                                     </div>
                                     <div class="product-info">
                                         <h6 class="product-title">
-                                            <a
-                                                href="{{ url('product/' . $product->product_slug) }}">{{ $product->product_name }}</a>
+                                            <a href="{{ url('product/' . $product->product_slug) }}">{{ $product->product_name }}</a>
                                         </h6>
-                                        <div class="product-views mb-1 text-muted" style="font-size: 0.9em;">
-                                            <i class="zmdi zmdi-eye"></i> {{ $product->product_view }} lượt xem
-                                        </div>
                                         @if ($product->product_price_discount > 0)
-                                        <h3 class="pro-price-sale text-danger text-decoration-line-through">
-                                            {{ number_format($product->product_price_discount) }} đ
-                                        </h3>
-                                        <h3 class="pro-price">
-                                            {{ number_format($product->product_price) }} đ
-                                        </h3>
-
+                                        <div class="price-container">
+                                            <span class="sale-price text-danger">
+                                                {{ number_format($product->product_price_discount) }} đ
+                                            </span>
+                                            <span class="original-price text-muted text-decoration-line-through">
+                                                {{ number_format($product->product_price) }} đ
+                                            </span>
+                                        </div>
                                         @else
-                                        <h3 class="pro-price">{{ number_format($product->product_price) }} đ
-
-                                        </h3>
+                                        <div class="price-container">
+                                            <span class="sale-price">
+                                                {{ number_format($product->product_price) }} đ
+                                            </span>
+                                        </div>
                                         @endif
-                                        <ul class="action-button">
-                                            <li>
-                                                <a href="#" class="add-to-favorite" data-product-id="{{ $product->product_id }}" title="Thêm vào yêu thích" onclick="addToFavorite(event, {{ $product->product_id }})">
-                                                    <i class="zmdi zmdi-favorite"></i>
-                                                </a>
-                                            </li>
-                                        </ul>
+                                        <div class="product-actions">
+                                            <a href="#" class="action-btn add-to-favorite" data-product-id="{{ $product->product_id }}" title="Thêm vào yêu thích" onclick="addToFavorite(event, {{ $product->product_id }}); return false;">
+                                                <i class="zmdi zmdi-favorite"></i>
+                                            </a>
+                                            <a href="{{ url('cart/add/' . $product->product_id) }}" class="action-btn add-to-cart" title="Thêm vào giỏ hàng">
+                                                <i class="zmdi zmdi-shopping-cart"></i>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -62,6 +67,213 @@
 <!-- PRODUCT TAB SECTION END -->
 
 <style>
+    /* Featured Products Title Styling */
+    .section-title h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 1rem;
+    }
+
+    .title-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        max-width: 300px;
+    }
+
+    .divider-line {
+        flex: 1;
+        height: 2px;
+        background-color: #e0e0e0;
+    }
+
+    .title-divider i {
+        margin: 0 15px;
+        color: #ff6b00;
+        font-size: 1.5rem;
+    }
+
+    /* Price Styles */
+    .price-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1px;
+        margin: 0 0 12px 0;
+        width: 100%;
+    }
+    
+    .sale-price {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #ee4d2d;
+        line-height: 1.2;
+        width: 100%;
+        text-align: center;
+        display: block;
+    }
+    
+    .original-price {
+        font-size: 0.9rem;
+        color: #666;
+        text-decoration: line-through;
+        width: 100%;
+        text-align: center;
+        display: block;
+        margin: 0 auto;
+        padding: 0;
+    }
+    
+    /* Product Item Styles */
+    .product-item {
+        position: relative;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+        border: 1px solid #eee;
+    }
+    
+    .product-img {
+        position: relative;
+        overflow: hidden;
+        background: #f9f9f9;
+        padding-top: 100%;
+    }
+    
+    .product-img img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 15px;
+        transition: transform 0.5s ease;
+    }
+    
+    .product-info {
+        padding: 15px;
+        position: relative;
+    }
+    
+    .product-title {
+        margin: 0 0 8px 0;
+        line-height: 1.4;
+        min-height: 42px;
+        max-height: 54px;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    
+    .product-title a {
+        color: #333;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.3s ease;
+        line-height: 1.4;
+    }
+    
+    .pro-price {
+    color: #d70018;
+    font-size: 13px;   /* giảm vừa phải, dễ đọc */
+    font-weight: 600;
+    margin: 5px 0;
+}
+
+.pro-price-sale {
+    color: #666;
+    font-size: 11px;   /* nhỏ hơn giá bán, nhưng vẫn nhìn rõ */
+    text-decoration: line-through;
+    margin-bottom: 3px;
+}
+
+    
+    /* Product Actions */
+    .product-actions {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 5px 0;
+    }
+    
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        color: #666;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    
+    .action-btn:hover {
+        background: #f8f8f8;
+        color: #333;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .action-btn.add-to-favorite {
+        color: #999;
+    }
+    
+    .action-btn.add-to-favorite[data-favorited="true"],
+    .action-btn.add-to-favorite:hover {
+        color: #ff4757;
+        background: #fff;
+    }
+    
+    .action-btn.add-to-cart {
+        color: #666;
+        background: #fff;
+    }
+    
+    .action-btn.add-to-cart:hover {
+        color: #2ecc71;
+        background: #f8f8f8;
+    }
+    
+    
+    /* Hover Effects */
+    .product-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .product-item:hover .product-img img {
+        transform: scale(1.05);
+    }
+    
+    .product-item:hover .action-button {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .action-button a:hover {
+        background: #ff6b00;
+        color: #fff;
+        transform: rotate(360deg);
+    }
+    
+    .product-title a:hover {
+        color: #ff6b00;
+    }
+
     .modal-overlay {
         position: fixed;
         top: 0;
