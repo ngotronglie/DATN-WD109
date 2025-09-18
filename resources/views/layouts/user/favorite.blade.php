@@ -87,7 +87,7 @@
                                                         @endif
                                                         
                                                         <button class="remove-favorite-btn" data-favorite-id="{{ $favorite->id }}" title="Xóa khỏi yêu thích">
-                                                            <i class="zmdi zmdi-close"></i>
+                                                            <i class="zmdi zmdi-delete"></i>
                                                         </button>
                                                     </div>
                                                     <div class="card-content">
@@ -125,14 +125,6 @@
                                                                 <span class="current-price">Liên hệ</span>
                                                             @endif
                                                         </div>
-                                                        <div class="product-actions">
-                                                            @if($favorite->product->variants && $favorite->product->variants->first())
-                                                                @php $variant = $favorite->product->variants->first(); @endphp
-                                                                <a href="{{ url('cart/add/' . $variant->id) }}" class="action-btn add-to-cart" title="Thêm vào giỏ hàng">
-                                                                    <i class="zmdi zmdi-shopping-cart"></i>
-                                                                </a>
-                                                            @endif
-                                                        </div>
                                                     </div>
                                                 </div>
                                                 @endif
@@ -163,45 +155,6 @@
 
 @section('script-client')
 <style>
-/* Product Actions */
-.product-actions {
-    display: flex;
-    justify-content: center;
-    padding: 8px 0;
-    border-top: 1px solid #f0f0f0;
-    margin-top: 10px;
-}
-
-.action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    color: #666;
-    background-color: #f5f5f5;
-    margin: 0 4px;
-    transition: all 0.3s ease;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.action-btn:hover {
-    background-color: #ee4d2d;
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.action-btn i {
-    font-size: 18px;
-}
-
-.add-to-cart:hover {
-    background-color: #ee4d2d;
-}
 
 /* Shopee-style Breadcrumbs */
 .shopee-breadcrumbs {
@@ -337,13 +290,13 @@
 
 .remove-favorite-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0,0,0,0.7);
+    top: 8px;
+    right: 8px;
+    background: rgba(231, 76, 60, 0.9);
     color: white;
     border: none;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -352,15 +305,23 @@
     opacity: 0;
     transition: all 0.3s ease;
     z-index: 10;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
 }
 
 .favorite-card:hover .remove-favorite-btn {
     opacity: 1;
+    transform: scale(1.05);
 }
 
 .remove-favorite-btn:hover {
-    background: #e74c3c;
-    transform: scale(1.1);
+    background: #c0392b;
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.5);
+}
+
+.remove-favorite-btn i {
+    font-size: 16px;
+    font-weight: bold;
 }
 
 .card-content {
