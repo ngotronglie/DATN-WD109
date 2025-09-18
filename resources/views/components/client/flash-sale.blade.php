@@ -11,13 +11,18 @@
                     <div class="flash-icon me-2">⚡</div>
                     <h3 class="section-title mb-0">FLASH SALE</h3>
                     @php
-                        $upcomingFlashSales = $flashSales->filter(function($flashSale) {
-                            return $flashSale->start_time > now();
-                        });
-
+                        // Lọc flash sale đang diễn ra (active và trong khung giờ)
                         $ongoingFlashSales = $flashSales->filter(function($flashSale) {
                             return $flashSale->isActive();
                         })->first();
+
+                        // Chỉ hiển thị flash sale sắp diễn ra khi KHÔNG có flash sale nào đang diễn ra
+                        $upcomingFlashSales = collect();
+                        if (!$ongoingFlashSales) {
+                            $upcomingFlashSales = $flashSales->filter(function($flashSale) {
+                                return $flashSale->start_time > now() && $flashSale->is_active;
+                            });
+                        }
                     @endphp
 
                     @if($ongoingFlashSales)
@@ -31,14 +36,24 @@
                         @php
                             $nextFlashSale = $upcomingFlashSales->sortBy('start_time')->first();
                             $startTime = $nextFlashSale->start_time;
-                            $hours = $startTime->diffInHours(now());
-                            $minutes = $startTime->diffInMinutes(now()) % 60;
-                            $seconds = $startTime->diffInSeconds(now()) % 60;
+                            $now = now();
+                            
+                            $days = $startTime->diffInDays($now);
+                            $hours = $startTime->diffInHours($now) % 24;
+                            $minutes = $startTime->diffInMinutes($now) % 60;
+                            $seconds = $startTime->diffInSeconds($now) % 60;
+                            
                             $timeString = '';
-                            if ($hours > 0) {
+                            if ($days > 0) {
+                                $timeString .= $days . ' ngày ';
+                            }
+                            if ($hours > 0 || $days > 0) {
                                 $timeString .= $hours . ' giờ ';
                             }
-                            $timeString .= $minutes . ' phút ' . $seconds . ' giây';
+                            if ($minutes > 0 || $hours > 0 || $days > 0) {
+                                $timeString .= $minutes . ' phút ';
+                            }
+                            $timeString .= $seconds . ' giây';
                         @endphp
                         <div class="upcoming-badge ms-3">
                             <span class="badge bg-warning text-dark">Bắt đầu sau {{ $timeString }}</span>
@@ -51,7 +66,17 @@
 
         {{-- Products Grid --}}
         <div class="row g-0">
-            @foreach($flashSales as $flashSale)
+            @php
+                // Chỉ hiển thị flash sale đang diễn ra, nếu không có thì hiển thị sắp diễn ra
+                $displayFlashSales = collect();
+                if ($ongoingFlashSales) {
+                    $displayFlashSales = collect([$ongoingFlashSales]);
+                } elseif ($upcomingFlashSales->isNotEmpty()) {
+                    $displayFlashSales = $upcomingFlashSales->take(1); // Chỉ lấy 1 flash sale sắp diễn ra gần nhất
+                }
+            @endphp
+
+            @foreach($displayFlashSales as $flashSale)
                 @php
                     // Group items by product to avoid duplicate cards for different variants
                     $itemsGroupedByProduct = $flashSale->flashSaleProductsByPriority
@@ -90,7 +115,7 @@
                                         @if($flashSale->start_time > now())
                                             <div class="upcoming-price">
                                                 <div class="original-price">
-                                                    <span class="original-price-value">₫{{ number_format($flashProduct->original_price, 0, ',', '.') }}</span>
+                                                    <span class="original-price-value">{{ number_format($flashProduct->original_price, 0, ',', '.') }}₫</span>
                                                     <div class="sale-price-placeholder">
                                                         <span class="price-char">?</span>
                                                         <span class="price-char">?</span>
@@ -98,19 +123,27 @@
                                                         <span class="price-char">?</span>
                                                         <span class="price-char">đ</span>
                                                     </div>
-                                                    <span class="discount-badge">-{{ $flashProduct->getDiscountPercentage() }}%</span>
                                                 </div>
                                             </div>
                                         @else
                                             <div class="product-price">
-                                                <div class="sale-price">₫{{ number_format($flashProduct->sale_price, 0, ',', '.') }}</div>
+                                                <div class="sale-price">{{ number_format($flashProduct->sale_price, 0, ',', '.') }}₫</div>
                                                 <div class="original-price">
-                                                    <span>₫{{ number_format($flashProduct->original_price, 0, ',', '.') }}</span>
+                                                    <span>{{ number_format($flashProduct->original_price, 0, ',', '.') }}₫</span>
                                                     <!-- <span class="discount-badge">-{{ number_format((($flashProduct->original_price - $flashProduct->sale_price) / $flashProduct->original_price) * 100, 0) }}%</span> -->
                                                 </div>
                                             </div>
                                         @endif
 
+                                        {{-- Product Actions --}}
+                                        <div class="product-actions">
+                                            <button class="action-btn add-to-favorite" data-product-id="{{ $flashProduct->productVariant->product->id }}" title="Thêm vào yêu thích" onclick="addToFavorite(event, {{ $flashProduct->productVariant->product->id }}); return false;">
+                                                <i class="zmdi zmdi-favorite"></i>
+                                            </button>
+                                            <button class="action-btn add-to-cart" data-product-id="{{ $flashProduct->productVariant->product->id }}" data-variant-id="{{ $flashProduct->productVariant->id }}" data-flash-sale-id="{{ $flashSale->id }}" data-flash-price="{{ $flashProduct->sale_price }}" title="Thêm vào giỏ hàng" onclick="addToCart(event, {{ $flashProduct->productVariant->product->id }}, {{ $flashProduct->productVariant->id }}, {{ $flashSale->id }}, {{ $flashProduct->sale_price }}); return false;">
+                                                <i class="zmdi zmdi-shopping-cart"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </a>
                             </div>
@@ -138,15 +171,19 @@
                             return;
                         }
 
+                        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
                         let timeString = 'Bắt đầu sau ';
-                        if (hours > 0) {
+                        if (days > 0) {
+                            timeString += days + ' ngày ';
+                        }
+                        if (hours > 0 || days > 0) {
                             timeString += hours + ' giờ ';
                         }
-                        if (minutes > 0 || hours > 0) {
+                        if (minutes > 0 || hours > 0 || days > 0) {
                             timeString += minutes + ' phút ';
                         }
                         timeString += seconds + ' giây';
@@ -463,6 +500,178 @@
     font-size: 12px;
 }
 
+/* Product Actions */
+.product-actions {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 4px 0;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    color: #666;
+    text-align: center;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    background: #f8f8f8;
+    color: #333;
+    transform: none;
+    box-shadow: none;
+}
+
+.action-btn.add-to-favorite {
+    color: #999;
+}
+
+.action-btn.add-to-favorite[data-favorited="true"],
+.action-btn.add-to-favorite:hover {
+    color: #ff4757;
+    background: #fff;
+}
+
+.action-btn.add-to-cart {
+    color: #666;
+    background: #fff;
+}
+
+.action-btn.add-to-cart:hover {
+    color: #2ecc71;
+    background: #f8f8f8;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: scale(0.7);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.show .modal-content {
+    transform: scale(1);
+}
+
+.modal-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+    color: #28a745;
+}
+
+.modal-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.modal-message {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 25px;
+}
+
+.modal-button {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.modal-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.modal-button:active {
+    transform: translateY(0);
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: #f8f9fa;
+    color: #333;
+}
+
+.success-icon {
+    color: #28a745;
+}
+
+.error-icon {
+    color: #dc3545;
+}
+
+.warning-icon {
+    color: #ffc107;
+}
+
+.info-icon {
+    color: #17a2b8;
+}
 
 /* Hiệu ứng khi hover vào sản phẩm */
 .flash-product-card:hover .sale-price {
@@ -534,6 +743,9 @@
 
 {{-- JavaScript --}}
 <script>
+// Cache cho trạng thái yêu thích
+const favoriteCache = new Map();
+
 document.addEventListener('DOMContentLoaded', function() {
     // Countdown Timer - Compact Version
     const countdownCompact = document.querySelector('.countdown-compact');
@@ -563,6 +775,242 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCountdown();
         setInterval(updateCountdown, 1000);
     }
+
+    // Kiểm tra trạng thái yêu thích khi trang load
+    @auth
+    checkFavoriteStatus();
+    @endauth
 });
+
+// Kiểm tra trạng thái yêu thích của tất cả sản phẩm
+@auth
+function checkFavoriteStatus() {
+    const favoriteButtons = document.querySelectorAll('.flash-sale-section .add-to-favorite');
+
+    favoriteButtons.forEach(button => {
+        const productId = button.getAttribute('data-product-id');
+        const icon = button.querySelector('i');
+
+        // Kiểm tra cache trước
+        if (favoriteCache.has(productId)) {
+            const isFavorite = favoriteCache.get(productId);
+            if (isFavorite) {
+                icon.style.color = '#e74c3c';
+                button.setAttribute('data-favorited', 'true');
+            }
+            return;
+        }
+
+        // Gọi API kiểm tra trạng thái yêu thích
+        fetch(`/favorites/check/${productId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Lưu vào cache
+                favoriteCache.set(productId, data.is_favorite);
+
+                if (data.is_favorite) {
+                    // Nếu đã yêu thích thì đổi màu icon thành đỏ
+                    icon.style.color = '#e74c3c';
+                    button.setAttribute('data-favorited', 'true');
+                }
+            })
+            .catch(error => {
+                console.log('Lỗi khi kiểm tra trạng thái yêu thích:', error);
+            });
+    });
+}
+@endauth
+
+// Hàm thêm vào yêu thích
+function addToFavorite(event, productId) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Lấy button và icon chính xác
+    const button = event.target.closest('.add-to-favorite');
+    const icon = button.querySelector('i');
+
+    // Kiểm tra xem user đã đăng nhập chưa
+    @auth
+    // Kiểm tra nếu đã yêu thích rồi thì hiển thị thông báo
+    if (button.getAttribute('data-favorited') === 'true') {
+        showModal('Sản phẩm đã có trong danh sách yêu thích!', 'info');
+        return;
+    }
+
+    showModal('Đang thêm sản phẩm vào yêu thích...', 'info');
+
+    // Tạo form data
+    const formData = new FormData();
+    formData.append('product_id', productId);
+    formData.append('_token', '{{ csrf_token() }}');
+
+    // Gửi request
+    fetch('/favorites', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Thay đổi màu icon thành đỏ
+                icon.style.color = '#e74c3c';
+                button.setAttribute('data-favorited', 'true');
+
+                // Cập nhật cache
+                favoriteCache.set(productId, true);
+
+                // Hiển thị thông báo thành công
+                showModal('Đã thêm sản phẩm vào danh sách yêu thích!', 'success');
+            } else {
+                // Kiểm tra nếu sản phẩm đã có trong yêu thích thì hiển thị thông báo thông tin
+                if (data.message && data.message.includes('đã có trong danh sách yêu thích')) {
+                    icon.style.color = '#e74c3c';
+                    button.setAttribute('data-favorited', 'true');
+
+                    // Cập nhật cache
+                    favoriteCache.set(productId, true);
+
+                    showModal(data.message, 'info');
+                } else {
+                    showModal(data.message || 'Có lỗi xảy ra!', 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showModal('Có lỗi xảy ra khi thêm vào yêu thích!', 'error');
+        });
+    @else
+    // Nếu chưa đăng nhập, chỉ hiển thị thông báo
+    showModal('Vui lòng đăng nhập để thêm sản phẩm vào yêu thích!', 'warning');
+    @endauth
+}
+
+// Hàm thêm vào giỏ hàng
+function addToCart(event, productId, variantId, flashSaleId, flashPrice) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    @auth
+    showModal('Đang thêm sản phẩm vào giỏ hàng...', 'info');
+
+    // Tạo data cho flash sale product
+    const cartData = {
+        product_id: productId,
+        product_variant_id: variantId,
+        quantity: 1,
+        is_flash_sale: true,
+        flash_sale_id: flashSaleId,
+        flash_sale_price: flashPrice,
+        _token: '{{ csrf_token() }}'
+    };
+
+    // Gửi request thêm vào giỏ hàng
+    fetch('/api/add-to-cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(cartData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showModal('Đã thêm sản phẩm flash sale vào giỏ hàng!', 'success');
+            } else {
+                showModal(data.message || 'Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showModal('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
+        });
+    @else
+    // Nếu chưa đăng nhập, chỉ hiển thị thông báo
+    showModal('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!', 'warning');
+    @endauth
+}
+
+// Hiển thị modal thông báo ở giữa màn hình
+function showModal(message, type = 'info') {
+    const icons = {
+        success: 'zmdi-check-circle success-icon',
+        error: 'zmdi-close-circle error-icon',
+        warning: 'zmdi-alert-triangle warning-icon',
+        info: 'zmdi-info info-icon'
+    };
+
+    const titles = {
+        success: 'Thành công!',
+        error: 'Có lỗi!',
+        warning: 'Cảnh báo!',
+        info: 'Thông báo'
+    };
+
+    const modalHtml = `
+        <div class="modal-overlay" id="flashSaleNotificationModal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeFlashSaleModal()">
+                    <i class="zmdi zmdi-close"></i>
+                </button>
+                <i class="zmdi ${icons[type]} modal-icon"></i>
+                <h3 class="modal-title">${titles[type]}</h3>
+                <p class="modal-message">${message}</p>
+            </div>
+        </div>
+    `;
+
+    // Xóa modal cũ nếu có
+    const oldModal = document.getElementById('flashSaleNotificationModal');
+    if (oldModal) {
+        oldModal.remove();
+    }
+
+    // Thêm modal mới
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Hiển thị animation
+    setTimeout(() => {
+        const modal = document.getElementById('flashSaleNotificationModal');
+        if (modal) {
+            modal.classList.add('show');
+        }
+    }, 100);
+
+    // Tự động đóng sau 3 giây
+    setTimeout(function() {
+        closeFlashSaleModal();
+    }, 3000);
+}
+
+// Đ��ng modal
+function closeFlashSaleModal() {
+    const modal = document.getElementById('flashSaleNotificationModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    }
+}
 </script>
 @endif

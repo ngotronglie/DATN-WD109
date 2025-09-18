@@ -66,10 +66,10 @@
 
                         <!-- Price Section -->
                         <div class="price-section">
-                            <div id="current-price" class="current-price">₫{{ isset($variants[0]) ? number_format($variants[0]->price, 0, ',', '.') : '0' }}</div>
+                            <div id="current-price" class="current-price">{{ isset($variants[0]) ? number_format($variants[0]->price, 0, ',', '.') : '0' }}₫</div>
                             @if(isset($variants[0]) && $variants[0]->price_sale)
-                            <div id="original-price" class="original-price">₫{{ number_format($variants[0]->price_sale, 0, ',', '.') }}</div>
-                            <div id="savings-badge" class="savings-badge">Tiết kiệm ₫{{ number_format($variants[0]->price - $variants[0]->price_sale, 0, ',', '.') }}</div>
+                            <div id="original-price" class="original-price">{{ number_format($variants[0]->price_sale, 0, ',', '.') }}₫</div>
+                            <div id="savings-badge" class="savings-badge">Tiết kiệm {{ number_format($variants[0]->price - $variants[0]->price_sale, 0, ',', '.') }}₫</div>
                             @endif
                         </div>
                         <!-- Variant Selection -->
@@ -599,12 +599,12 @@ async function updateProductVariant() {
         
         if (currentPriceElement) {
             // Format và hiển thị giá hiện tại
-            currentPriceElement.textContent = '₫' + Math.round(displayPrice).toLocaleString('vi-VN');
+            currentPriceElement.textContent = Math.round(displayPrice).toLocaleString('vi-VN') + '₫';
             
             // Hiển thị giá gốc và % giảm giá nếu có khác biệt
             if (displayPrice < originalPrice) {
                 if (originalPriceElement) {
-                    originalPriceElement.textContent = '₫' + Math.round(originalPrice).toLocaleString('vi-VN');
+                    originalPriceElement.textContent = Math.round(originalPrice).toLocaleString('vi-VN') + '₫';
                     originalPriceElement.style.display = 'inline';
                     originalPriceElement.classList.add('text-decoration-line-through', 'text-muted', 'ms-2');
                 }

@@ -83,9 +83,9 @@
 
                         <!-- Price Section -->
                         <div class="price-section">
-                            <div id="current-price" class="current-price">₫{{ number_format($flashSaleProduct->sale_price, 0, ',', '.') }}</div>
-                            <div id="original-price" class="original-price">₫{{ number_format($flashSaleProduct->original_price, 0, ',', '.') }}</div>
-                            <div id="savings-badge" class="savings-badge">Tiết kiệm ₫{{ number_format($flashSaleProduct->original_price - $flashSaleProduct->sale_price, 0, ',', '.') }}</div>
+                            <div id="current-price" class="current-price">{{ number_format($flashSaleProduct->sale_price, 0, ',', '.') }}₫</div>
+                            <div id="original-price" class="original-price">{{ number_format($flashSaleProduct->original_price, 0, ',', '.') }}₫</div>
+                            <div id="savings-badge" class="savings-badge">Tiết kiệm {{ number_format($flashSaleProduct->original_price - $flashSaleProduct->sale_price, 0, ',', '.') }}₫</div>
                         </div>
 
 
@@ -1273,12 +1273,12 @@ async function updateProductVariant() {
             
             if (currentPriceElement) {
                 // Format và hiển thị giá hiện tại
-                currentPriceElement.textContent = '₫' + Math.round(displayPrice).toLocaleString('vi-VN');
+                currentPriceElement.textContent = Math.round(displayPrice).toLocaleString('vi-VN') + '₫';
                 
                 // Hiển thị giá gốc và % giảm giá nếu có khác biệt
                 if (displayPrice < originalPrice) {
                     if (originalPriceElement) {
-                        originalPriceElement.textContent = '₫' + Math.round(originalPrice).toLocaleString('vi-VN');
+                        originalPriceElement.textContent = Math.round(originalPrice).toLocaleString('vi-VN') + '₫';
                         originalPriceElement.style.display = 'inline';
                         originalPriceElement.classList.add('text-decoration-line-through', 'text-muted', 'ms-2');
                     }
