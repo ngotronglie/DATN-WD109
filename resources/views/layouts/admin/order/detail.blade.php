@@ -123,6 +123,8 @@
                         <span class="badge bg-success text-dark">Không xác nhận yêu cầu hoàn hàng</span>
                         @elseif($stt === 13)
                         <span class="badge bg-danger">Giao hàng thất bại</span>
+                        @elseif($stt === 14)
+                        <span class="badge bg-warning text-dark">COD không nhận hàng</span>
                         @else
                         <span class="badge bg-secondary">Không xác định</span>
                         @endif
@@ -142,10 +144,18 @@
                         </form>
                         <form action="{{ route('admin.orders.deliveryFailed', $order->id) }}" method="POST" style="display:inline;">
                             @csrf
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận giao hàng thất bại?')">
+                            <button type="submit" class="btn btn-danger btn-sm me-2" onclick="return confirm('Xác nhận giao hàng thất bại?')">
                                 <i class="fas fa-times"></i> Giao thất bại
                             </button>
                         </form>
+                        @if (strtolower((string)$order->payment_method) === 'cod')
+                        <form action="{{ route('admin.orders.codNotReceived', $order->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Xác nhận COD không nhận hàng?')">
+                                <i class="fas fa-user-times"></i> Khách không nhận hàng
+                            </button>
+                        </form>
+                        @endif
                     </div>
                     @elseif($stt === 13)
                     <div class="mt-3">
@@ -161,6 +171,17 @@
                             <i class="fas fa-money-bill-wave"></i> Hoàn tiền
                         </button>
                         @endif
+                    </div>
+                    @elseif($stt === 14)
+                    <div class="mt-3">
+                        <h6>Hành động:</h6>
+                        <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <input type="hidden" name="status" value="6">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận hủy đơn hàng COD không nhận?')">
+                                <i class="fas fa-times"></i> Hủy đơn
+                            </button>
+                        </form>
                     </div>
                     @endif
                 </div>

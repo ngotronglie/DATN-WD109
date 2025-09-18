@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\RefundRequest;
+use App\Jobs\AutoCancelFailedDeliveryOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
@@ -403,10 +404,40 @@ class OrderController extends Controller
             // Cập nhật trạng thái sang "Đang giao hàng" (4)
             $order->status = 4;
             $order->save();
-            
             \DB::commit();
             
             return back()->with('success', 'Đã chuyển đơn hàng sang trạng thái đang giao hàng để giao lại.');
+            
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return back()->with('error', 'Lỗi khi cập nhật trạng thái: ' . $e->getMessage());
+        }
+    }
+
+    // COD không nhận hàng - chuyển sang trạng thái COD không nhận hàng
+    public function codNotReceived($id)
+    {
+        \DB::beginTransaction();
+        
+        try {
+            $order = Order::findOrFail($id);
+            
+            // Chỉ cho phép khi đơn hàng đang ở trạng thái "Đang giao hàng" (4) và là COD
+            if ((int)$order->status !== 4) {
+                return back()->with('error', 'Chỉ có thể đánh dấu COD không nhận hàng khi đơn hàng đang giao hàng.');
+            }
+            
+            if (strtolower((string)$order->payment_method) !== 'cod') {
+                return back()->with('error', 'Chỉ áp dụng cho đơn hàng COD.');
+            }
+            
+            // Cập nhật trạng thái sang "COD không nhận hàng" (14)
+            $order->status = 14;
+            $order->save();
+            
+            \DB::commit();
+            
+            return back()->with('success', 'Đã đánh dấu COD không nhận hàng.');
             
         } catch (\Exception $e) {
             \DB::rollBack();

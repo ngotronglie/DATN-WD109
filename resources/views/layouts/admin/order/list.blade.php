@@ -43,6 +43,7 @@
                     11 => \App\Models\Order::where('status', 11)->count(),
                     12 => \App\Models\Order::where('status', 12)->count(),
                     13 => \App\Models\Order::where('status', 13)->count(),
+                    14 => \App\Models\Order::where('status', 14)->count(),
                     ];
                     @endphp
                     <div class="mb-3">
@@ -59,6 +60,7 @@
                         <a href="{{ route('admin.orders.index', ['status' => 9]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 9 ? 'active' : '' }}">Đã hoàn tiền ({{ $counts[9] }})</a>
                         <a href="{{ route('admin.orders.index', ['status' => 12]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 12 ? 'active' : '' }}">Không hoàn hàng ({{ $counts[12] }})</a>
                         <a href="{{ route('admin.orders.index', ['status' => 13]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 13 ? 'active' : '' }}">Giao hàng thất bại ({{ $counts[13] }})</a>
+                        <a href="{{ route('admin.orders.index', ['status' => 14]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 14 ? 'active' : '' }}">Khách không nhận hàng ({{ $counts[14] }})</a>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover table-striped table-bordered">
@@ -113,6 +115,8 @@
                                         <span class="badge bg-dark text-white">Không hoàn hàng</span>
                                         @elseif($stt === 13)
                                         <span class="badge bg-danger">Giao hàng thất bại</span>
+                                        @elseif($stt === 14)
+                                        <span class="badge bg-warning text-dark">Khách không nhận hàng</span>
                                         @else
                                         <span class="badge bg-secondary">Không xác định</span>
                                         @endif
@@ -175,8 +179,14 @@
                                         </form>
                                         <form action="{{ route('admin.orders.deliveryFailed', $order->id) }}" method="POST" style="display:inline;">
                                             @csrf
-                                            <button class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận giao hàng thất bại?')">Giao thất bại</button>
+                                            <button class="btn btn-danger btn-sm me-1" onclick="return confirm('Xác nhận giao hàng thất bại?')">Giao thất bại</button>
                                         </form>
+                                        @if (strtolower((string)$order->payment_method) === 'cod')
+                                        <form action="{{ route('admin.orders.codNotReceived', $order->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <button class="btn btn-warning btn-sm" onclick="return confirm('Xác nhận COD không nhận hàng?')">COD không nhận</button>
+                                        </form>
+                                        @endif
                                         @elseif($stt === 5)
                                         -
                                         @elseif($stt === 13)
@@ -187,6 +197,12 @@
                                         @if (strtolower((string)$order->payment_method) === 'vnpay')
                                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#initiateRefundModal-{{ $order->id }}">Hoàn tiền</button>
                                         @endif
+                                        @elseif($stt === 14)
+                                        <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <input type="hidden" name="status" value="6">
+                                            <button class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận hủy đơn hàng COD không nhận?')">Hủy đơn</button>
+                                        </form>
                                         @endif
                                     </td>
                                     <td class="text-center">

@@ -131,9 +131,7 @@
         @if (in_array($order->status, [4, 5]) && strtolower((string)$order->payment_method) === 'vnpay')
         @if ($order->refundRequest == null)
         <div class="text-end mt-4">
-            <button class="btn btn-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#refundModal">
-                Yêu cầu hoàn tiền
-            </button>
+        
         </div>
         @else
         <div class="alert alert-warning mt-4 rounded-4">

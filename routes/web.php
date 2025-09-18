@@ -265,6 +265,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('/orders/{id}/delivery-success', [OrderController::class, 'deliverySuccess'])->name('orders.deliverySuccess');
     Route::post('/orders/{id}/delivery-failed', [OrderController::class, 'deliveryFailed'])->name('orders.deliveryFailed');
     Route::post('/orders/{id}/redeliver', [OrderController::class, 'redeliver'])->name('orders.redeliver');
+    Route::post('/orders/{id}/cod-not-received', [OrderController::class, 'codNotReceived'])->name('orders.codNotReceived');
 
 
     // Refund Requests
