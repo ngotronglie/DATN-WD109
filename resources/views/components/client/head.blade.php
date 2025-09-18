@@ -9,6 +9,7 @@
     <!-- Favicon -->
     <link rel="shortcut icon" type="{{ asset('frontend/image/x-icon') }}"
         href="{{ asset('frontend/img/icon/favicon.png') }}">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- All CSS Files -->
     <!-- Bootstrap fremwork main css -->

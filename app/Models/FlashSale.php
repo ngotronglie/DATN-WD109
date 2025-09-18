@@ -146,11 +146,11 @@ class FlashSale extends Model
     public static function getActiveFlashSales()
     {
         return self::where('is_active', true)
-                   ->where('start_time', '<=', now())
                    ->where('end_time', '>', now())
                    ->with(['flashSaleProductsByPriority.productVariant.product', 
                           'flashSaleProductsByPriority.productVariant.color',
                           'flashSaleProductsByPriority.productVariant.capacity'])
+                   ->orderBy('start_time')
                    ->get();
     }
 

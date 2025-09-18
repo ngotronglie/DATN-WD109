@@ -1,29 +1,30 @@
   <!-- Header -->
-  <header class="bg-white shadow py-0">
-      <div class="container-fluid d-flex align-items-center justify-content-between px-4">
-          <!-- Logo -->
-          <div class="logo">
-              <a href="{{ route('home') }}">
-                  <img src="{{ asset('frontend/img/logo/logo.png') }}" alt="Logo" height="25">
-              </a>
-          </div>
-          <!-- Menu -->
-          <nav class="d-none d-lg-block">
-              <ul class="nav justify-content-center">
-                  <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Trang chủ</a></li>
-                  <li class="nav-item"><a class="nav-link" href="{{ route('shop.index') }}">Sản phẩm</a></li>
-                  <li class="nav-item"><a class="nav-link" href="{{ route('blog') }}">Bài viết</a></li>
-                  <li class="nav-item"><a class="nav-link" href="{{ route('contact') }}">Liên hệ</a></li>
+  <header class="bg-dark shadow" style="padding: 0; min-height: 30px;">
+      <div class="container-fluid">
+          <div class="d-flex align-items-center">
+              <!-- Logo -->
+              <div class="logo me-auto">
+                  <a href="{{ route('home') }}">
+                      <img src="{{ asset('frontend/img/logo/logo.png') }}" alt="Logo" height="25">
+                  </a>
+              </div>
+              <!-- Menu -->
+              <nav class="d-none d-lg-block position-absolute start-50 translate-middle-x">
+                  <ul class="nav">
+                  <li class="nav-item"><a class="nav-link" href="{{ route('home') }}" style="color: #ffffff !important;">Trang chủ</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{{ route('shop.index') }}" style="color: #ffffff !important;">Sản phẩm</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{{ route('blog') }}" style="color: #ffffff !important;">Bài viết</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{{ route('contact') }}" style="color: #ffffff !important;">Liên hệ</a></li>
                   @auth
                   @if (Auth::user()->role_id == 2)
-                  <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản
+                  <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}" style="color: #ffffff !important;">Quản
                           trị</a></li>
                   @endif
                   @endauth
               </ul>
           </nav>
           <!-- Auth Links -->
-          <div class="d-flex align-items-center gap-3">
+          <div class="ms-auto d-flex align-items-center gap-3">
 
               @auth
               <!-- Avatar dropdown -->
@@ -67,85 +68,94 @@
   </header>
 
   <style>
-    /* ===== HEADER ===== */
+/* ===== HEADER ===== */
 header {
-    position: sticky; /* header dính khi scroll */
+    position: sticky;
     top: 0;
     z-index: 1000;
-    background: #fff;
+    background: #121212;
+    height: 70px; /* Tăng thêm chiều cao header */
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
 }
 
 /* Logo */
 .logo img {
-    height: 40px; /* logo cao hơn 1 chút */
-    transition: transform 0.3s ease;
-}
-.logo img:hover {
-    transform: scale(1.05);
+    height: 22px; /* Tăng thêm kích thước logo */
 }
 
 /* Menu chính */
-nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-nav .nav-link {
-    color: #333;
-    font-size: 16px;
-    font-weight: 500;
-    padding: 15px 20px;
-    transition: color 0.3s, border-bottom 0.3s;
-}
-nav .nav-link:hover {
-    color: #007bff;
-    border-bottom: 2px solid #007bff;
-}
-
-/* Avatar dropdown */
-.dropdown-toggle img {
-    border: 2px solid #eee;
-    transition: transform 0.2s ease;
-}
-.dropdown-toggle img:hover {
-    transform: scale(1.1);
-}
-
-/* Dropdown menu */
-.dropdown-menu {
-    border-radius: 10px;
-    padding: 0;
+.nav-link {
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #fff !important;
+    padding: 0 14px !important;
+    line-height: 60px !important;
+    position: relative;
+    transition: all 0.3s ease-in-out !important;
     overflow: hidden;
 }
-.dropdown-menu .dropdown-item {
-    font-size: 15px;
-    transition: background 0.2s;
+
+/* Hiệu ứng gạch chân khi hover */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 15px;
+    left: 50%;
+    background-color: #00aaff;
+    transition: all 0.3s ease-in-out;
+    transform: translateX(-50%);
 }
-.dropdown-menu .dropdown-item:hover {
-    background: #f8f9fa;
+
+/* Hiệu ứng khi hover */
+.nav-link:hover {
+    color: #00aaff !important;
+    transform: translateY(-1px);
+}
+
+.nav-link:hover::after {
+    width: 60%;
+}
+
+/* Hiệu ứng active */
+.nav-link.active {
+    color: #00aaff !important;
+}
+
+.nav-link.active::after {
+    width: 60%;
+    background-color: #00aaff;
 }
 
 /* Auth links */
 header .fs-5 {
-    color: #333;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-header .fs-5:hover {
-    color: #007bff;
+    font-size: 14.5px !important;
+    line-height: 60px; /* Căn giữa theo header mới */
+    padding: 0 12px;
 }
 
-/* Icon yêu thích & giỏ hàng */
+/* Icon */
 header a[title="Yêu thích"],
 header a[title="Giỏ hàng"] {
-    color: #333;
-    transition: color 0.3s;
+    font-size: 18px !important;
+    line-height: 60px; /* Căn giữa theo header mới */
+    padding: 0 10px;
+    transition: all 0.2s ease;
 }
-header a[title="Yêu thích"]:hover {
-    color: red;
-}
+
+header a[title="Yêu thích"]:hover,
 header a[title="Giỏ hàng"]:hover {
-    color: #007bff;
+    color: #00aaff !important;
+    transform: scale(1.1);
 }
+
+
+
+
 
   </style>

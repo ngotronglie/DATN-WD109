@@ -28,86 +28,77 @@
 
 
         <!-- BLOG SECTION START -->
-        <div class="blog-section-2 pt-60 pb-30">
+        <div class="blog-section section-bg-tb pt-80 pb-55">
             <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="section-title text-start mb-40">
-                            <h2 class="uppercase">Bài viết mới nhất</h2>
-                            <h6>There are many variations of passages of brands available,</h6>
-                        </div>
+                <div class="section-title text-center mb-5">
+                    <h2 class="mb-3">BÀI VIẾT MỚI NHẤT</h2>
+                    <div class="title-divider">
+                        <span class="divider-line"></span>
+                        <i class="zmdi zmdi-star"></i>
+                        <span class="divider-line"></span>
                     </div>
                 </div>
-                <div class="blog">
-                    <div class="row active-blog-2">
-                        <!-- blog-item start -->
-                        <div class="col-lg-12">
-                            <div class="blog-item-2">
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="blog-image">
-                                            <a href="single-blog.html"><img src="{{asset('frontend/img/blog/4.jpg')}}" alt=""></a>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="blog-desc">
-                                            <h5 class="blog-title-2"><a href="#">dummy Blog name</a></h5>
-                                            <p>There are many variations of passages of in psum available, but the
-                                                majority have sufe ered on in some form...</p>
-                                            <div class="read-more">
-                                                <a href="#">Read more</a>
-                                            </div>
-                                        </div>
+                <div class="row">
+                    @if(isset($latestBlogs) && $latestBlogs->count() > 0)
+                        @foreach($latestBlogs as $blog)
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="blog-item">
+                                <div class="blog-img">
+                                    <a href="{{ route('blog.show', $blog->slug) }}">
+                                        <img src="{{ $blog->image ? asset('storage/' . $blog->image) : asset('frontend/img/blog/4.jpg') }}" alt="{{ $blog->title }}" />
+                                    </a>
+                                </div>
+                                <div class="blog-info">
+                                    <h5 class="blog-title">
+                                        <a href="{{ route('blog.show', $blog->slug) }}">{{ $blog->title }}</a>
+                                    </h5>
+                                    <p class="blog-excerpt">
+                                        {{ Str::limit(strip_tags($blog->content), 100) }}
+                                    </p>
+                                    <div class="blog-meta">
+                                        <span class="blog-date">
+                                            <i class="zmdi zmdi-calendar"></i> {{ $blog->created_at->format('d/m/Y') }}
+                                        </span>
+                                        <a href="{{ route('blog.show', $blog->slug) }}" class="read-more">
+                                            Xem thêm <i class="zmdi zmdi-arrow-right"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- blog-item end -->
-                        <!-- blog-item start -->
-                        <div class="col-lg-12">
-                            <div class="blog-item-2">
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="blog-image">
-                                            <a href="single-blog.html"><img src="{{asset('frontend/img/blog/5.jpg')}}" alt=""></a>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="blog-desc">
-                                            <h5 class="blog-title-2"><a href="#">dummy Blog name</a></h5>
-                                            <p>There are many variations of passages of in psum available, but the
-                                                majority have sufe ered on in some form...</p>
-                                            <div class="read-more">
-                                                <a href="#">Read more</a>
-                                            </div>
-                                        </div>
+                        @endforeach
+                    @else
+                        @for($i = 1; $i <= 4; $i++)
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="blog-item">
+                                <div class="blog-img">
+                                    <a href="#">
+                                        <img src="{{ asset('frontend/img/blog/' . $i . '.jpg') }}" alt="Bài viết mẫu" />
+                                    </a>
+                                </div>
+                                <div class="blog-info">
+                                    <h5 class="blog-title">
+                                        <a href="#">Tiêu đề bài viết mẫu {{ $i }}</a>
+                                    </h5>
+                                    <p class="blog-excerpt">
+                                        Đây là nội dung mẫu của bài viết. Nội dung thực tế sẽ được hiển thị tại đây.
+                                    </p>
+                                    <div class="blog-meta">
+                                        <span class="blog-date">
+                                            <i class="zmdi zmdi-calendar"></i> {{ now()->format('d/m/Y') }}
+                                        </span>
+                                        <a href="#" class="read-more">
+                                            Xem thêm <i class="zmdi zmdi-arrow-right"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- blog-item end -->
-                        <!-- blog-item start -->
-                        <div class="col-lg-12">
-                            <div class="blog-item-2">
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="blog-image">
-                                            <a href="single-blog.html"><img src="{{asset('frontend/img/blog/4.jpg')}}"" alt=""></a>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="blog-desc">
-                                            <h5 class="blog-title-2"><a href="#">dummy Blog name</a></h5>
-                                            <p>There are many variations of passages of in psum available, but the
-                                                majority have sufe ered on in some form...</p>
-                                            <div class="read-more">
-                                                <a href="#">Read more</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        @endfor
+                    @endif
+                </div>
+            </div>
+        </div>
                         <!-- blog-item end -->
                     </div>
                 </div>
@@ -143,8 +134,152 @@
 @endsection
 
 <style>
+    /* ====== BLOG STYLES ====== */
+    .blog-section {
+        background-color: #f9f9f9;
+    }
+    
+    .blog-item {
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+        border: 1px solid #eee;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .blog-item:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-5px);
+    }
+    
+    .blog-img {
+        position: relative;
+        overflow: hidden;
+        padding-top: 60%;
+    }
+    
+    .blog-img img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .blog-item:hover .blog-img img {
+        transform: scale(1.05);
+    }
+    
+    .blog-info {
+        padding: 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .blog-title {
+        margin: 0 0 12px 0;
+        line-height: 1.4;
+        min-height: 42px;
+        max-height: 54px;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    
+    .blog-title a {
+        color: #333;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .blog-title a:hover {
+        color: #ff6b00;
+    }
+    
+    .blog-excerpt {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 15px;
+        flex-grow: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .blog-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+    
+    .blog-date {
+        color: #888;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .blog-date i {
+        margin-right: 5px;
+        font-size: 1rem;
+    }
+    
+    .read-more {
+        color: #ff6b00;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+    
+    .read-more i {
+        margin-left: 5px;
+        transition: transform 0.3s ease;
+    }
+    
+    .read-more:hover {
+        color: #e65100;
+    }
+    
+    .read-more:hover i {
+        transform: translateX(3px);
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 991px) {
+        .blog-title a {
+            font-size: 1rem;
+        }
+        
+        .blog-excerpt {
+            font-size: 0.85rem;
+        }
+    }
+    
+    @media (max-width: 767px) {
+        .blog-item {
+            margin-bottom: 20px;
+        }
+    }
+    
     /* ====== GLOBAL ====== */
-/* ====== GLOBAL ====== */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f9f9f9;

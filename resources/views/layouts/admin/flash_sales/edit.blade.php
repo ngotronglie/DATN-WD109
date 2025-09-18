@@ -169,7 +169,14 @@
                                                            placeholder="Max: {{ $flashSaleProduct->productVariant->quantity + $flashSaleProduct->sale_quantity }}">
                                                 </td>
                                                 <td class="text-center">
-                                                    <span class="saving-amount" data-index="{{ $index }}">0đ (0%)</span>
+                                                    @php
+                                                        $saving = $flashSaleProduct->original_price - $flashSaleProduct->sale_price;
+                                                        $percentage = round(($saving / $flashSaleProduct->original_price) * 100);
+                                                    @endphp
+                                                    <span class="saving-amount text-success" data-index="{{ $index }}">
+                                                        {{ number_format($saving) }}đ<br>
+                                                        <small>({{ $percentage }}%)</small>
+                                                    </span>
                                                 </td>
                                                 <td class="text-center">
                                                     <button type="button" class="btn btn-danger btn-sm remove-product" 
@@ -332,8 +339,8 @@ document.addEventListener('DOMContentLoaded', function() {
                        data-index="${productIndex}"
                        placeholder="Max: ${maxQuantity}">
             </td>
-            <td class="text-center">
-                <span class="saving-amount" data-index="${productIndex}">0đ (0%)</span>
+            <td class="saving-${productIndex} text-center">
+                <span class="badge bg-success">0đ (0%)</span>
             </td>
             <td class="text-center">
                 <button type="button" class="btn btn-danger btn-sm remove-product" 
@@ -347,15 +354,15 @@ document.addEventListener('DOMContentLoaded', function() {
         variantSelect.value = '';
         addProductBtn.disabled = true;
 
-        // Tính toán tiết kiệm ban đầu
-        const savingSpan = row.querySelector('.saving-amount');
-        const initialSalePrice = existingSalePrice || 0;
-        const saving = originalPrice - initialSalePrice;
-        const percentage = Math.round((saving / originalPrice) * 100);
-        savingSpan.innerHTML = initialSalePrice > 0 ? 
-            `${formatPrice(saving)}<br><small>(${percentage}%)</small>` : 
-            '0đ (0%)';
-        savingSpan.className = initialSalePrice > 0 ? 'saving-amount text-success' : 'saving-amount';
+        // Tính toán tiết kiệm nếu có giá sale sẵn
+        if (existingSalePrice) {
+            const salePriceInput = row.querySelector('.sale-price-input');
+            const savingSpan = row.querySelector('.saving-amount');
+            const saving = originalPrice - existingSalePrice;
+            const percentage = Math.round((saving / originalPrice) * 100);
+            savingSpan.innerHTML = `${formatPrice(saving)}<br><small>(${percentage}%)</small>`;
+            savingSpan.className = 'saving-amount text-success';
+        }
 
         productIndex++;
     });
@@ -397,12 +404,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const percentage = Math.round((saving / originalPrice) * 100);
                 savingSpan.innerHTML = `${formatPrice(saving)}<br><small>(${percentage}%)</small>`;
                 savingSpan.className = 'saving-amount text-success';
-            } else if (salePrice === 0 || isNaN(salePrice)) {
-                savingSpan.innerHTML = '0đ (0%)';
-                savingSpan.className = 'saving-amount';
             } else {
-                savingSpan.innerHTML = '<span class="text-danger">Giá phải nhỏ hơn giá gốc!</span>';
-                savingSpan.className = 'saving-amount text-danger';
+                savingSpan.textContent = '-';
+                savingSpan.className = 'saving-amount';
             }
         }
         

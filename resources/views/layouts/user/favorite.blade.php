@@ -1,24 +1,19 @@
 @extends('index.clientdashboard')
 
 @section('content')
-        <!-- BREADCRUMBS SETCTION START -->
-        <div class="favorite-breadcrumb">
+        <!-- Shopee-style Breadcrumbs -->
+        <div class="shopee-breadcrumbs">
             <div class="container">
-                <div class="breadcrumb-content">
-                    <div class="breadcrumb-left">
-                        <i class="zmdi zmdi-favorite"></i>
-                        <h1>Sản phẩm yêu thích</h1>
-                        <span class="favorites-count">(<span id="favorites-display">0</span> sản phẩm)</span>
-                    </div>
-                    <div class="breadcrumb-right">
-                        <a href="{{ route('home') }}">Trang chủ</a>
-                        <span>/</span>
-                        <span>Yêu thích</span>
-                    </div>
+                <div class="breadcrumb-nav">
+                    <a href="{{ route('home') }}" class="breadcrumb-link">
+                        <i class="zmdi zmdi-home"></i>
+                        Trang chủ
+                    </a>
+                    <i class="zmdi zmdi-chevron-right breadcrumb-arrow"></i>
+                    <span class="breadcrumb-current">Sản phẩm yêu thích (<span id="favorites-display">0</span> sản phẩm)</span>
                 </div>
             </div>
         </div>
-        <!-- BREADCRUMBS SETCTION END -->
 
         <!-- Start page content -->
         <div id="page-content" class="page-wrapper section">
@@ -92,7 +87,7 @@
                                                         @endif
                                                         
                                                         <button class="remove-favorite-btn" data-favorite-id="{{ $favorite->id }}" title="Xóa khỏi yêu thích">
-                                                            <i class="zmdi zmdi-close"></i>
+                                                            <i class="zmdi zmdi-delete"></i>
                                                         </button>
                                                     </div>
                                                     <div class="card-content">
@@ -115,32 +110,20 @@
                                                                 @endphp
                                                                 
                                                                 @if($flashSaleProduct)
-                                                                    <span class="current-price flash-sale-price">₫{{ number_format($flashSaleProduct->sale_price, 0, ',', '.') }}</span>
-                                                                    <span class="old-price">₫{{ number_format($flashSaleProduct->original_price, 0, ',', '.') }}</span>
+                                                                    <div class="flash-sale-price">₫{{ number_format($flashSaleProduct->sale_price, 0, ',', '.') }}</div>
+                                                                    <div class="original-price">₫{{ number_format($flashSaleProduct->original_price, 0, ',', '.') }}</div>
                                                                     <div class="flash-sale-discount">
                                                                         -{{ round((($flashSaleProduct->original_price - $flashSaleProduct->sale_price) / $flashSaleProduct->original_price) * 100) }}%
                                                                     </div>
                                                                 @elseif($variant->price_sale && $variant->price_sale < $variant->price)
-                                                                    <span class="current-price">₫{{ number_format($variant->price_sale, 0, ',', '.') }}</span>
-                                                                    <span class="old-price">₫{{ number_format($variant->price, 0, ',', '.') }}</span>
+                                                                    <div class="current-price">₫{{ number_format($variant->price_sale, 0, ',', '.') }}</div>
+                                                                    <div class="old-price">₫{{ number_format($variant->price, 0, ',', '.') }}</div>
                                                                 @else
-                                                                    <span class="current-price">₫{{ number_format($variant->price, 0, ',', '.') }}</span>
+                                                                    <div class="current-price">₫{{ number_format($variant->price, 0, ',', '.') }}</div>
                                                                 @endif
                                                             @else
                                                                 <span class="current-price">Liên hệ</span>
                                                             @endif
-                                                        </div>
-                                                        <div class="card-actions">
-                                                            @php
-                                                                // Tính tổng số lượng đã bán từ order_detail
-                                                                $totalSold = \DB::table('order_detail')
-                                                                    ->join('product_variants', 'order_detail.product_variant_id', '=', 'product_variants.id')
-                                                                    ->where('product_variants.product_id', $favorite->product->id)
-                                                                    ->sum('order_detail.quantity');
-                                                            @endphp
-                                                            <div class="sales-info">
-                                                                Đã bán {{ $totalSold }}
-                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -172,57 +155,55 @@
 
 @section('script-client')
 <style>
-/* Favorite Breadcrumb */
-.favorite-breadcrumb {
-    background: #f8f9fa;
-    padding: 20px 0;
-    border-bottom: 1px solid #e9ecef;
+
+/* Shopee-style Breadcrumbs */
+.shopee-breadcrumbs {
+    background: #fff;
+    padding: 16px 0;
+    border-bottom: 1px solid #f0f0f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.breadcrumb-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.breadcrumb-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.breadcrumb-left i {
-    font-size: 24px;
-    color: #ee4d2d;
-}
-
-.breadcrumb-left h1 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-}
-
-.favorites-count {
-    color: #666;
-    font-size: 14px;
-}
-
-.breadcrumb-right {
+.breadcrumb-nav {
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: #666;
 }
 
-.breadcrumb-right a {
+.breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     color: #ee4d2d;
     text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-weight: 500;
 }
 
-.breadcrumb-right a:hover {
-    text-decoration: underline;
+.breadcrumb-link:hover {
+    background: #fff5f5;
+    color: #d73502;
+}
+
+.breadcrumb-arrow {
+    color: #ccc;
+    font-size: 16px;
+    margin: 0 4px;
+}
+
+.breadcrumb-current {
+    color: #333;
+    font-weight: 600;
+    padding: 4px 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Favorites Grid */
@@ -309,13 +290,13 @@
 
 .remove-favorite-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0,0,0,0.7);
+    top: 8px;
+    right: 8px;
+    background: rgba(231, 76, 60, 0.9);
     color: white;
     border: none;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -323,15 +304,24 @@
     cursor: pointer;
     opacity: 0;
     transition: all 0.3s ease;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
 }
 
 .favorite-card:hover .remove-favorite-btn {
     opacity: 1;
+    transform: scale(1.05);
 }
 
 .remove-favorite-btn:hover {
-    background: #e74c3c;
-    transform: scale(1.1);
+    background: #c0392b;
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.5);
+}
+
+.remove-favorite-btn i {
+    font-size: 16px;
+    font-weight: bold;
 }
 
 .card-content {
@@ -364,24 +354,23 @@
     font-size: 16px;
     font-weight: 600;
     color: #ee4d2d;
+    margin-bottom: 4px;
 }
 
-.old-price {
+.flash-sale-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ff6b6b;
+    margin-bottom: 4px;
+}
+
+.old-price, .original-price {
     font-size: 12px;
     color: #999;
     text-decoration: line-through;
-    margin-left: 6px;
+    margin-bottom: 4px;
 }
 
-.sales-info {
-    text-align: center;
-    color: #666;
-    font-size: 12px;
-    padding: 8px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    font-weight: 500;
-}
 
 /* Flash Sale Styles */
 .flash-sale-badge {
@@ -394,12 +383,12 @@
     border-radius: 12px;
     font-size: 10px;
     font-weight: 600;
-    z-index: 3;
     display: flex;
     align-items: center;
     gap: 3px;
     box-shadow: 0 2px 8px rgba(238, 90, 36, 0.3);
     animation: flashPulse 2s infinite;
+    z-index: 10;
 }
 
 .flash-sale-badge i {
