@@ -8,7 +8,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h4 class="mb-1">Đơn hàng theo doanh thu</h4>
-                    <p class="text-muted mb-0">Danh sách các đơn hàng đã thanh toán</p>
+                    <p class="text-muted mb-0">Danh sách các đơn hàng đã giao thành công</p>
                 </div>
                 <a href="{{ route('admin.thongke.donhang') }}" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-2"></i>Quay lại thống kê

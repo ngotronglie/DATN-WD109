@@ -141,37 +141,33 @@ class StatisticController extends Controller
                 break;
         }
         
-        // Total revenue (only paid orders)
+        // Total revenue: only orders delivered successfully
         $totalRevenue = $query->clone()
-            ->whereIn('status', [1, 2, 3, 4, 5]) // Completed orders
-            ->where('status_method', '>', 0) // Paid orders
+            ->where('status', 5)
             ->sum('total_amount');
             
         // Revenue by payment method
         $revenueByPayment = $query->clone()
-            ->whereIn('status', [1, 2, 3, 4, 5])
-            ->where('status_method', '>', 0)
+            ->where('status', 5)
             ->select('payment_method', DB::raw('SUM(total_amount) as revenue'))
             ->groupBy('payment_method')
             ->get();
             
         // Revenue by order status
         $revenueByStatus = $query->clone()
-            ->where('status_method', '>', 0)
+            ->where('status', 5)
             ->select('status', DB::raw('SUM(total_amount) as revenue'), DB::raw('COUNT(*) as order_count'))
             ->groupBy('status')
             ->get();
             
         // Average order value
         $avgOrderValue = $query->clone()
-            ->whereIn('status', [1, 2, 3, 4, 5])
-            ->where('status_method', '>', 0)
+            ->where('status', 5)
             ->avg('total_amount');
             
         // Top customers by revenue
         $topCustomers = $query->clone()
-            ->whereIn('status', [1, 2, 3, 4, 5])
-            ->where('status_method', '>', 0)
+            ->where('status', 5)
             ->where('user_id', '>', 0)
             ->select('user_id', DB::raw('SUM(total_amount) as total_spent'), DB::raw('COUNT(*) as order_count'))
             ->groupBy('user_id')
@@ -192,8 +188,7 @@ class StatisticController extends Controller
                 DB::raw('MONTH(created_at) as month'),
                 DB::raw('SUM(total_amount) as revenue')
             )
-            ->whereIn('status', [1, 2, 3, 4, 5])
-            ->where('status_method', '>', 0)
+            ->where('status', 5)
             ->whereYear('created_at', now()->year)
             ->groupBy('year', 'month')
             ->orderBy('month')
@@ -239,10 +234,9 @@ class StatisticController extends Controller
     {
         $filter = $request->get('filter', 'all'); // all, today, week, month, year
         
-        // Query orders that contribute to revenue
+        // Query orders that contribute to revenue: only delivered successfully
         $query = Order::with(['user', 'orderDetails.product'])
-            ->whereIn('status', [1, 2, 3, 4, 5]) // Completed orders
-            ->where('status_method', '>', 0); // Paid orders
+            ->where('status', 5);
         
         // Apply time filter
         switch($filter) {
