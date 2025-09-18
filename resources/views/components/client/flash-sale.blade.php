@@ -14,12 +14,12 @@
                         $upcomingFlashSales = $flashSales->filter(function($flashSale) {
                             return $flashSale->start_time > now();
                         });
-                        
+
                         $ongoingFlashSales = $flashSales->filter(function($flashSale) {
                             return $flashSale->isActive();
                         })->first();
                     @endphp
-                    
+
                     @if($ongoingFlashSales)
                         <div class="countdown-compact ms-3" data-end-time="{{ $ongoingFlashSales->end_time->toISOString() }}">
                             <span class="countdown-text">Kết thúc sau</span>
@@ -74,8 +74,8 @@
                                 <a href="{{ route('flash-sale.product.detail', $flashProduct->productVariant->product->slug) }}" class="text-decoration-none">
                                     {{-- Product Image --}}
                                     <div class="product-image-container">
-                                        <img src="{{ $flashProduct->productVariant->image ?: asset('images/no-image.png') }}" 
-                                             alt="{{ $flashProduct->productVariant->product->name }}" 
+                                        <img src="{{ $flashProduct->productVariant->image ?: asset('images/no-image.png') }}"
+                                             alt="{{ $flashProduct->productVariant->product->name }}"
                                              class="product-img"
                                              onerror="this.src='{{ asset('images/no-image.png') }}'">
                                         <div class="discount-tag">-{{ $flashProduct->getDiscountPercentage() }}%</div>
@@ -110,7 +110,7 @@
                                                 </div>
                                             </div>
                                         @endif
-                                        
+
                                     </div>
                                 </a>
                             </div>
@@ -119,7 +119,7 @@
                 @endforeach
             @endforeach
         </div>
-        
+
         @if($upcomingFlashSales->isNotEmpty())
             @php
                 $nextFlashSale = $upcomingFlashSales->sortBy('start_time')->first();
@@ -128,20 +128,20 @@
                 document.addEventListener('DOMContentLoaded', function() {
                     const startTime = new Date('{{ $nextFlashSale->start_time->toIso8601String() }}').getTime();
                     const countdownElement = document.querySelector('.upcoming-badge .badge');
-                    
+
                     function updateCountdown() {
                         const now = new Date().getTime();
                         const distance = startTime - now;
-                        
+
                         if (distance < 0) {
                             window.location.reload();
                             return;
                         }
-                        
+
                         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                        
+
                         let timeString = 'Bắt đầu sau ';
                         if (hours > 0) {
                             timeString += hours + ' giờ ';
@@ -150,10 +150,10 @@
                             timeString += minutes + ' phút ';
                         }
                         timeString += seconds + ' giây';
-                        
+
                         countdownElement.textContent = timeString;
                     }
-                    
+
                     updateCountdown();
                     setInterval(updateCountdown, 1000);
                 });
@@ -305,8 +305,8 @@
     opacity: 1;
 }
 
-.product-image-container { 
-    aspect-ratio: 1.2 / 1; 
+.product-image-container {
+    aspect-ratio: 1.2 / 1;
     overflow: hidden;
     border-radius: 6px;
     margin: 0 auto;
@@ -502,16 +502,16 @@
     .flash-sale-header {
         padding: 10px 0;
     }
-    
+
     .section-title {
         font-size: 14px;
     }
-    
-    .product-image-container { 
-        aspect-ratio: 1.2 / 1; 
+
+    .product-image-container {
+        aspect-ratio: 1.2 / 1;
         width: 80%;
     }
-    
+
     .countdown-compact {
         flex-direction: column;
         gap: 4px;
@@ -519,15 +519,15 @@
 }
 
 @media (max-width: 576px) {
-    .product-image-container { 
-        aspect-ratio: 1.2 / 1; 
+    .product-image-container {
+        aspect-ratio: 1.2 / 1;
         width: 75%;
     }
-    
+
     .sale-price { font-size: 14px; }
-    
+
     .original-price { font-size: 9px; }
-    
+
     .product-name { font-size: 11px; }
 }
 </style>
@@ -539,27 +539,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const countdownCompact = document.querySelector('.countdown-compact');
     if (countdownCompact) {
         const endTime = new Date(countdownCompact.dataset.endTime).getTime();
-        
+
         function updateCountdown() {
             const now = new Date().getTime();
             const distance = endTime - now;
-            
+
             if (distance < 0) {
                 document.getElementById('hours').textContent = '00';
                 document.getElementById('minutes').textContent = '00';
                 document.getElementById('seconds').textContent = '00';
                 return;
             }
-            
+
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
+
             document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
             document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
             document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
         }
-        
+
         updateCountdown();
         setInterval(updateCountdown, 1000);
     }
