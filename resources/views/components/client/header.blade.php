@@ -5,7 +5,7 @@
               <!-- Logo -->
               <div class="logo me-auto">
                   <a href="{{ route('home') }}">
-                      <img src="{{ asset('frontend/img/logo/logo.png') }}" alt="Logo" height="25">
+                      <img src="{{ asset('frontend/img/logo/Techzone.png') }}" alt="Logo" height="25">
                   </a>
               </div>
               <!-- Menu -->

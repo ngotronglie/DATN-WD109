@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="category-scroll-container">
-      <div class="category-scroll">
+      <div class="category-scroll ">
         @foreach($categories as $category)
           <div class="category-item">
             <a href="{{ url('shop?category=' . $category->ID) }}">
