@@ -24,7 +24,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="shop-content">
-                                
+
                                 <!-- Favorites Content -->
                                 <div id="favorites-container">
                                     @if(isset($favorites) && count($favorites) > 0)
@@ -57,7 +57,7 @@
                                                                 <img class="product-image" src="{{ asset('frontend/img/product/1.jpg') }}" alt="{{ $favorite->product->name }}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0;" />
                                                             @endif
                                                         </a>
-                                                        
+
                                                         @php
                                                             // Kiểm tra flash sale cho badge
                                                             $variant = $favorite->product->variants->first();
@@ -74,7 +74,7 @@
                                                                 ->first();
                                                             }
                                                         @endphp
-                                                        
+
                                                         @if($flashSaleProduct)
                                                             <div class="flash-sale-badge">
                                                                 <i class="zmdi zmdi-flash"></i>
@@ -85,10 +85,8 @@
                                                                 <span class="timer-text">00:00:00</span>
                                                             </div>
                                                         @endif
-                                                        
-                                                        <button class="remove-favorite-btn" data-favorite-id="{{ $favorite->id }}" title="Xóa khỏi yêu thích">
-                                                            <i class="zmdi zmdi-delete"></i>
-                                                        </button>
+
+
                                                     </div>
                                                     <div class="card-content">
                                                         <h3 class="product-name">
@@ -96,7 +94,7 @@
                                                         </h3>
                                                         <div class="product-price">
                                                             @if($favorite->product->variants && $favorite->product->variants->first())
-                                                                @php 
+                                                                @php
                                                                     $variant = $favorite->product->variants->first();
                                                                     // Kiểm tra xem sản phẩm có đang flash sale không
                                                                     $flashSaleProduct = \App\Models\FlashSaleProduct::whereHas('flashSale', function($query) {
@@ -108,22 +106,61 @@
                                                                     ->where('remaining_stock', '>', 0)
                                                                     ->first();
                                                                 @endphp
-                                                                
+
                                                                 @if($flashSaleProduct)
                                                                     <div class="flash-sale-price">₫{{ number_format($flashSaleProduct->sale_price, 0, ',', '.') }}</div>
-                                                                    <div class="original-price">₫{{ number_format($flashSaleProduct->original_price, 0, ',', '.') }}</div>
-                                                                    <div class="flash-sale-discount">
-                                                                        -{{ round((($flashSaleProduct->original_price - $flashSaleProduct->sale_price) / $flashSaleProduct->original_price) * 100) }}%
+                                                                    <div class="price-row">
+                                                                        <div class="original-price">₫{{ number_format($flashSaleProduct->original_price, 0, ',', '.') }}</div>
+                                                                        <div class="flash-sale-discount">
+                                                                            -{{ round((($flashSaleProduct->original_price - $flashSaleProduct->sale_price) / $flashSaleProduct->original_price) * 100) }}%
+                                                                        </div>
                                                                     </div>
                                                                 @elseif($variant->price_sale && $variant->price_sale < $variant->price)
                                                                     <div class="current-price">₫{{ number_format($variant->price_sale, 0, ',', '.') }}</div>
-                                                                    <div class="old-price">₫{{ number_format($variant->price, 0, ',', '.') }}</div>
+                                                                    <div class="price-row">
+                                                                        <div class="old-price">₫{{ number_format($variant->price, 0, ',', '.') }}</div>
+                                                                        <div class="sale-discount">
+                                                                            -{{ round((($variant->price - $variant->price_sale) / $variant->price) * 100) }}%
+                                                                        </div>
+                                                                    </div>
                                                                 @else
                                                                     <div class="current-price">₫{{ number_format($variant->price, 0, ',', '.') }}</div>
                                                                 @endif
                                                             @else
                                                                 <span class="current-price">Liên hệ</span>
                                                             @endif
+                                                        </div>
+
+                                                        <!-- Action Buttons -->
+                                                        <div class="product-actions">
+
+                                                            @php
+                                                                // Kiểm tra flash sale cho nút gi��� hàng
+                                                                $variant = $favorite->product->variants->first();
+                                                                $flashSaleProduct = null;
+                                                                if ($variant) {
+                                                                    $flashSaleProduct = \App\Models\FlashSaleProduct::whereHas('flashSale', function($query) {
+                                                                        $query->where('is_active', true)
+                                                                              ->where('start_time', '<=', now())
+                                                                              ->where('end_time', '>', now());
+                                                                    })
+                                                                    ->where('product_variant_id', $variant->id)
+                                                                    ->where('remaining_stock', '>', 0)
+                                                                    ->first();
+                                                                }
+                                                            @endphp
+                                                            @if($flashSaleProduct)
+                                                                <button class="action-btn add-to-cart" title="Chọn biến thể" onclick="goToFlashSaleDetail('{{ $favorite->product->slug }}'); return false;">
+                                                                    <i class="zmdi zmdi-shopping-cart"></i>
+                                                                </button>
+                                                            @else
+                                                                <button class="action-btn add-to-cart" title="Chọn biến thể" onclick="goToProductDetail('{{ $favorite->product->slug }}'); return false;">
+                                                                    <i class="zmdi zmdi-shopping-cart"></i>
+                                                                </button>
+                                                            @endif
+                                                            <button class="action-btn remove-favorite-btn" data-favorite-id="{{ $favorite->id }}" title="Xóa khỏi yêu thích">
+                                                                <i class="zmdi zmdi-delete"></i>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -288,41 +325,7 @@
     transform: scale(1.05);
 }
 
-.remove-favorite-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: rgba(231, 76, 60, 0.9);
-    color: white;
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    opacity: 0;
-    transition: all 0.3s ease;
-    z-index: 10;
-    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
-}
 
-.favorite-card:hover .remove-favorite-btn {
-    opacity: 1;
-    transform: scale(1.05);
-}
-
-.remove-favorite-btn:hover {
-    background: #c0392b;
-    transform: scale(1.15);
-    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.5);
-}
-
-.remove-favorite-btn i {
-    font-size: 16px;
-    font-weight: bold;
-}
 
 .card-content {
     padding: 12px;
@@ -430,12 +433,95 @@
 .flash-sale-discount {
     background: #ff6b6b;
     color: white;
-    padding: 2px 6px;
-    border-radius: 8px;
-    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 8px;
     font-weight: 600;
     display: inline-block;
-    margin-top: 4px;
+    margin-left: 4px;
+}
+
+.price-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 2px;
+}
+
+.sale-discount {
+    background: #ee4d2d;
+    color: white;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 600;
+    display: inline-block;
+    margin-left: 4px;
+}
+
+/* Product Actions */
+.product-actions {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 4px 0;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    color: #666;
+    text-align: center;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    background: #f8f8f8;
+    color: #333;
+    transform: none;
+    box-shadow: none;
+}
+
+.action-btn.add-to-favorite {
+    color: #ff4757;
+    background: #fff;
+}
+
+.action-btn.add-to-favorite[data-favorited="true"],
+.action-btn.add-to-favorite:hover {
+    color: #ff4757;
+    background: #fff;
+}
+
+.action-btn.add-to-cart {
+    color: #666;
+    background: #fff;
+}
+
+.action-btn.add-to-cart:hover {
+    color: #2ecc71;
+    background: #f8f8f8;
+}
+
+.action-btn.remove-favorite-btn {
+    color: #dc3545;
+    background: #fff;
+}
+
+.action-btn.remove-favorite-btn:hover {
+    color: #c82333;
+    background: #f8f8f8;
 }
 
 @keyframes slideInRight {
@@ -471,23 +557,23 @@
     .favorite-hero-section {
         padding: 60px 0;
     }
-    
+
     .hero-title {
         font-size: 36px;
     }
-    
+
     .hero-subtitle {
         font-size: 18px;
     }
-    
+
     .floating-hearts {
         height: 150px;
     }
-    
+
     .heart {
         font-size: 24px;
     }
-    
+
     .stat-number {
         font-size: 36px;
     }
@@ -500,7 +586,7 @@ $(document).ready(function() {
     $('.product-image').each(function() {
         const img = $(this);
         const placeholder = img.closest('.card-image').find('.image-placeholder');
-        
+
         // Đặt kích thước ngay lập tức để tránh flash
         img.css({
             'width': '100%',
@@ -511,7 +597,7 @@ $(document).ready(function() {
             'left': '0',
             'opacity': '0'
         });
-        
+
         // Nếu ảnh đã load
         if (this.complete && this.naturalWidth > 0) {
             img.css('opacity', '1');
@@ -522,7 +608,7 @@ $(document).ready(function() {
                 $(this).css('opacity', '1');
                 placeholder.fadeOut(200);
             });
-            
+
             // Xử lý khi ảnh lỗi
             img.on('error', function() {
                 $(this).css('opacity', '1');
@@ -530,7 +616,7 @@ $(document).ready(function() {
             });
         }
     });
-    
+
     // Flash Sale Countdown Timer
     function updateFlashSaleTimers() {
         $('.flash-sale-timer').each(function() {
@@ -538,17 +624,17 @@ $(document).ready(function() {
             const endTime = new Date(timer.data('end-time')).getTime();
             const now = new Date().getTime();
             const timeLeft = endTime - now;
-            
+
             if (timeLeft > 0) {
                 const hours = Math.floor(timeLeft / (1000 * 60 * 60));
                 const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                
-                const timeString = 
+
+                const timeString =
                     (hours < 10 ? '0' : '') + hours + ':' +
                     (minutes < 10 ? '0' : '') + minutes + ':' +
                     (seconds < 10 ? '0' : '') + seconds;
-                
+
                 timer.find('.timer-text').text(timeString);
             } else {
                 timer.find('.timer-text').text('Đã kết thúc');
@@ -556,21 +642,21 @@ $(document).ready(function() {
             }
         });
     }
-    
+
     // Cập nhật timer mỗi giây
     if ($('.flash-sale-timer').length > 0) {
         updateFlashSaleTimers();
         setInterval(updateFlashSaleTimers, 1000);
     }
-    
+
     // Xóa sản phẩm khỏi favorites
     $('.remove-favorite-btn').on('click', function(e) {
         e.preventDefault();
-        
+
         const favoriteId = $(this).data('favorite-id');
         const productItem = $(this).closest('.favorite-card');
         const productName = $(this).closest('.favorite-card').find('.product-name a').text();
-        
+
         // Hiển thị modal xác nhận
         showConfirmModal(
             'Xóa khỏi danh sách yêu thích',
@@ -587,13 +673,13 @@ $(document).ready(function() {
                         productItem.fadeOut(300, function() {
                             $(this).remove();
                             updateFavoritesCount();
-                            
+
                             // Kiểm tra nếu không còn sản phẩm nào
                             if ($('.favorite-card').length === 0) {
                                 location.reload();
                             }
                         });
-                        
+
                         // Hiển thị thông báo thành công
                         showNotification('Đã xóa sản phẩm khỏi danh sách yêu thích', 'success');
                     },
@@ -604,22 +690,22 @@ $(document).ready(function() {
             }
         );
     });
-    
-    
+
+
     // Cập nhật số lượng favorites
     function updateFavoritesCount() {
         const count = $('.favorite-card').length;
         $('#favorites-display').text(count);
     }
-    
+
     // Hiển thị thông báo
     function showNotification(message, type) {
         // Xóa thông báo cũ nếu có
         $('.custom-notification').remove();
-        
+
         const bgColor = type === 'success' ? '#28a745' : '#dc3545';
         const icon = type === 'success' ? 'zmdi-check-circle' : 'zmdi-alert-circle';
-        
+
         const notificationHtml = `
             <div class="custom-notification" style="
                 position: fixed;
@@ -640,9 +726,9 @@ $(document).ready(function() {
                 <span>${message}</span>
             </div>
         `;
-        
+
         $('body').append(notificationHtml);
-        
+
         // Tự động ẩn sau 5 giây
         setTimeout(function() {
             $('.custom-notification').fadeOut(300, function() {
@@ -650,12 +736,12 @@ $(document).ready(function() {
             });
         }, 5000);
     }
-    
+
     // Hiển thị modal xác nhận
     function showConfirmModal(title, message, onConfirm) {
         // Xóa modal cũ nếu có
         $('.custom-confirm-modal').remove();
-        
+
         const modalHtml = `
             <div class="custom-confirm-modal" style="
                 position: fixed;
@@ -707,23 +793,23 @@ $(document).ready(function() {
                 </div>
             </div>
         `;
-        
+
         $('body').append(modalHtml);
-        
+
         // Xử lý sự kiện click
         $('.btn-cancel').on('click', function() {
             $('.custom-confirm-modal').fadeOut(300, function() {
                 $(this).remove();
             });
         });
-        
+
         $('.btn-confirm').on('click', function() {
             $('.custom-confirm-modal').fadeOut(300, function() {
                 $(this).remove();
             });
             if (onConfirm) onConfirm();
         });
-        
+
         // Đóng modal khi click bên ngoài
         $('.custom-confirm-modal').on('click', function(e) {
             if (e.target === this) {
@@ -733,9 +819,69 @@ $(document).ready(function() {
             }
         });
     }
-    
+
     // Khởi tạo số lượng favorites
     updateFavoritesCount();
 });
+
+// Hàm chuyển đến trang chi tiết Flash Sale
+function goToFlashSaleDetail(productSlug) {
+    // Chuyển đến trang flash-sale-product-detail
+    window.location.href = `/flash-sale-product/${productSlug}`;
+}
+
+// Hàm chuyển đến trang chi tiết sản phẩm thường
+function goToProductDetail(productSlug) {
+    // Chuyển đến trang product-detail
+    window.location.href = `/product/${productSlug}`;
+}
+
+// Hàm xử lý click vào icon yêu thích (đã yêu thích rồi)
+function addToFavorite(event, productId) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Hiển thị thông báo đã yêu thích
+    showNotification('Sản phẩm đã có trong danh sách yêu thích!', 'info');
+}
+
+// Hiển thị thông báo (function helper)
+function showNotification(message, type) {
+    // Xóa thông báo cũ nếu có
+    $('.custom-notification').remove();
+
+    const bgColor = type === 'success' ? '#28a745' : (type === 'info' ? '#17a2b8' : '#dc3545');
+    const icon = type === 'success' ? 'zmdi-check-circle' : (type === 'info' ? 'zmdi-info' : 'zmdi-alert-circle');
+
+    const notificationHtml = `
+        <div class="custom-notification" style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${bgColor};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            max-width: 300px;
+            display: flex;
+            align-items: center;
+            animation: slideInRight 0.3s ease;
+        ">
+            <i class="zmdi ${icon}" style="font-size: 20px; margin-right: 10px;"></i>
+            <span>${message}</span>
+        </div>
+    `;
+
+    $('body').append(notificationHtml);
+
+    // Tự động ẩn sau 3 giây
+    setTimeout(function() {
+        $('.custom-notification').fadeOut(300, function() {
+            $(this).remove();
+        });
+    }, 3000);
+}
 </script>
 @endsection
