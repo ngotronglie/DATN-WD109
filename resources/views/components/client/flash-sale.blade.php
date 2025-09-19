@@ -37,12 +37,12 @@
                             $nextFlashSale = $upcomingFlashSales->sortBy('start_time')->first();
                             $startTime = $nextFlashSale->start_time;
                             $now = now();
-                            
+
                             $days = $startTime->diffInDays($now);
                             $hours = $startTime->diffInHours($now) % 24;
                             $minutes = $startTime->diffInMinutes($now) % 60;
                             $seconds = $startTime->diffInSeconds($now) % 60;
-                            
+
                             $timeString = '';
                             if ($days > 0) {
                                 $timeString .= $days . ' ngày ';
@@ -837,66 +837,66 @@ function addToFavorite(event, productId) {
 
     // Kiểm tra xem user đã đăng nhập chưa
     @auth
-    // Kiểm tra nếu đã yêu thích rồi thì hiển thị thông báo
-    if (button.getAttribute('data-favorited') === 'true') {
-        showModal('Sản phẩm đã có trong danh sách yêu thích!', 'info');
-        return;
-    }
+        // Kiểm tra nếu đã yêu thích rồi thì hiển thị thông báo
+        if (button.getAttribute('data-favorited') === 'true') {
+            showModal('Sản phẩm đã có trong danh sách yêu thích!', 'info');
+            return;
+        }
 
-    showModal('Đang thêm sản phẩm vào yêu thích...', 'info');
+        showModal('Đang thêm sản phẩm vào yêu thích...', 'info');
 
-    // Tạo form data
-    const formData = new FormData();
-    formData.append('product_id', productId);
-    formData.append('_token', '{{ csrf_token() }}');
+        // Tạo form data
+        const formData = new FormData();
+        formData.append('product_id', productId);
+        formData.append('_token', '{{ csrf_token() }}');
 
-    // Gửi request
-    fetch('/favorites', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Thay đổi màu icon thành đỏ
-                icon.style.color = '#e74c3c';
-                button.setAttribute('data-favorited', 'true');
-
-                // Cập nhật cache
-                favoriteCache.set(productId, true);
-
-                // Hiển thị thông báo thành công
-                showModal('Đã thêm sản phẩm vào danh sách yêu thích!', 'success');
-            } else {
-                // Kiểm tra nếu sản phẩm đã có trong yêu thích thì hiển thị thông báo thông tin
-                if (data.message && data.message.includes('đã có trong danh sách yêu thích')) {
+        // Gửi request
+        fetch('/favorites', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Thay đổi màu icon thành đỏ
                     icon.style.color = '#e74c3c';
                     button.setAttribute('data-favorited', 'true');
 
                     // Cập nhật cache
                     favoriteCache.set(productId, true);
 
-                    showModal(data.message, 'info');
+                    // Hiển thị thông báo thành công
+                    showModal('Đã thêm sản phẩm vào danh sách yêu thích!', 'success');
                 } else {
-                    showModal(data.message || 'Có lỗi xảy ra!', 'error');
+                    // Kiểm tra nếu sản phẩm đã có trong yêu thích thì hiển thị thông báo thông tin
+                    if (data.message && data.message.includes('đã có trong danh sách yêu thích')) {
+                        icon.style.color = '#e74c3c';
+                        button.setAttribute('data-favorited', 'true');
+
+                        // Cập nhật cache
+                        favoriteCache.set(productId, true);
+
+                        showModal(data.message, 'info');
+                    } else {
+                        showModal(data.message || 'Có lỗi xảy ra!', 'error');
+                    }
                 }
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showModal('Có lỗi xảy ra khi thêm vào yêu thích!', 'error');
-        });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showModal('Có lỗi xảy ra khi thêm vào yêu thích!', 'error');
+            });
     @else
-    // Nếu chưa đăng nhập, chỉ hiển thị thông báo
-    showModal('Vui lòng đăng nhập để thêm sản phẩm vào yêu thích!', 'warning');
+        // Nếu chưa đăng nhập, chỉ hiển thị thông báo
+        showModal('Vui lòng đăng nhập để thêm sản phẩm vào yêu thích!', 'warning');
     @endauth
 }
 
@@ -906,49 +906,49 @@ function addToCart(event, productId, variantId, flashSaleId, flashPrice) {
     event.stopPropagation();
 
     @auth
-    showModal('Đang thêm sản phẩm vào giỏ hàng...', 'info');
+        showModal('Đang thêm sản phẩm vào giỏ hàng...', 'info');
 
-    // Tạo data cho flash sale product
-    const cartData = {
-        product_id: productId,
-        product_variant_id: variantId,
-        quantity: 1,
-        is_flash_sale: true,
-        flash_sale_id: flashSaleId,
-        flash_sale_price: flashPrice,
-        _token: '{{ csrf_token() }}'
-    };
+        // Tạo data cho flash sale product
+        const cartData = {
+            product_id: productId,
+            product_variant_id: variantId,
+            quantity: 1,
+            is_flash_sale: true,
+            flash_sale_id: flashSaleId,
+            flash_sale_price: flashPrice,
+            _token: '{{ csrf_token() }}'
+        };
 
-    // Gửi request thêm vào giỏ hàng
-    fetch('/api/add-to-cart', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify(cartData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showModal('Đã thêm sản phẩm flash sale vào giỏ hàng!', 'success');
-            } else {
-                showModal(data.message || 'Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showModal('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
-        });
+        // Gửi request thêm vào giỏ hàng
+        fetch('/api/add-to-cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(cartData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showModal('Đã thêm sản phẩm flash sale vào giỏ hàng!', 'success');
+                } else {
+                    showModal(data.message || 'Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showModal('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
+            });
     @else
-    // Nếu chưa đăng nhập, chỉ hiển thị thông báo
-    showModal('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!', 'warning');
+        // Nếu chưa đăng nhập, chỉ hiển thị thông báo
+        showModal('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!', 'warning');
     @endauth
 }
 

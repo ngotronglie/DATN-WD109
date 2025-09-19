@@ -44,13 +44,17 @@
                         <div class="col-lg-3 col-md-6 mb-4">
                             <div class="blog-item">
                                 <div class="blog-img">
-                                    <a href="{{ route('blog.show', $blog->slug) }}">
-                                        <img src="{{ $blog->image ? asset('storage/' . $blog->image) : asset('frontend/img/blog/4.jpg') }}" alt="{{ $blog->title }}" />
+                                    <a href="{{ route('blog.detail.show', $blog->slug) }}">
+                                        @if($blog->image)
+                                            <img src="{{ $blog->image }}" alt="{{ $blog->slug }}" />
+                                        @else
+                                            <img src="{{ asset('frontend/img/blog/4.jpg') }}" alt="{{ $blog->slug }}" />
+                                        @endif
                                     </a>
                                 </div>
                                 <div class="blog-info">
                                     <h5 class="blog-title">
-                                        <a href="{{ route('blog.show', $blog->slug) }}">{{ $blog->title }}</a>
+                                        <a href="{{ route('blog.detail.show', $blog->slug) }}">{{ $blog->slug }}</a>
                                     </h5>
                                     <p class="blog-excerpt">
                                         {{ Str::limit(strip_tags($blog->content), 100) }}
@@ -59,7 +63,7 @@
                                         <span class="blog-date">
                                             <i class="zmdi zmdi-calendar"></i> {{ $blog->created_at->format('d/m/Y') }}
                                         </span>
-                                        <a href="{{ route('blog.show', $blog->slug) }}" class="read-more">
+                                        <a href="{{ route('blog.detail.show', $blog->slug) }}" class="read-more">
                                             Xem thêm <i class="zmdi zmdi-arrow-right"></i>
                                         </a>
                                     </div>

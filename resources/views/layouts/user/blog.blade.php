@@ -34,40 +34,11 @@
                         </div>
                     @endif
                 @endauth
-                
+
                 <div class="row">
                     <div class="col-lg-9 order-lg-2 order-1">
                         <div class="blog-content">
-                            <!-- Blog Options -->
-                            <div class="blog-options mb-4">
-                                <div class="row align-items-center">
-                                    <div class="col-md-6">
-                                        <div class="view-tabs">
-                                            <button class="view-tab active" data-view="grid">
-                                                <i class="zmdi zmdi-view-module"></i>
-                                            </button>
-                                            <button class="view-tab" data-view="list">
-                                                <i class="zmdi zmdi-view-list-alt"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="blog-controls">
-                                            <form method="GET" action="{{ route('client.blog.index') }}" id="sortForm" class="d-inline-block">
-                                                <select name="sort" onchange="document.getElementById('sortForm').submit()" class="form-select">
-                                                    <option value="">Sắp xếp</option>
-                                                    <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Mới nhất</option>
-                                                    <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Cũ nhất</option>
-                                                    <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Phổ biến</option>
-                                                </select>
-                                                @foreach(request()->except('sort', 'page') as $key => $value)
-                                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                                                @endforeach
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+
 
                             <!-- Blog Posts Grid -->
                             <div class="blog-posts-container">
@@ -83,18 +54,18 @@
                                                             <img src="{{ asset('images/no-image.png') }}" alt="{{ $blog->slug }}" class="blog-image">
                                                         @endif
                                                     </a>
-                                                    
+
                                                 </div>
-                                                
+
                                                 <div class="blog-content">
                                                     <h5 class="blog-title">
                                                         <a href="{{ route('blog.detail.show', $blog->slug) }}">{{ $blog->slug }}</a>
                                                     </h5>
-                                                    
+
                                                     <p class="blog-excerpt">
                                                         {{ \Illuminate\Support\Str::limit(strip_tags($blog->content), 120) }}
                                                     </p>
-                                                    
+
                                                     <div class="blog-footer">
                                                         <div class="blog-author">
                                                             <i class="zmdi zmdi-account"></i>
@@ -127,7 +98,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-lg-3 order-lg-1 order-2">
                         <!-- Blog Sidebar -->
                         <div class="blog-sidebar">
@@ -143,7 +114,7 @@
                                         </li>
                                         @foreach($categories ?? [] as $category)
                                             <li class="category-item">
-                                                <a href="{{ route('client.blog.index', ['category' => $category->slug]) }}" 
+                                                <a href="{{ route('client.blog.index', ['category' => $category->slug]) }}"
                                                    class="category-link {{ request('category') == $category->slug ? 'active' : '' }}">
                                                     {{ $category->name }}
                                                 </a>
@@ -183,19 +154,7 @@
                                 </div>
                             </div>
 
-                            <!-- Tags -->
-                            <div class="filter-widget">
-                                <h6 class="filter-title">Tags</h6>
-                                <div class="filter-content">
-                                    <div class="tags-list">
-                                        @foreach($tags ?? [] as $tag)
-                                            <a href="{{ route('client.blog.index', ['tag' => $tag->slug]) }}" class="tag-link">
-                                                {{ $tag->name }}
-                                            </a>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -210,14 +169,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     const viewTabs = document.querySelectorAll('.view-tab');
     const blogPostsGrid = document.getElementById('blog-posts-grid');
-    
+
     viewTabs.forEach(tab => {
         tab.addEventListener('click', function() {
             // Remove active class from all tabs
             viewTabs.forEach(t => t.classList.remove('active'));
             // Add active class to clicked tab
             this.classList.add('active');
-            
+
             const view = this.dataset.view;
             if (view === 'list') {
                 blogPostsGrid.classList.add('list-view');
@@ -354,11 +313,21 @@ document.addEventListener('DOMContentLoaded', function() {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    /* Prevent any initial zoom/flicker */
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
 }
 
+/* Disable zoom on hover to avoid flicker during click */
 .blog-card:hover .blog-image {
-    transform: scale(1.05);
+    transform: none;
+}
+
+/* Also guard against active state zoom */
+.blog-card:active .blog-image,
+.blog-card a:active .blog-image {
+    transform: none !important;
 }
 
 
@@ -611,29 +580,29 @@ document.addEventListener('DOMContentLoaded', function() {
     .blog-options {
         padding: 15px;
     }
-    
+
     .view-tabs {
         justify-content: center;
         margin-bottom: 15px;
     }
-    
+
     .blog-controls {
         text-align: center;
     }
-    
+
     .blog-image-container {
         height: 180px;
     }
-    
+
     .blog-sidebar {
         margin-top: 20px;
         padding: 15px;
     }
-    
+
     .blog-posts-container.list-view .blog-card {
         flex-direction: column;
     }
-    
+
     .blog-posts-container.list-view .blog-image-container {
         width: 100%;
         height: 200px;

@@ -109,13 +109,21 @@ class ClientController extends Controller
         // Lấy flash sales đang hoạt động
         $flashSales = FlashSale::getActiveFlashSales();
         
+        // Lấy bài viết mới nhất (giống như trang blog)
+        $latestBlogs = Blog::with(['user'])
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(4)
+            ->get();
+        
         return view('layouts.user.main', [
             'categories' => $categories,
             'banners' => $banners,
             'products' => $products,
             'flashSales' => $flashSales,
             'discountedProducts' => $discountedProducts ?? [],
-            'popularProducts' => $popularProducts ?? []
+            'popularProducts' => $popularProducts ?? [],
+            'latestBlogs' => $latestBlogs
         ]);
 
     }

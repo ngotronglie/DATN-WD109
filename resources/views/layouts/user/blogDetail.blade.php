@@ -24,37 +24,9 @@
             <!-- Sidebar (moved up for mobile) -->
             <aside class="col-lg-3 order-lg-2 mb-4 mb-lg-0">
                 <div class="blog-sidebar">
-                    <!-- Search Widget -->
-                    <div class="sidebar-widget">
-                        <h6 class="widget-title">Tìm kiếm</h6>
-                        <div class="widget-content">
-                            <form action="{{ route('blog.detail.search') }}" method="GET" class="search-form">
-                                <div class="search-input-group" style="width:100%;">
-                                    <input type="text" name="keyword" placeholder="Tìm kiếm bài viết..."
-                                           value="{{ $keyword ?? '' }}" class="search-input" style="width:100%;">
-                                    <button type="submit" class="search-btn">
-                                        <i class="zmdi zmdi-search"></i>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
 
-                    <!-- Tags Widget -->
-                    <div class="sidebar-widget">
-                        <h6 class="widget-title">Tags</h6>
-                        <div class="widget-content">
-                            <div class="tags-list sidebar-tags-list" style="width:100%;">
-                                @forelse($tags as $tag)
-                                    <a href="{{ route('blog.detail.tag', $tag->id) }}" class="tag-link">
-                                            {{ $tag->name_tag }} ({{ $tag->blogs_count }})
-                                        </a>
-                                @empty
-                                    <span class="no-tags">Không có tags</span>
-                                @endforelse
-                            </div>
-                        </div>
-                    </div>
+
+
 
                     <!-- Recent Posts Widget -->
                     <div class="sidebar-widget">
@@ -212,7 +184,7 @@
                         @else
                         <div class="login-required">
                             <i class="zmdi zmdi-account-circle"></i>
-                            <p>Bạn cần <a href="{{ route('login') }}">đăng nhập</a> để bình luận.</p>
+                            <p>Bạn cần <a href="{{ route('auth.login') }}">đăng nhập</a> để bình luận.</p>
                         </div>
                         @endif
                     </div>
@@ -701,6 +673,68 @@
     border-bottom: none;
     margin-bottom: 0;
     padding-bottom: 0;
+}
+
+/* Recent posts sidebar styles */
+.recent-posts {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.recent-post-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+.recent-post-item:hover {
+    background: #f8f9fa;
+}
+
+.recent-post-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.recent-post-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.recent-post-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.recent-post-title {
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0 0 4px;
+    line-height: 1.35;
+}
+
+.recent-post-title a {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.recent-post-title a:hover {
+    color: #ee4d2d;
+}
+
+.recent-post-date {
+    font-size: 11px;
+    color: #999;
 }
 
 /* Search input group fix */

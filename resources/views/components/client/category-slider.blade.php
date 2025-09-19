@@ -20,7 +20,7 @@
                   <img src="https://via.placeholder.com/80x80?text=No+Img" alt="No Image">
                 @endif
               </div>
-              <div class="category-title">{{ $category->Name }}</div>
+
             </a>
           </div>
         @endforeach
@@ -72,11 +72,11 @@
     padding: 0 10px;
     gap: 10px;
   }
-  
+
   .category-item {
     width: 120px;
   }
-  
+
   .category-icon {
     width: 100px;
     height: 100px;
@@ -110,6 +110,25 @@
   height: 70%;
   object-fit: contain;
   transition: transform 0.2s ease;
+}
+
+/* Hover/Focus effects */
+.category-item:hover .category-icon {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+  border-color: #ffd3b3;
+}
+
+.category-item:hover .category-icon img {
+  transform: scale(1.06);
+}
+
+/* Keyboard accessibility */
+.category-item a:focus .category-icon,
+.category-item a:active .category-icon {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+  border-color: #ffd3b3;
 }
 
 /* Ẩn thanh cuộn trên Chrome, Safari và Opera */
@@ -156,22 +175,22 @@
     gap: 12px;
     padding: 0 10px;
   }
-  
+
   .category-item {
     width: 110px;
   }
-  
+
   .category-icon {
     width: 100px;
     height: 100px;
   }
-  
+
   .category-title {
     font-size: 0.8rem;
     max-width: 100%;
     margin-top: 4px;
   }
-  
+
   .section-title {
     margin-bottom: 15px;
   }

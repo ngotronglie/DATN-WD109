@@ -22,35 +22,7 @@
                     <div class="row">
                         <div class="col-lg-9 order-lg-2 order-1">
                             <div class="shop-content">
-                            <!-- Shop Options -->
-                            <div class="shop-options mb-4">
-                                <div class="row align-items-center">
-                                    <div class="col-md-6">
-                                        <div class="view-tabs">
-                                            <button class="view-tab active" data-view="grid">
-                                                <i class="zmdi zmdi-view-module"></i>
-                                            </button>
-                                            <button class="view-tab" data-view="list">
-                                                <i class="zmdi zmdi-view-list-alt"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="shop-controls">
-                                            <form method="GET" action="{{ route('shop.index') }}" id="sortForm" class="d-inline-block">
-                                                <select name="sort" onchange="document.getElementById('sortForm').submit()" class="form-select">
-                                                <option value="">Sắp xếp</option>
-                                                <option value="az" {{ request('sort') == 'az' ? 'selected' : '' }}>Tên A-Z</option>
-                                                <option value="za" {{ request('sort') == 'za' ? 'selected' : '' }}>Tên Z-A</option>
-                                            </select>
-                                            @foreach(request()->except('sort', 'page') as $key => $value)
-                                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                                            @endforeach
-                                        </form>
-                                    </div>
-                                    </div>
-                                </div>
-                            </div>
+
                             <!-- Products Grid -->
                             <div class="products-container">
                                 <div class="row" id="products-grid">
