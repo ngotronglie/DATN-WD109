@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\RefundRequest;
 use App\Jobs\AutoCancelFailedDeliveryOrder;
+use App\Jobs\AutoMarkDelivered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
@@ -27,6 +28,20 @@ class OrderController extends Controller
         if ($request->has('status') && $request->status !== null && $request->status !== '') {
             $query->where('status', (int)$request->status);
         }
+
+        // Chỉ hiển thị:
+        // - COD: Đã giao xong (status = 5)
+        // - VNPAY: Thanh toán thành công (status_method = 2)
+        $query->where(function ($q) {
+            $q->where(function ($q1) {
+                $q1->whereRaw('LOWER(COALESCE(payment_method, "")) = ?', ['cod'])
+                   ->where('status', 5);
+            })
+            ->orWhere(function ($q2) {
+                $q2->whereRaw('LOWER(COALESCE(payment_method, "")) = ?', ['vnpay'])
+                   ->where('status_method', 2);
+            });
+        });
 
         $orders = $query->paginate(10);
         return view('layouts.admin.order.list', compact('orders'));
@@ -113,6 +128,7 @@ class OrderController extends Controller
             }
 
             // Cập nhật trạng thái đơn hàng
+            $wasStatus = (int)$order->status;
             $order->status = $newStatus;
 
             // Nếu chuyển sang Đang vận chuyển (4) hoặc Đã giao/hoàn thành (5), xóa yêu cầu hoàn tiền nếu có
@@ -132,6 +148,11 @@ class OrderController extends Controller
             }
 
             $order->save();
+
+            // Nếu chuyển sang Đang giao hàng (4), lên lịch tự động đánh dấu đã giao (5) sau 30 giây
+            if ($wasStatus !== 4 && $newStatus === 4) {
+                AutoMarkDelivered::dispatch($order->id)->delay(now()->addSeconds(30));
+            }
             \DB::commit();
 
             return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
@@ -404,6 +425,9 @@ class OrderController extends Controller
             // Cập nhật trạng thái sang "Đang giao hàng" (4)
             $order->status = 4;
             $order->save();
+
+            // Lên lịch tự động đánh dấu đã giao (5) sau 30 giây
+            AutoMarkDelivered::dispatch($order->id)->delay(now()->addSeconds(30));
             \DB::commit();
             
             return back()->with('success', 'Đã chuyển đơn hàng sang trạng thái đang giao hàng để giao lại.');

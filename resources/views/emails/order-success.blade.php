@@ -26,6 +26,6 @@
 
     <p style="margin-top: 40px;">
         Trân trọng,<br>
-        <strong style="color: #007bff;">BeeHat Store</strong>
+        <strong style="color: #007bff;">TechZone</strong>
     </p>
 </div>

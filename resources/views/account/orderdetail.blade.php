@@ -45,6 +45,12 @@
         $status = $order->status;
         $statusText = $statusLabels[$status] ?? 'Không xác định';
         $badgeClass = $statusColors[$status] ?? 'bg-light text-dark';
+
+        // Nếu VNPAY chưa thanh toán và đơn còn ở trạng thái chờ (0), hiển thị 'Chờ thanh toán'
+        if ((int)$order->status === 0 && strtolower((string)$order->payment_method) === 'vnpay' && (int)$order->status_method === 0) {
+            $statusText = 'Chờ thanh toán';
+            $badgeClass = 'bg-warning text-dark';
+        }
         @endphp
 
         <div class="mb-4">
@@ -52,10 +58,19 @@
             <p class="mb-0"><strong>Trạng thái:</strong> <span class="badge {{ $badgeClass }} px-3 py-1 rounded-pill">{{ $statusText }}</span></p>
         </div>
         @if (in_array($order->status, [0,1]))
-        <form action="{{ route('user.orders.cancel', $order->id) }}" method="POST" class="mb-4">
+        <form action="{{ route('order.cancel', $order->id) }}" method="POST" class="mb-4">
             @csrf
             <button type="submit" class="btn btn-outline-danger rounded-pill" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">Hủy đơn</button>
         </form>
+        @endif
+
+        {{-- Nếu là VNPAY và chưa thanh toán, hiển thị nút tiếp tục thanh toán --}}
+        @if (strtolower((string)$order->payment_method) === 'vnpay' && (int)$order->status_method === 0)
+        <div class="mb-4">
+            <a href="/vnpay/payment?order_id={{ $order->id }}" class="btn btn-primary rounded-pill">
+                Tiếp tục thanh toán VNPAY
+            </a>
+        </div>
         @endif
 
         @if ((int)$order->status === 6 && strtolower((string)$order->payment_method) === 'vnpay')

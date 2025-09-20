@@ -2,14 +2,8 @@
           <div class="main-nav">
                <!-- Sidebar Logo -->
                <div class="logo-box">
-                    <a href="index.html" class="logo-dark">
-                         <img src="{{ asset('dashboard/assets/images/logo-sm.png') }}" class="logo-sm" alt="logo sm">
-                         <img src="{{ asset('dashboard/assets/images/logo-dark.png') }}" class="logo-lg" alt="logo dark">
-                    </a>
-
-                    <a href="index.html" class="logo-light">
-                         <img src="{{ asset('dashboard/assets/images/logo-sm.png') }}" class="logo-sm" alt="logo sm">
-                         <img src="{{ asset('dashboard/assets/images/logo-light.png') }}" class="logo-lg" alt="logo light">
+                    <a href="{{ route('admin.dashboard') }}" class="logo-dark d-flex align-items-center text-decoration-none">
+                         <span class="brand-text fw-bold fs-5">TechZone</span>
                     </a>
                </div>
 

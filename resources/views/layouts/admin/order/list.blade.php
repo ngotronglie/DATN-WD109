@@ -125,9 +125,9 @@
                                     @if ((int)$order->status_method == 0)
                                     <span class="badge bg-danger">Chưa thanh toán</span>
                                     @elseif ((int)$order->status_method == 1)
-                                    <span class="badge bg-success">Đã thanh toán (COD)</span>
+                                    <span class="badge bg-success">Đã thanh toán </span>
                                     @elseif ((int)$order->status_method == 2)
-                                    <span class="badge bg-success">Đã thanh toán (CK)</span>
+                                    <span class="badge bg-success">Đã thanh toán </span>
                                     @endif
 </td>
                                      <td class="text-center">{{ $order->payment_method }}</td>
@@ -335,7 +335,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-warning">Tạo yêu cầu hoàn</button>
+                    <button type="submit" class="btn btn-warning">Tạo yêu cầu hoàn tiền</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                 </div>
             </form>

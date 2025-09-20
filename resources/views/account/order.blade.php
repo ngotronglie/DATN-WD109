@@ -116,6 +116,12 @@
                                 $status = $order->status;
                                 $statusText = $statusLabels[$status] ?? 'Không xác định';
                                 $badgeClass = $statusColors[$status] ?? 'bg-light text-dark';
+
+                                // Nếu là VNPAY và chưa thanh toán, hiển thị 'Chờ thanh toán' (chỉ khi status == 0)
+                                if ((int)$order->status === 0 && strtolower((string)$order->payment_method) === 'vnpay' && (int)$order->status_method === 0) {
+                                    $statusText = 'Chờ thanh toán';
+                                    $badgeClass = 'bg-warning text-dark';
+                                }
                                 @endphp
                                 <tr class="text-center align-middle">
                                     <td>
@@ -166,13 +172,15 @@
                                     </td>
 
                                     <td>
-                                        @if ((int)$order->status === 6 && strtolower((string)$order->payment_method) === 'vnpay')
-                                        <form action="{{ route('user.orders.reorder', $order->id) }}" method="POST" onsubmit="return confirm('Thêm lại các sản phẩm vào giỏ hàng?')">
-                                            @csrf
-                                            <button class="btn btn-sm btn-primary">Đặt lại hàng</button>
-                                        </form>
+                                        @if ((int)$order->status === 0 && strtolower((string)$order->payment_method) === 'vnpay' && (int)$order->status_method === 0)
+                                            <a href="/vnpay/payment?order_id={{ $order->id }}" class="btn btn-sm btn-primary">Tiếp tục thanh toán VNPAY</a>
+                                        @elseif ((int)$order->status === 6 && strtolower((string)$order->payment_method) === 'vnpay')
+                                            <form action="{{ route('user.orders.reorder', $order->id) }}" method="POST" onsubmit="return confirm('Thêm lại các sản phẩm vào giỏ hàng?')">
+                                                @csrf
+                                                <button class="btn btn-sm btn-primary">Đặt lại hàng</button>
+                                            </form>
                                         @else
-                                        <span class="text-muted">—</span>
+                                            <span class="text-muted">—</span>
                                         @endif
                                     </td>
 

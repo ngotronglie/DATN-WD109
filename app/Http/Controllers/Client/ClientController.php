@@ -23,6 +23,7 @@ use App\Models\ProductComment;
 use App\Http\Requests\ContactRequest;
 use App\Models\Contact;
 use Illuminate\Support\Facades\Mail;
+use App\Models\User;
 
 class ClientController extends Controller
 {
@@ -44,6 +45,98 @@ class ClientController extends Controller
         
         // Nếu chỉ có đường dẫn tương đối, sử dụng asset()
         return asset($imagePath);
+    }
+
+    /**
+     * Gửi email thông báo đơn hàng mới cho Admin (role_id = 2) và các email cấu hình trong ENV
+     */
+    private function sendAdminOrderNotify($order)
+    {
+        try {
+            // Eager-load để template có đủ dữ liệu
+            try { $order->load(['orderDetails.productVariant.product']); } catch (\Throwable $e) {}
+
+            $admins = User::where('role_id', 2)->whereNotNull('email')->get();
+            \Log::warning('[Order Admin Notify][ClientController] Found admins count (DB): ' . $admins->count() . ' for order ' . $order->order_code);
+
+            $envEmailsRaw = env('ADMIN_NOTIFICATION_EMAILS');
+            $envEmails = [];
+            if (!empty($envEmailsRaw)) {
+                $envEmails = collect(explode(',', $envEmailsRaw))
+                    ->map(fn($e) => trim($e))
+                    ->filter()
+                    ->all();
+                \Log::warning('[Order Admin Notify][ClientController] ENV emails provided: ' . implode(',', $envEmails));
+            } else {
+                \Log::warning('[Order Admin Notify][ClientController] No ENV ADMIN_NOTIFICATION_EMAILS provided.');
+            }
+
+            $emails = collect($admins->pluck('email')->all())
+                ->merge($envEmails)
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            if (empty($emails)) {
+                \Log::warning('[Order Admin Notify][ClientController] No recipient emails available after merging DB and ENV. Skipping send.');
+                return;
+            }
+
+            $primary = $emails[0];
+            $bccList = array_slice($emails, 1);
+            \Log::warning('[Order Admin Notify][ClientController] Primary to: ' . $primary . ' | BCC count: ' . count($bccList));
+            if (!empty($bccList)) {
+                \Log::warning('[Order Admin Notify][ClientController] BCC list: ' . implode(',', $bccList));
+            }
+
+            $admin = $admins->first();
+            if (!$admin) { $admin = (object)['name' => 'Admin', 'email' => $primary]; }
+
+            Mail::send('emails.order-admin-notify', compact('order', 'admin') + ['user' => auth()->user() ?? (object)['name' => $order->name, 'email' => $order->email]], function ($message) use ($primary, $bccList, $order) {
+                $message->to($primary);
+                if (!empty($bccList)) { $message->bcc($bccList); }
+                $message->subject('Đơn hàng mới #' . $order->order_code);
+            });
+
+            \Log::warning('[Order Admin Notify][ClientController] Completed SMTP send for order ' . $order->order_code);
+        } catch (\Throwable $e) {
+            \Log::warning('[Order Admin Notify][ClientController] SMTP send failed, falling back to log mailer: ' . $e->getMessage());
+
+            // Fallback: log mailer
+            try {
+                $admins = isset($admins) ? $admins : collect();
+                $envEmailsRaw = env('ADMIN_NOTIFICATION_EMAILS');
+                $envEmails = [];
+                if (!empty($envEmailsRaw)) {
+                    $envEmails = collect(explode(',', $envEmailsRaw))
+                        ->map(fn($ee) => trim($ee))
+                        ->filter()
+                        ->all();
+                }
+                $emails = collect(optional($admins)->pluck('email')->all() ?? [])
+                    ->merge($envEmails)
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+                if (empty($emails)) {
+                    \Log::warning('[Order Admin Notify][ClientController - Fallback] No recipient emails available.');
+                    return;
+                }
+                $primary = $emails[0];
+                $bccList = array_slice($emails, 1);
+                \Log::warning('[Order Admin Notify][ClientController - Fallback] Using log mailer. Primary: ' . $primary . ' | BCC count: ' . count($bccList));
+                $admin = $admins->first() ?: (object)['name' => 'Admin', 'email' => $primary];
+                Mail::mailer('log')->send('emails.order-admin-notify', compact('order', 'admin') + ['user' => auth()->user() ?? (object)['name' => $order->name, 'email' => $order->email]], function ($message) use ($primary, $bccList, $order) {
+                    $message->to($primary);
+                    if (!empty($bccList)) { $message->bcc($bccList); }
+                    $message->subject('Đơn hàng mới #' . $order->order_code);
+                });
+            } catch (\Throwable $e2) {
+                \Log::warning('[Order Admin Notify][ClientController - Fallback] Failed to log-send: ' . $e2->getMessage());
+            }
+        }
     }
     public function index()
 
@@ -1136,44 +1229,45 @@ class ClientController extends Controller
                         'price' => $item['price'],
                     ]);
 
-                    // Trừ tồn kho biến thể thực tế
+                    // Trừ tồn kho biến thể
                     $variant->decrement('quantity', (int) $item['quantity']);
                 }
             }
 
-            // ✅ Gửi mail nếu KHÔNG phải thanh toán qua VNPAY
+            // Lên lịch auto-cancel sau 30 giây nếu vẫn chưa thanh toán (áp dụng cho VNPAY chờ thanh toán)
+            \App\Jobs\AutoCancelUnpaidOrder::dispatch($order->id)->delay(now()->addSeconds(30));
+
+            DB::commit();
+
+            // ✅ Gửi mail cho khách và Admin nếu KHÔNG phải thanh toán qua VNPAY
             if (strtolower($order->payment_method) !== 'vnpay' && !empty($order->email)) {
                 try {
                     Mail::send('emails.order-success', compact('order'), function ($message) use ($order) {
                         $message->to($order->email);
                         $message->subject('Xác nhận đơn hàng #' . $order->order_code);
                     });
-                } catch (\Exception $e) {
-                    \Log::error('Lỗi gửi mail đơn hàng #' . $order->order_code . ': ' . $e->getMessage());
+                } catch (\Throwable $e) {
+                    \Log::warning('SMTP send failed in apiCheckout (customer), falling back to log mailer: ' . $e->getMessage());
+                    Mail::mailer('log')->send('emails.order-success', compact('order'), function ($message) use ($order) {
+                        $message->to($order->email);
+                        $message->subject('Xác nhận đơn hàng #' . $order->order_code);
+                    });
                 }
-            } elseif (empty($order->email)) {
-                \Log::warning('Không gửi được mail vì email trống cho đơn hàng #' . $order->order_code);
+                // Gửi thông báo cho Admin
+                $this->sendAdminOrderNotify($order);
             }
 
-            // Xóa cart
-            if ($userId) {
-                $cart = \App\Models\Cart::where('user_id', $userId)->first();
-                if ($cart) {
-                    $cart->items()->delete();
-                    $cart->delete();
-                }
-            } else {
-                \Session::forget('cart');
-            }
-
-            DB::commit();
-            return response()->json(['success' => true, 'order_id' => $order->id, 'order_code' => $orderCode]);
+            return response()->json([
+                'success' => true,
+                'order_id' => $order->id,
+                'order_code' => $order->order_code,
+            ]);
         } catch (\Throwable $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            \Log::error('apiCheckout error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Lỗi hệ thống'], 500);
         }
     }
-
 
     /**
      * Khởi tạo thanh toán VNPAY sandbox
@@ -1185,6 +1279,7 @@ class ClientController extends Controller
         if (!$order) {
             return redirect('/checkout')->with('error', 'Không tìm thấy đơn hàng');
         }
+
         // Cấu hình VNPAY sandbox
         $vnp_TmnCode = "HRDYTL3E"; // Mã website tại VNPAY
         $vnp_HashSecret = "MXSQ5VQKM5S176MJD4LHHU0B03Q9MCA8"; // Chuỗi bí mật
@@ -1193,35 +1288,29 @@ class ClientController extends Controller
         $vnp_TxnRef = $order->order_code;
         $vnp_OrderInfo = 'Thanh toan don hang ' . $order->order_code;
         $vnp_OrderType = 'billpayment';
-        $vnp_Amount = $order->total_amount * 100; // VNPAY yêu cầu nhân 100
+        $vnp_Amount = ((int) $order->total_amount) * 100; // VNPAY yêu cầu x100
         $vnp_Locale = 'vn';
-        $vnp_IpAddr = $request->ip();
+        $vnp_IpAddr = request()->ip();
 
         $inputData = array(
-            "vnp_Version" => "2.1.0",
-            "vnp_TmnCode" => $vnp_TmnCode,
-            "vnp_Amount" => $vnp_Amount,
-            "vnp_Command" => "pay",
-            "vnp_CreateDate" => date('YmdHis'),
-            "vnp_CurrCode" => "VND",
-            "vnp_IpAddr" => $vnp_IpAddr,
-            "vnp_Locale" => $vnp_Locale,
-            "vnp_OrderInfo" => $vnp_OrderInfo,
-            "vnp_OrderType" => $vnp_OrderType,
-            "vnp_ReturnUrl" => $vnp_Returnurl,
-            "vnp_TxnRef" => $vnp_TxnRef,
-            "vnp_ExpireDate" => date('YmdHis', strtotime('+15 minutes')),
+            'vnp_Version' => '2.1.0',
+            'vnp_TmnCode' => $vnp_TmnCode,
+            'vnp_Amount' => $vnp_Amount,
+            'vnp_Command' => 'pay',
+            'vnp_CreateDate' => date('YmdHis'),
+            'vnp_CurrCode' => 'VND',
+            'vnp_IpAddr' => $vnp_IpAddr,
+            'vnp_Locale' => $vnp_Locale,
+            'vnp_OrderInfo' => $vnp_OrderInfo,
+            'vnp_OrderType' => $vnp_OrderType,
+            'vnp_ReturnUrl' => $vnp_Returnurl,
+            'vnp_TxnRef' => $vnp_TxnRef,
         );
-
-        \Log::info('VNPay Redirect Debug', [
-            'inputData' => $inputData,
-        ]);
 
         ksort($inputData);
         $query = "";
         $hashdata = '';
         $i = 0;
-
         foreach ($inputData as $key => $value) {
             if ($i == 1) {
                 $hashdata .= '&' . urlencode($key) . "=" . urlencode($value);
@@ -1258,18 +1347,22 @@ class ClientController extends Controller
             $order->status = 1; // 1 = đã xác nhận
             $order->save();
 
-            // Gửi mail xác nhận
+            // Gửi mail xác nhận cho khách
             if (!empty($order->email)) {
                 try {
                     Mail::send('emails.order-success', compact('order'), function ($message) use ($order) {
                         $message->to($order->email);
                         $message->subject('Xác nhận đơn hàng #' . $order->order_code);
                     });
-                } catch (\Exception $e) {
-                    \Log::error('Lỗi gửi mail đơn hàng #' . $order->order_code . ': ' . $e->getMessage());
+                } catch (\Throwable $e) {
+                    \Log::warning('SMTP send failed in vnpayReturn, falling back to log mailer: ' . $e->getMessage());
+                    Mail::mailer('log')->send('emails.order-success', compact('order'), function ($message) use ($order) {
+                        $message->to($order->email);
+                        $message->subject('Xác nhận đơn hàng #' . $order->order_code);
+                    });
                 }
-            } else {
-                \Log::warning('Không gửi được mail vì email trống cho đơn hàng #' . $order->order_code);
+                // Gửi thông báo cho Admin sau khi thanh toán thành công
+                $this->sendAdminOrderNotify($order);
             }
 
             return view('layouts.user.vnpay_success', ['order' => $order]);

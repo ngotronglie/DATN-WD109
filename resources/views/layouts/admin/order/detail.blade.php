@@ -44,13 +44,24 @@
                                 @endphp
                                 <tr>
                                     <td>
-                                        @if($item->productVariant->image)
-                                        <img src="{{ $item->productVariant->image }}" alt="{{ $item->productVariant->product->name ?? '' }}" style="width:40px;height:40px;object-fit:cover;margin-right:8px;">
-                                        @endif
-                                        {{ $item->productVariant->product->name ?? '' }}
+                                        @php $variant = $item->productVariant; @endphp
+                                        @php
+                                            $imageUrl = null;
+                                            if ($variant && $variant->image) {
+                                                $img = $variant->image;
+                                                // Nếu không phải URL tuyệt đối, dùng asset() để tạo URL đầy đủ
+                                                $isAbsolute = preg_match('/^https?:\/\//i', $img);
+                                                $imageUrl = $isAbsolute ? $img : asset($img);
+                                            }
+                                        @endphp
+                                        <img src="{{ $imageUrl ?: asset('images/no-image.png') }}"
+                                             alt="{{ optional($variant?->product)->name ?? 'Sản phẩm' }}"
+                                             style="width:40px;height:40px;object-fit:cover;margin-right:8px;"
+                                             onerror="this.src='{{ asset('images/no-image.png') }}'">
+                                        {{ optional($variant?->product)->name ?? 'N/A' }}
                                     </td>
-                                    <td>{{ $item->productVariant->color->name ?? '-' }}</td>
-                                    <td>{{ $item->productVariant->capacity->name ?? '-' }}</td>
+                                    <td>{{ optional($variant?->color)->name ?? '-' }}</td>
+                                    <td>{{ optional($variant?->capacity)->name ?? '-' }}</td>
                                     <td>{{ number_format($item->price, 0, ',', '.') }}đ</td>
                                     <td>{{ $item->quantity }}</td>
                                     <td>{{ number_format($itemTotal, 0, ',', '.') }}đ</td>
