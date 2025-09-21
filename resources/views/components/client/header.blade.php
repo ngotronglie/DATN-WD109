@@ -60,12 +60,48 @@
               <a href="{{ route('wishlist') }}" class="fs-4" title="Yêu thích">❤️</a>
 
               <!-- Icon Giỏ hàng -->
-              <a href="{{ route('cart') }}" class="fs-3" title="Giỏ hàng">
+              <a href="{{ route('cart') }}" class="fs-3 position-relative" title="Giỏ hàng">
                   <i class="zmdi zmdi-shopping-cart-plus"></i>
+                  <span id="cart-count-badge" class="position-absolute translate-middle badge rounded-pill bg-danger" style="top: 6px; left: 18px; font-size: 10px; min-width: 18px;">
+                      0
+                  </span>
               </a>
           </div>
       </div>
   </header>
+
+  <script>
+    // Helpers để cập nhật badge giỏ hàng toàn trang (luôn khả dụng cho cả khách và đã đăng nhập)
+    window.setCartBadge = function(count) {
+        try {
+            const badge = document.getElementById('cart-count-badge');
+            if (badge) {
+                const c = Math.max(0, parseInt(count || 0, 10) || 0);
+                badge.innerText = String(c);
+                badge.style.display = c > 0 ? '' : 'none';
+            }
+        } catch (_) {}
+    };
+
+    window.refreshCartBadgeByApi = async function() {
+        try {
+            const res = await fetch('/api/cart', { credentials: 'same-origin' });
+            const data = await res.json();
+            if (data && data.success) {
+                const items = Array.isArray(data.data) ? data.data : [];
+                const totalQty = items.reduce((sum, it) => sum + (parseInt(it.quantity || it.cart_quantity || 0, 10) || 0), 0);
+                window.setCartBadge(totalQty);
+            } else {
+                window.setCartBadge(0);
+            }
+        } catch (_) { window.setCartBadge(0); }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Đồng bộ badge khi tải trang
+        window.refreshCartBadgeByApi();
+    });
+  </script>
 
   <style>
 /* ===== HEADER ===== */

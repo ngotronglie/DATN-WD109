@@ -95,6 +95,7 @@
                                 12 => 'Không hoàn hàng',
                                 13 => 'Giao hàng thất bại',
                                 14 => 'COD không nhận hàng',
+                                15 => 'Đã giao thành công',
                                 ];
                                 $statusColors = [
                                 0 => 'bg-warning text-dark', // Chờ xác nhận
@@ -111,6 +112,7 @@
                                 12 => 'bg-dark text-white', // Không hoàn hàng
                                 13 => 'bg-danger text-white', // Giao hàng thất bại
                                 14 => 'bg-warning text-dark', // COD không nhận hàng
+                                15 => 'bg-success text-white', // Đã giao thành công
                                 ];
 
                                 $status = $order->status;

@@ -3,6 +3,22 @@
 @section('content')
 <h2>Chi tiết yêu cầu hoàn tiền/hoàn hàng - Đơn #{{ $refund->order_id }}</h2>
 
+@if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+@endif
+@if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+@endif
+@if($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach($errors->all() as $err)
+                <li>{{ $err }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <table class="table table-bordered">
     @if($refund->bank_name || $refund->bank_number || $refund->account_name)
     <tr>

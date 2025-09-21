@@ -52,8 +52,7 @@
                                 <thead class="table-light text-center">
                                     <tr>
                                         <th class="text-start">Sản phẩm</th>
-                                        <th>Màu</th>
-                                        <th>Dung lượng</th>
+                                       
                                         <th>Giá</th>
                                         <th>Số lượng</th>
                                         <th>Tổng</th>
@@ -450,11 +449,22 @@
                 : `<span class="fw-semibold">${formatCurrency(item.price)}</span>`;
             tr.innerHTML = `
             <td>
-                <img src="${item.image}" alt="${item.name}" style="width:40px;height:40px;object-fit:cover;margin-right:8px;">
-                ${item.name}
-            </td>
-            <td>${item.color}</td>
-            <td>${item.capacity}</td>
+    <div style="display: flex; align-items: center;">
+        <!-- Ảnh sản phẩm -->
+        <img src="${item.image}" alt="${item.name}" 
+             style="width:40px; height:40px; object-fit:cover; margin-right:8px;">
+
+        <!-- Thông tin sản phẩm -->
+        <div>
+            <div style="font-weight: 500;">${item.name}</div>
+            <div style="font-size: 12px; color: #555;">
+                <span>${item.color}</span> | <span>${item.capacity}</span>
+            </div>
+        </div>
+    </div>
+</td>
+
+           
             <td>${priceHtml}</td>
             <td>
                 <button class="btn btn-sm btn-light qty-btn-cart" onclick="decreaseQty(${idx})">-</button>

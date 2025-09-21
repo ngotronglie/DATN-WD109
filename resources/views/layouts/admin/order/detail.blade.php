@@ -136,6 +136,8 @@
                         <span class="badge bg-danger">Giao hàng thất bại</span>
                         @elseif($stt === 14)
                         <span class="badge bg-warning text-dark">COD không nhận hàng</span>
+                        @elseif($stt === 15)
+                        <span class="badge bg-success">Đã giao thành công</span>
                         @else
                         <span class="badge bg-secondary">Không xác định</span>
                         @endif

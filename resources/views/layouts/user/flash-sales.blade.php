@@ -600,7 +600,13 @@ function addToCart(variantId, quantity = 1, price = null) {
     .then(data => {
         if (data.success) {
             showNotification('Đã thêm vào giỏ hàng!', 'success');
-            updateCartCount();
+            try {
+                if (typeof window.setCartBadge === 'function' && data.cart_count !== undefined) {
+                    window.setCartBadge(data.cart_count);
+                } else if (typeof window.refreshCartBadgeByApi === 'function') {
+                    window.refreshCartBadgeByApi();
+                }
+            } catch (_) {}
         }
     })
     .catch(error => {
@@ -627,7 +633,13 @@ function buyNow(variantId, price) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Redirect to cart page immediately after successful addition
+            try {
+                if (typeof window.setCartBadge === 'function' && data.cart_count !== undefined) {
+                    window.setCartBadge(data.cart_count);
+                } else if (typeof window.refreshCartBadgeByApi === 'function') {
+                    window.refreshCartBadgeByApi();
+                }
+            } catch (_) {}
             window.location.href = '{{ route('cart') }}';
         } else {
             showNotification(data.message || 'Có lỗi xảy ra!', 'error');

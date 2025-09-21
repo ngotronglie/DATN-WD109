@@ -1239,6 +1239,25 @@ class ClientController extends Controller
 
             DB::commit();
 
+            // Xóa giỏ hàng sau khi tạo đơn hàng thành công
+            if (auth()->check()) {
+                try {
+                    $cart = Cart::where('user_id', $userId)->first();
+                    if ($cart) {
+                        $cart->items()->delete();
+                        $cart->delete();
+                    }
+                } catch (\Throwable $e) {
+                    \Log::warning('Không thể xóa giỏ hàng DB sau khi đặt hàng: ' . $e->getMessage());
+                }
+            } else {
+                try {
+                    Session::forget('cart');
+                } catch (\Throwable $e) {
+                    \Log::warning('Không thể xóa giỏ hàng session sau khi đặt hàng: ' . $e->getMessage());
+                }
+            }
+
             // ✅ Gửi mail cho khách và Admin nếu KHÔNG phải thanh toán qua VNPAY
             if (strtolower($order->payment_method) !== 'vnpay' && !empty($order->email)) {
                 try {
@@ -1363,6 +1382,20 @@ class ClientController extends Controller
                 }
                 // Gửi thông báo cho Admin sau khi thanh toán thành công
                 $this->sendAdminOrderNotify($order);
+            }
+
+            // Đảm bảo xóa giỏ hàng sau khi thanh toán thành công
+            try {
+                if (!empty($order->user_id)) {
+                    $cart = \App\Models\Cart::where('user_id', $order->user_id)->first();
+                    if ($cart) {
+                        $cart->items()->delete();
+                        $cart->delete();
+                    }
+                }
+                \Session::forget('cart');
+            } catch (\Throwable $e) {
+                \Log::warning('Không thể xóa giỏ hàng sau VNPAY thành công: ' . $e->getMessage());
             }
 
             return view('layouts.user.vnpay_success', ['order' => $order]);

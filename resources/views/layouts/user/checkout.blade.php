@@ -350,6 +350,17 @@
             });
             const data = await res.json();
             if (data.success) {
+                // Đặt badge giỏ hàng về 0 trước khi chuyển hướng sang VNPAY
+                try {
+                    document.getElementById('cart-count-badge').innerText = '0';
+                } catch (e) {}
+                // Xóa dữ liệu tạm trên client
+                try {
+                    localStorage.removeItem('checkout_cart');
+                    localStorage.removeItem('checkout_user');
+                    localStorage.removeItem('checkout_voucher');
+                    localStorage.removeItem('checkout_voucher_code');
+                } catch (e) {}
                 window.location.href = '/vnpay/payment?order_id=' + data.order_id;
             } else {
                 alert('Có lỗi khi tạo đơn hàng, vui lòng thử lại!');
@@ -388,9 +399,17 @@
         const data = await res.json();
         if (data.success) {
             alert('Đặt hàng thành công! Mã đơn: ' + data.order_code);
-            localStorage.removeItem('checkout_cart');
-            localStorage.removeItem('checkout_user');
-            localStorage.removeItem('checkout_voucher');
+            // Đặt badge giỏ hàng về 0
+            try {
+                document.getElementById('cart-count-badge').innerText = '0';
+            } catch (e) {}
+            // Xóa dữ liệu tạm trên client
+            try {
+                localStorage.removeItem('checkout_cart');
+                localStorage.removeItem('checkout_user');
+                localStorage.removeItem('checkout_voucher');
+                localStorage.removeItem('checkout_voucher_code');
+            } catch (e) {}
             window.location.href = '/';
         } else {
             alert('Có lỗi khi đặt hàng, vui lòng thử lại!');

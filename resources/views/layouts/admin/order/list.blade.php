@@ -44,6 +44,7 @@
                     12 => \App\Models\Order::where('status', 12)->count(),
                     13 => \App\Models\Order::where('status', 13)->count(),
                     14 => \App\Models\Order::where('status', 14)->count(),
+                    15 => \App\Models\Order::where('status', 15)->count(),
                     ];
                     @endphp
                     <div class="mb-3">
@@ -61,6 +62,7 @@
                         <a href="{{ route('admin.orders.index', ['status' => 12]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 12 ? 'active' : '' }}">Không hoàn hàng ({{ $counts[12] }})</a>
                         <a href="{{ route('admin.orders.index', ['status' => 13]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 13 ? 'active' : '' }}">Giao hàng thất bại ({{ $counts[13] }})</a>
                         <a href="{{ route('admin.orders.index', ['status' => 14]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 14 ? 'active' : '' }}">Khách không nhận hàng ({{ $counts[14] }})</a>
+                        <a href="{{ route('admin.orders.index', ['status' => 15]) }}" class="btn btn-outline-secondary btn-sm {{ request('status') == 15 ? 'active' : '' }}">Đã giao thành công ({{ $counts[15] }})</a>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover table-striped table-bordered">
@@ -117,6 +119,8 @@
                                         <span class="badge bg-danger">Giao hàng thất bại</span>
                                         @elseif($stt === 14)
                                         <span class="badge bg-warning text-dark">Khách không nhận hàng</span>
+                                        @elseif($stt === 15)
+                                        <span class="badge bg-success">Đã giao thành công</span>
                                         @else
                                         <span class="badge bg-secondary">Không xác định</span>
                                         @endif
@@ -201,7 +205,7 @@
                                         <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             <input type="hidden" name="status" value="6">
-                                            <button class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận hủy đơn hàng COD không nhận?')">Hủy đơn</button>
+                                            <button class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận hủy đơn hàng COD không nhận?')">Đã nhận hàng hoàn</button>
                                         </form>
                                         @endif
                                     </td>

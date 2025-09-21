@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -28,20 +29,6 @@ class OrderController extends Controller
         if ($request->has('status') && $request->status !== null && $request->status !== '') {
             $query->where('status', (int)$request->status);
         }
-
-        // Chỉ hiển thị:
-        // - COD: Đã giao xong (status = 5)
-        // - VNPAY: Thanh toán thành công (status_method = 2)
-        $query->where(function ($q) {
-            $q->where(function ($q1) {
-                $q1->whereRaw('LOWER(COALESCE(payment_method, "")) = ?', ['cod'])
-                   ->where('status', 5);
-            })
-            ->orWhere(function ($q2) {
-                $q2->whereRaw('LOWER(COALESCE(payment_method, "")) = ?', ['vnpay'])
-                   ->where('status_method', 2);
-            });
-        });
 
         $orders = $query->paginate(10);
         return view('layouts.admin.order.list', compact('orders'));
@@ -149,9 +136,13 @@ class OrderController extends Controller
 
             $order->save();
 
-            // Nếu chuyển sang Đang giao hàng (4), lên lịch tự động đánh dấu đã giao (5) sau 30 giây
+            // Nếu chuyển sang Đang giao hàng (4), lên lịch tự động đánh dấu đã giao (5)
+            // Chỉ áp dụng cho đơn COD và sau 30 phút nếu khách chưa xác nhận
             if ($wasStatus !== 4 && $newStatus === 4) {
-                AutoMarkDelivered::dispatch($order->id)->delay(now()->addSeconds(30));
+                $paymentMethod = strtolower((string) $order->payment_method);
+                if ($paymentMethod === 'cod') {
+                    AutoMarkDelivered::dispatch($order->id)->delay(now()->addMinutes(30));
+                }
             }
             \DB::commit();
 
@@ -287,6 +278,24 @@ class OrderController extends Controller
         if ($order) {
             $order->status = 9; // Hoàn tiền thành công
             $order->save();
+        }
+
+        // ✅ Gửi email cho khách kèm minh chứng hoàn tiền
+        try {
+            $user = $order?->user;
+            if ($user && $user->email) {
+                $proofUrl = $refund->proof_image ? asset('storage/' . $refund->proof_image) : null;
+                Mail::send('emails.refund-completed', [
+                    'order' => $order,
+                    'refund' => $refund,
+                    'proofUrl' => $proofUrl,
+                ], function ($message) use ($user, $order) {
+                    $message->to($user->email);
+                    $message->subject('Hoàn tiền thành công cho đơn #' . ($order->order_code ?? $order->id));
+                });
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Không thể gửi email hoàn tiền: ' . $e->getMessage());
         }
 
         return back()->with('success', 'Đã cập nhật ảnh chuyển khoản và trạng thái đơn hàng.');

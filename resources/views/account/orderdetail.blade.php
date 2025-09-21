@@ -25,6 +25,7 @@
         11 => 'Đang yêu cầu hoàn hàng',
         12 => 'Không hoàn hàng',
         13 => 'Giao hàng thất bại',
+        15 => 'Đã giao thành công',
         ];
         $statusColors = [
         0 => 'bg-warning text-dark', // Chờ xác nhận
@@ -40,6 +41,7 @@
         11 => 'bg-warning text-dark', // Đang yêu cầu hoàn hàng
         12 => 'bg-dark text-white', // Không hoàn hàng
         13 => 'bg-danger text-white', // Giao hàng thất bại
+        15 => 'bg-success text-white', // Đã giao thành công
         ];
 
         $status = $order->status;
@@ -142,8 +144,8 @@
 
 
         </table>
-        {{-- Nếu đơn hàng đang ở trạng thái đang giao đến (4) hoặc đã giao (5) --}}
-        @if (in_array($order->status, [4, 5]) && strtolower((string)$order->payment_method) === 'vnpay')
+        {{-- Nếu đơn hàng đang ở trạng thái đang giao đến (4), đã giao (5) hoặc đã giao thành công (15) --}}
+        @if (in_array($order->status, [4, 5, 15]) && strtolower((string)$order->payment_method) === 'vnpay')
         @if ($order->refundRequest == null)
         <div class="text-end mt-4">
 
@@ -155,15 +157,15 @@
         @endif
         @endif
 
-        {{-- Xác nhận nhận hàng và Yêu cầu hoàn hàng (giai đoạn sau trạng thái đang giao đến) --}}
-        @if ($order->status == 4)
+        {{-- Hiển thị sau khi Admin đánh dấu giao hàng thành công (status = 5) và khách chưa xác nhận trước đó --}}
+        @if ($order->status == 5 && empty($order->received_confirmed_at))
         <form action="{{ route('user.orders.confirmReceived', $order->id) }}" method="POST" class="text-end mt-2">
             @csrf
             <button type="submit" class="btn btn-outline-success rounded-pill">Xác nhận đã nhận hàng</button>
         </form>
         @endif
 
-        @if (in_array($order->status, [4]) && $order->refundRequest == null)
+        @if ($order->status == 5 && $order->refundRequest == null)
         <div class="text-end mt-2">
             <button class="btn btn-outline-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#returnModal">
                 Yêu cầu hoàn hàng
@@ -297,7 +299,7 @@
 @endif
 
 {{-- Modal hoàn hàng (áp dụng cho đơn đang giao đến hoặc đã giao) --}}
-@if (in_array($order->status, [4,5]))
+@if (in_array($order->status, [4,5,15]))
 <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <form action="{{ route('order.return', $order->id) }}" method="POST" enctype="multipart/form-data" class="modal-content shadow rounded-4 fs-5">
@@ -318,6 +320,26 @@
                     </select>
                     <input type="text" name="reason_input" class="form-control mt-2 return-reason-input" placeholder="Nhập lý do khác nếu chọn 'Khác'" style="display: none;">
                 </div>
+
+                <div class="border rounded p-3 mb-3 bg-light">
+                    <div class="mb-2 fw-bold">Thông tin ngân hàng nhận hoàn tiền</div>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Tên ngân hàng</label>
+                            <input type="text" class="form-control" name="bank_name" placeholder="VD: Vietcombank" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Số tài khoản</label>
+                            <input type="text" class="form-control" name="bank_number" placeholder="Nhập số tài khoản" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Chủ tài khoản</label>
+                            <input type="text" class="form-control" name="account_name" placeholder="Tên chủ tài khoản" required>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2">Vui lòng nhập chính xác để quá trình hoàn tiền diễn ra nhanh chóng.</small>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label">Ảnh minh chứng (nếu có)</label>
                     <input type="file" class="form-control" name="image" accept="image/*">

@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Models\User;
+use App\Models\Cart;
+use App\Models\CartItem;
+use Illuminate\Support\Facades\Session;
 
 
 class EmailOrderController extends Controller
@@ -153,6 +156,21 @@ class EmailOrderController extends Controller
             } else {
                 \Log::warning('[Order Admin Notify - Fallback] No recipient emails available after merging DB and ENV.');
             }
+        }
+
+        // Xóa giỏ hàng sau khi tạo đơn hàng thành công
+        try {
+            if ($user) {
+                $cart = Cart::where('user_id', $user->id)->first();
+                if ($cart) {
+                    $cart->items()->delete();
+                    $cart->delete();
+                }
+            }
+            // Xóa giỏ hàng session (phòng trường hợp dùng session)
+            Session::forget('cart');
+        } catch (\Throwable $e) {
+            \Log::warning('Không thể xóa giỏ hàng sau khi đặt hàng (EmailOrderController): ' . $e->getMessage());
         }
 
         return redirect()->route('order.success')->with('success', 'Đặt hàng thành công!');

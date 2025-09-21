@@ -79,15 +79,18 @@ class UserOrderController extends Controller
     {
         $order = Order::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
-        // Không cho phép yêu cầu hoàn hàng khi đang vận chuyển hoặc đã hoàn thành
-        if (in_array((int)$order->status, [4, 5])) {
-            return redirect()->route('user.orders.show', $order->id)->with('error', 'Không thể yêu cầu hoàn hàng khi đơn đang vận chuyển hoặc đã hoàn thành.');
+        // Chỉ cho phép yêu cầu hoàn hàng khi đơn ở trạng thái ĐÃ GIAO (5)
+        if ((int)$order->status !== 5) {
+            return redirect()->route('user.orders.show', $order->id)->with('error', 'Chỉ có thể yêu cầu hoàn hàng khi đơn đã giao.');
         }
 
         $request->validate([
             'reason' => 'required|string|max:1000',
             'reason_input' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'bank_name' => 'required|string|max:255',
+            'bank_number' => 'required|string|max:50',
+            'account_name' => 'required|string|max:255',
         ]);
 
         $imagePath = null;
@@ -101,6 +104,9 @@ class UserOrderController extends Controller
             'reason' => $request->reason === 'Khác' ? ($request->reason_input ?? 'Khác') : $request->reason,
             'image' => $imagePath,
             'refund_requested_at' => now(),
+            'bank_name' => $request->bank_name,
+            'bank_number' => $request->bank_number,
+            'account_name' => $request->account_name,
         ]);
 
         $order->status = 11; // Đang yêu cầu hoàn hàng (hoàn hàng từ phía khách)
@@ -170,15 +176,20 @@ class UserOrderController extends Controller
     {
         $order = Order::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
-        if ((int)$order->status !== 4) {
-            return redirect()->back()->with('error', 'Chỉ xác nhận khi đơn đang vận chuyển.');
+        // Cho phép xác nhận khi đơn đang vận chuyển (4) hoặc đã giao (5)
+        if (!in_array((int)$order->status, [4, 5])) {
+            return redirect()->back()->with('error', 'Chỉ xác nhận khi đơn đang vận chuyển hoặc đã giao.');
         }
 
-        $order->status = 5; // Đã giao hàng
-        // Nếu chưa đánh dấu thanh toán, coi như đã thu COD khi khách xác nhận nhận hàng
-        if ((int)($order->status_method ?? 0) === 0) {
+        // Khi khách xác nhận, chuyển sang "Đã giao thành công" (15)
+        $order->status = 15;
+
+        // Nếu là COD và chưa đánh dấu thanh toán, coi như đã thu COD khi khách xác nhận nhận hàng
+        if (strtolower((string)$order->payment_method) === 'cod' && (int)($order->status_method ?? 0) === 0) {
             $order->status_method = 1; // Đã thanh toán (COD)
         }
+        // Ghi nhận thời điểm khách xác nhận đã nhận hàng để ẩn nút lần sau
+        $order->received_confirmed_at = now();
         $order->save();
 
         return redirect()->route('user.orders.show', $order->id)->with('success', 'Đã xác nhận nhận hàng. Cảm ơn bạn!');

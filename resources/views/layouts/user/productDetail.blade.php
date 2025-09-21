@@ -770,6 +770,14 @@ async function addToCart() {
         const data = await res.json();
         if (data && data.success) {
             showCenterNotice('Đã thêm vào giỏ hàng!', 'success');
+            // Cập nhật badge giỏ hàng ở header
+            try {
+                if (typeof window.setCartBadge === 'function' && data.cart_count !== undefined) {
+                    window.setCartBadge(data.cart_count);
+                } else if (typeof window.refreshCartBadgeByApi === 'function') {
+                    window.refreshCartBadgeByApi();
+                }
+            } catch (_) {}
         } else {
             showCenterNotice(data?.message || 'Không thể thêm vào giỏ hàng.', 'error');
         }
