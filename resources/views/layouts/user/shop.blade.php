@@ -48,7 +48,7 @@
                                                             ->first();
                                                         }
                                                     @endphp
-                                                    <a href="{{ route('shop.show', $product->id) }}">
+                                                    <a href="{{ $flashSaleProduct ? route('flash-sale.product.detail', $product->slug) : route('product.detail', $product->slug) }}">
                                                         @if($variant && $variant->image)
                                                             <img src="{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}"
                                                                  alt="{{ $product->name }}"
@@ -73,26 +73,13 @@
 
                                                 <div class="product-content">
                                                     <h5 class="product-title text-center">
-                                                                <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
+                                                                <a href="{{ $flashSaleProduct ? route('flash-sale.product.detail', $product->slug) : route('product.detail', $product->slug) }}">{{ $product->name }}</a>
                                                     </h5>
 
                                                     <!-- Price -->
                                                     <div class="price-info text-center">
                                                         @if($variant)
-                                                            @php
-                                                                // Kiểm tra flash sale cho giá
-                                                                $flashSaleProduct = null;
-                                                                if ($variant) {
-                                                                    $flashSaleProduct = \App\Models\FlashSaleProduct::whereHas('flashSale', function($query) {
-                                                                        $query->where('is_active', true)
-                                                                              ->where('start_time', '<=', now())
-                                                                              ->where('end_time', '>', now());
-                                                                    })
-                                                                    ->where('product_variant_id', $variant->id)
-                                                                    ->where('remaining_stock', '>', 0)
-                                                                    ->first();
-                                                                }
-                                                            @endphp
+                                                            {{-- Sử dụng $flashSaleProduct đã được kiểm tra ở trên --}}
 
                                                             @if($flashSaleProduct)
                                                                 <div class="flash-sale-price-container">
@@ -118,20 +105,7 @@
                                                         <button class="action-btn add-to-favorite" data-product-id="{{ $product->id }}" title="Thêm vào yêu thích" onclick="addToFavorite(event, {{ $product->id }}); return false;">
                                                             <i class="zmdi zmdi-favorite"></i>
                                                         </button>
-                                                        @php
-                                                            // Kiểm tra flash sale cho nút giỏ hàng
-                                                            $flashSaleProduct = null;
-                                                            if ($variant) {
-                                                                $flashSaleProduct = \App\Models\FlashSaleProduct::whereHas('flashSale', function($query) {
-                                                                    $query->where('is_active', true)
-                                                                          ->where('start_time', '<=', now())
-                                                                          ->where('end_time', '>', now());
-                                                                })
-                                                                ->where('product_variant_id', $variant->id)
-                                                                ->where('remaining_stock', '>', 0)
-                                                                ->first();
-                                                            }
-                                                        @endphp
+                                                        {{-- Sử dụng $flashSaleProduct đã được kiểm tra ở trên --}}
                                                         @if($flashSaleProduct)
                                                             <button class="action-btn add-to-cart" title="Chọn biến thể" onclick="goToFlashSaleDetail('{{ $product->slug }}'); return false;">
                                                                 <i class="zmdi zmdi-shopping-cart"></i>

@@ -129,6 +129,7 @@ Route::get('/api/voucher', [\App\Http\Controllers\Client\ClientController::class
 Route::post('/api/add-to-cart', [\App\Http\Controllers\Client\ClientController::class, 'apiAddToCart']);
 Route::get('/api/cart', [\App\Http\Controllers\Client\ClientController::class, 'apiGetCart']);
 Route::get('/api/user', [\App\Http\Controllers\Client\ClientController::class, 'apiGetUser']);
+Route::get('/api/product-options', [\App\Http\Controllers\Client\ClientController::class, 'apiGetProductOptions']);
 Route::post('/api/cart/update-qty', [\App\Http\Controllers\Client\ClientController::class, 'apiUpdateCartQty']);
 Route::post('/api/cart/remove', [\App\Http\Controllers\Client\ClientController::class, 'apiRemoveCartItem']);
 Route::post('/api/checkout', [\App\Http\Controllers\Client\ClientController::class, 'apiCheckout']);
@@ -305,9 +306,9 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::get('/sanpham', [\App\Http\Controllers\Admin\StatisticController::class, 'sanpham'])->name('sanpham');
         Route::get('/donhang', [\App\Http\Controllers\Admin\StatisticController::class, 'donhang'])->name('donhang');
         Route::get('/nguoidung', [\App\Http\Controllers\Admin\StatisticController::class, 'nguoidung'])->name('nguoidung');
-      
+
         Route::get('/', function() { return view('layouts.admin.thongke.index'); })->name('index');
-    
+
     });
 });
 

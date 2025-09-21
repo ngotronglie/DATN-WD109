@@ -232,7 +232,7 @@
                             </div>
                         @else
                             <div class="alert alert-info mt-3">
-                                Vui lòng <a href="{{ route('login') }}">đăng nhập</a> để bình luận.
+                                Vui lòng <a href="{{ route('auth.login') }}">đăng nhập</a> để bình luận.
                             </div>
                         @endauth
                     </div>
@@ -891,7 +891,7 @@ function showLoginPrompt(redirectPath, purpose) {
 
     const loginBtn = document.createElement('a');
     const target = typeof redirectPath === 'string' && redirectPath.startsWith('/') ? redirectPath : '/checkout';
-    loginBtn.href = '/login?redirect=' + encodeURIComponent(target);
+    loginBtn.href = '{{ route("auth.login") }}?redirect=' + encodeURIComponent(target);
     loginBtn.textContent = 'Đăng nhập';
     loginBtn.style.background = '#ee4d2d';
     loginBtn.style.color = '#fff';

@@ -112,14 +112,14 @@
 
                                         {{-- Product Info --}}
                                         <div class="product-content p-3">
-                                            <h5 class="product-title mb-2">
+                                            <h5 class="product-title mb-2 text-center">
                                                 <a href="{{ route('flash-sale.product.detail', $flashProduct->productVariant->product->slug) }}">
                                                     {{ $flashProduct->productVariant->product->name }}
                                                 </a>
                                             </h5>
                                             
                                             {{-- Variant Info --}}
-                                            <div class="variant-tags mb-2">
+                                            <div class="variant-tags mb-2 text-center">
                                                 @if($flashProduct->productVariant->color)
                                                     <span class="variant-tag">{{ $flashProduct->productVariant->color->name }}</span>
                                                 @endif
@@ -129,7 +129,7 @@
                                             </div>
 
                                             {{-- Price --}}
-                                            <div class="price-info mb-3">
+                                            <div class="price-info mb-3 text-center">
                                                 <div class="price-row">
                                                     <span class="sale-price">{{ number_format($flashProduct->sale_price, 0, ',', '.') }}₫</span>
                                                     <span class="original-price">{{ number_format($flashProduct->original_price, 0, ',', '.') }}₫</span>
@@ -141,24 +141,17 @@
 
 
                                             {{-- Action Buttons --}}
-                                            <div class="product-actions">
+                                            <div class="product-actions text-center">
+                                                <button class="action-btn add-to-favorite" data-product-id="{{ $flashProduct->productVariant->product->id }}" title="Thêm vào yêu thích" onclick="addToFavorite(event, {{ $flashProduct->productVariant->product->id }}); return false;">
+                                                    <i class="zmdi zmdi-favorite"></i>
+                                                </button>
                                                 @if($flashProduct->remaining_stock > 0)
-                                                    <button class="btn btn-danger btn-buy-now w-100 mb-2" 
-                                                            data-variant-id="{{ $flashProduct->productVariant->id }}"
-                                                            data-flash-price="{{ $flashProduct->sale_price }}">
-                                                        <i class="fas fa-shopping-cart me-2"></i>
-                                                        Mua ngay
-                                                    </button>
-                                                    <button class="btn btn-outline-secondary btn-add-to-cart w-100" 
-                                                            data-variant-id="{{ $flashProduct->productVariant->id }}"
-                                                            data-flash-price="{{ $flashProduct->sale_price }}">
-                                                        <i class="fas fa-cart-plus me-2"></i>
-                                                        Thêm vào giỏ
+                                                    <button class="action-btn add-to-cart" title="Thêm vào giỏ hàng" onclick="addToCart(event, {{ $flashProduct->productVariant->product->id }}, {{ $flashProduct->productVariant->id }}, {{ $flashProduct->flashSale->id }}, {{ $flashProduct->sale_price }}); return false;">
+                                                        <i class="zmdi zmdi-shopping-cart"></i>
                                                     </button>
                                                 @else
-                                                    <button class="btn btn-secondary w-100" disabled>
-                                                        <i class="fas fa-times me-2"></i>
-                                                        Hết hàng
+                                                    <button class="action-btn add-to-cart" title="Hết hàng" disabled>
+                                                        <i class="zmdi zmdi-close"></i>
                                                     </button>
                                                 @endif
                                             </div>
@@ -654,10 +647,218 @@ function showNotification(message, type = 'info') {
 }
 
 // Update cart count function
+/* Action Buttons Styling */
+.product-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 0;
+    margin: 0 auto;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e0e0e0;
+    border-radius: 50%;
+    background: #fff;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.action-btn:hover {
+    background: #f8f8f8;
+    color: #333;
+    transform: none;
+    box-shadow: none;
+}
+
+.action-btn.add-to-favorite {
+    color: #999;
+}
+
+.action-btn.add-to-favorite[data-favorited="true"],
+.action-btn.add-to-favorite:hover {
+    color: #ff4757;
+    background: #fff;
+}
+
+.action-btn.add-to-cart {
+    color: #666;
+    background: #fff;
+}
+
+.action-btn.add-to-cart:hover {
+    color: #2ecc71;
+    background: #f8f8f8;
+}
+
+.action-btn:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.action-btn:disabled:hover {
+    color: #ccc;
+    background: #fff;
+    transform: none;
+}
+
 function updateCartCount() {
     // Cart count update functionality can be added here if needed
     // For now, we'll just show a success message
     console.log('Cart updated successfully');
+}
+
+// JavaScript functionality for favorite and cart actions
+function addToFavorite(event, productId) {
+    event.preventDefault();
+    
+    // Lấy button và icon chính xác
+    const button = event.target.closest('.add-to-favorite');
+    const icon = button.querySelector('i');
+    
+    @auth
+        // Nếu đã đăng nhập, thực hiện thêm/xóa yêu thích
+        const formData = new FormData();
+        formData.append('product_id', productId);
+        
+        fetch('/favorites', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.action === 'added') {
+                    button.setAttribute('data-favorited', 'true');
+                    showModal('Đã thêm vào danh sách yêu thích!', 'success');
+                } else {
+                    button.setAttribute('data-favorited', 'false');
+                    showModal('Đã xóa khỏi danh sách yêu thích!', 'info');
+                }
+            } else {
+                showModal('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showModal('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+        });
+    @else
+        // Nếu chưa đăng nhập, chỉ hiển thị thông báo
+        showModal('Vui lòng đăng nhập để thêm sản phẩm vào yêu thích!', 'warning');
+    @endauth
+}
+
+function addToCart(event, productId, variantId, flashSaleId, flashPrice) {
+    event.preventDefault();
+    
+    @auth
+        // Nếu đã đăng nhập, thực hiện thêm vào giỏ hàng
+        const formData = new FormData();
+        formData.append('product_variant_id', variantId);
+        formData.append('quantity', 1);
+        formData.append('flash_sale_id', flashSaleId);
+        formData.append('flash_price', flashPrice);
+        
+        fetch('/api/add-to-cart', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showModal('Đã thêm sản phẩm vào giỏ hàng!', 'success');
+                updateCartCount();
+            } else {
+                showModal(data.message || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showModal('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+        });
+    @else
+        // Nếu chưa đăng nhập, hiển thị thông báo
+        showModal('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!', 'warning');
+    @endauth
+}
+
+// Hiển thị modal thông báo
+function showModal(message, type = 'info') {
+    const icons = {
+        success: 'zmdi-check-circle success-icon',
+        error: 'zmdi-close-circle error-icon',
+        warning: 'zmdi-alert-triangle warning-icon',
+        info: 'zmdi-info info-icon'
+    };
+
+    const titles = {
+        success: 'Thành công!',
+        error: 'Có lỗi!',
+        warning: 'Cảnh báo!',
+        info: 'Thông báo'
+    };
+
+    const modalHtml = `
+        <div class="modal-overlay" id="notificationModal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="zmdi zmdi-close"></i>
+                </button>
+                <i class="zmdi ${icons[type]} modal-icon"></i>
+                <h3 class="modal-title">${titles[type]}</h3>
+                <p class="modal-message">${message}</p>
+            </div>
+        </div>
+    `;
+
+    // Xóa modal cũ nếu có
+    const oldModal = document.getElementById('notificationModal');
+    if (oldModal) {
+        oldModal.remove();
+    }
+
+    // Thêm modal mới
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Hiển thị animation
+    setTimeout(() => {
+        const modal = document.getElementById('notificationModal');
+        if (modal) {
+            modal.classList.add('show');
+        }
+    }, 10);
+
+    // Tự động đóng sau 3 giây
+    setTimeout(() => {
+        closeModal();
+    }, 3000);
+}
+
+function closeModal() {
+    const modal = document.getElementById('notificationModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
 }
 </script>
 @endsection

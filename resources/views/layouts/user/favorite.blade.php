@@ -90,7 +90,7 @@
                                                     </div>
                                                     <div class="card-content">
                                                         <h3 class="product-name">
-                                                            <a href="{{ route('product.detail', $favorite->product->slug) }}">{{ Str::limit($favorite->product->name, 60) }}</a>
+                                                            <a href="{{ $productUrl }}">{{ Str::limit($favorite->product->name, 60) }}</a>
                                                         </h3>
                                                         <div class="product-price">
                                                             @if($favorite->product->variants && $favorite->product->variants->first())

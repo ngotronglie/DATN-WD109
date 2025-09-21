@@ -895,8 +895,9 @@ function addToFavorite(event, productId) {
                 showModal('Có lỗi xảy ra khi thêm vào yêu thích!', 'error');
             });
     @else
-        // Nếu chưa đăng nhập, chỉ hiển thị thông báo
-        showModal('Vui lòng đăng nhập để thêm sản phẩm vào yêu thích!', 'warning');
+        // Nếu chưa đăng nhập, hiển thị prompt đăng nhập giống như trang chi tiết sản phẩm
+        const currentPath = window.location.pathname + window.location.search;
+        showLoginPrompt(currentPath, 'favorite');
     @endauth
 }
 
@@ -950,6 +951,80 @@ function addToCart(event, productId, variantId, flashSaleId, flashPrice) {
         // Nếu chưa đăng nhập, chỉ hiển thị thông báo
         showModal('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!', 'warning');
     @endauth
+}
+
+// Prompt: ask user to login with explicit button (giống như trang chi tiết sản phẩm)
+function showLoginPrompt(redirectPath, purpose) {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.background = 'rgba(0,0,0,0.45)';
+    overlay.style.zIndex = '10000';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+
+    const box = document.createElement('div');
+    box.style.background = '#fff';
+    box.style.borderRadius = '10px';
+    box.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+    box.style.padding = '20px 22px';
+    box.style.maxWidth = '440px';
+    box.style.width = 'calc(100% - 40px)';
+    box.style.textAlign = 'center';
+
+    const title = document.createElement('div');
+    title.textContent = (purpose === 'favorite')
+        ? 'Bạn cần đăng nhập để thêm vào yêu thích'
+        : (purpose === 'cart'
+            ? 'Bạn cần đăng nhập để thêm vào giỏ hàng'
+            : 'Bạn cần đăng nhập để tiếp tục mua hàng');
+    title.style.fontWeight = '700';
+    title.style.fontSize = '16px';
+    title.style.marginBottom = '8px';
+
+    const desc = document.createElement('div');
+    desc.textContent = (purpose === 'favorite')
+        ? 'Đăng nhập để lưu sản phẩm vào danh sách yêu thích.'
+        : (purpose === 'cart'
+            ? 'Đăng nhập để thêm sản phẩm vào giỏ hàng.'
+            : 'Vui lòng đăng nhập để chuyển đến trang thanh toán.');
+    desc.style.color = '#555';
+    desc.style.marginBottom = '16px';
+
+    const actions = document.createElement('div');
+    actions.style.display = 'flex';
+    actions.style.gap = '10px';
+    actions.style.justifyContent = 'center';
+
+    const loginBtn = document.createElement('a');
+    const target = typeof redirectPath === 'string' && redirectPath.startsWith('/') ? redirectPath : '/checkout';
+    loginBtn.href = '{{ route("auth.login") }}?redirect=' + encodeURIComponent(target);
+    loginBtn.textContent = 'Đăng nhập';
+    loginBtn.style.background = '#ee4d2d';
+    loginBtn.style.color = '#fff';
+    loginBtn.style.padding = '10px 16px';
+    loginBtn.style.borderRadius = '6px';
+    loginBtn.style.textDecoration = 'none';
+    loginBtn.style.fontWeight = '600';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Để sau';
+    cancelBtn.style.background = '#f1f3f5';
+    cancelBtn.style.border = '1px solid #dee2e6';
+    cancelBtn.style.color = '#333';
+    cancelBtn.style.padding = '10px 16px';
+    cancelBtn.style.borderRadius = '6px';
+    cancelBtn.style.cursor = 'pointer';
+    cancelBtn.onclick = () => document.body.removeChild(overlay);
+
+    actions.appendChild(loginBtn);
+    actions.appendChild(cancelBtn);
+    box.appendChild(title);
+    box.appendChild(desc);
+    box.appendChild(actions);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
 }
 
 // Hiển thị modal thông báo ở giữa màn hình
