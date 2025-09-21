@@ -78,13 +78,13 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="min_money" class="form-label">Số tiền tối thiểu <span class="text-danger">*</span></label>
+                            <label for="min_money" class="form-label">giá trị đơn hàng tối thiểu <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" id="min_money" name="min_money" class="form-control @error('min_money') is-invalid @enderror" value="{{ old('min_money') }}" required>
                             @error('min_money')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
                         <div class="col-md-6">
-                            <label for="max_money" class="form-label">Số tiền tối đa <span class="text-danger">*</span></label>
+                            <label for="max_money" class="form-label">giá trị đơn hàng tối đa <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" id="max_money" name="max_money" class="form-control @error('max_money') is-invalid @enderror" value="{{ old('max_money') }}" required>
                             @error('max_money')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>

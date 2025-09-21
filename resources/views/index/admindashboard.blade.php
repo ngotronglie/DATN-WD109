@@ -29,6 +29,7 @@
      <!-- END Wrapper -->
 
        @include('components.admin.script')
+       @yield('script')
 
 </body>
 </html>

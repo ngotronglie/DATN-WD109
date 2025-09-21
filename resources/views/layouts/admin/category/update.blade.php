@@ -19,7 +19,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('categories.update', $category->ID) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.categories.update', $category->ID) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -73,7 +73,7 @@
                                 </div>
                             @endif
                             <input type="file" class="form-control @error('Image') is-invalid @enderror"
-                                id="Image" name="Image">
+                                id="Image" name="Image" accept="image/*">
                             @error('Image')
                                 <div class="text-danger mt-1">{{ $message }}</div>
                             @enderror
@@ -81,7 +81,7 @@
 
                         <div class="form-group mt-3">
                             <button type="submit" class="btn btn-primary">Cập nhật</button>
-                            <a href="{{ route('categories.index') }}" class="btn btn-secondary">Quay lại</a>
+                            <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">Quay lại</a>
                         </div>
                     </form>
                 </div>

@@ -15,7 +15,9 @@ class Product extends Model
         'slug',
         'is_active',
         'view_count',
-        'categories_id'
+        'categories_id',
+        'image',
+        'price'
     ];
 
     // Relationship with category
@@ -27,7 +29,34 @@ class Product extends Model
     // Relationship with product variants
     public function variants()
     {
-        return $this->hasMany(ProductVariant::class);
+        return $this->hasMany(ProductVariant::class, 'product_id');
+    }
+
+    // Lấy biến thể chính (ví dụ: biến thể đầu tiên)
+    public function mainVariant()
+    {
+        return $this->hasOne(ProductVariant::class, 'product_id')->orderBy('id');
+    }
+
+    /**
+     * Relationship với Favorite - Product có nhiều favorites
+     */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    /**
+     * Relationship với User thông qua Favorite - Product được yêu thích bởi nhiều users
+     */
+    public function favoritedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'favorites');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(ProductComment::class);
     }
 
     // Get all active products with pagination

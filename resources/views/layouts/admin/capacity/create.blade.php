@@ -33,23 +33,11 @@
                     <form action="{{ route('admin.capacities.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="row g-3">
-                            <div class="col-lg-6">
+                            <div class="col-lg-12">
                                 <div class="form-group">
                                     <label for="name" class="form-label">Tên dung lượng <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" id="name" value="{{ old('name') }}" placeholder="Nhập tên dung lượng">
                                     @error('name')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="col-lg-6">
-                                <div class="form-group">
-                                    <label for="value" class="form-label">Giá trị <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('value') is-invalid @enderror" name="value" id="value" value="{{ old('value') }}" placeholder="Nhập giá trị">
-                                    @error('value')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>

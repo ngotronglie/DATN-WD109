@@ -21,7 +21,34 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'role_id',
+        'is_active',
+        'address',
+        'phone_number',
+        'date_of_birth',
+        'avatar',
     ];
+        public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Relationship với Favorite - User có nhiều favorites
+     */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    /**
+     * Relationship với Product thông qua Favorite - User có nhiều products yêu thích
+     */
+    public function favoriteProducts()
+    {
+        return $this->belongsToMany(Product::class, 'favorites');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -42,4 +69,27 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+        // Quan hệ với Address
+    public function addresses()
+    {
+        return $this->hasMany(Address::class, 'user_id');   
+}
+    public function defaultAddress()
+{
+    return $this->hasOne(Address::class)->where('is_default', 1);
+}
+
+    // Phương thức để lấy địa chỉ mặc định của người dùng
+    public function getDefaultAddress()
+    {
+        return $this->addresses()->where('is_default', true)->first();
+    }
+
+    // Phương thức để lấy tất cả địa chỉ của người dùng
+    public function getAllAddresses()
+    {
+        return $this->addresses()->get();
+    }
+    
+
 }
