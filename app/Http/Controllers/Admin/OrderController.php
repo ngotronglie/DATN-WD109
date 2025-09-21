@@ -44,6 +44,13 @@ class OrderController extends Controller
             $newStatus = (int)$request->input('status');
             $oldStatus = $order->status;
 
+            // Chặn cập nhật trạng thái nếu là đơn VNPAY chưa thanh toán
+            $isVnpUnpaid = strtolower((string)$order->payment_method) === 'vnpay' && (int)($order->status_method ?? 0) === 0;
+            if ($isVnpUnpaid) {
+                \DB::rollBack();
+                return redirect()->back()->with('error', 'Đơn VNPAY chưa thanh toán, không thể thao tác cập nhật trạng thái.');
+            }
+
             // Nếu hủy đơn hàng (status = 6) và trước đó chưa bị hủy
             if ($newStatus === 6 && $oldStatus !== 6) {
                 foreach ($order->orderDetails as $detail) {
