@@ -39,7 +39,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <!-- <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -51,7 +51,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
         <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
@@ -121,7 +121,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <!-- <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -133,7 +133,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <!-- Charts Row -->
