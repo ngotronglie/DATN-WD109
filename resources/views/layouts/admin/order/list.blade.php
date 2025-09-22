@@ -104,7 +104,7 @@
                                         @elseif($stt === 6)
                                         <span class="badge bg-danger">Đã hủy</span>
                                         @elseif($stt === 7)
-                                        <span class="badge bg-warning text-dark">Đã xác nhận yêu cầu hoàn tiền</span>
+                                        <span class="badge bg-warning text-dark">Đã xác nhận hoàn lại tiền</span>
                                         @elseif($stt === 11)
                                         <span class="badge bg-warning text-dark">Đang yêu cầu hoàn hàng</span>
                                         @elseif($stt === 8)
@@ -224,14 +224,14 @@
 
                                         {{-- Nếu đang ở trạng thái yêu cầu hoàn (status = 6) --}}
                                         @if ($order->status == 5 && !$order->refundRequest->is_verified)
-                                        <form action="{{ route('admin.admin.refunds.verify', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
+                                        <form action="{{ route('admin.refunds.verify', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
                                             @csrf
                                             <button class="btn btn-primary btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Xác nhận yêu cầu hoàn?')">
                                                 Xác thực yêu cầu
                                             </button>
                                         </form>
 
-                                        <form action="{{ route('admin.admin.refunds.reject', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
+                                        <form action="{{ route('admin.refunds.reject', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
                                             @csrf
                                             <button class="btn btn-danger btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Hủy yêu cầu hoàn?')">
                                                 Hủy yêu cầu
@@ -246,7 +246,7 @@
                                                 Duyệt hoàn hàng
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.admin.refunds.reject', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
+                                        <form action="{{ route('admin.refunds.reject', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
                                             @csrf
                                             <button class="btn btn-danger btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Từ chối yêu cầu hoàn hàng?')">
                                                 Không hoàn hàng
@@ -255,11 +255,13 @@
                                         @endif
                                         @endif
 
-                                        {{-- Duyệt hoàn tiền: cho phép từ trạng thái 7 (admin khởi tạo) hoặc 8 (đã nhận tiền hoàn) --}}
+                                        {{-- Duyệt hoàn tiền: cho phép từ trạng thái 7 (đã duyệt hoàn hàng) hoặc 8 (đã nhận hàng hoàn) --}}
                                         @if (in_array($order->status, [7,8]) && !$order->refundRequest->refund_completed_at)
                                         <form action="{{ route('admin.refunds.approve', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
                                             @csrf
-                                      
+                                            <button class="btn btn-success btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Xác nhận đã hoàn tiền cho khách?')">
+                                                Duyệt hoàn
+                                            </button>
                                         </form>
                                         @endif
                                         @else

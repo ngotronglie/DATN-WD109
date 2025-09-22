@@ -186,6 +186,9 @@
                         
                         @if($comments->count() > 0)
                             @foreach($comments as $comment)
+                                @if(isset($comment->is_hidden) && $comment->is_hidden)
+                                    @continue
+                                @endif
                                 <div class="comment-item mb-3 p-3 border rounded">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <strong>{{ $comment->user->name ?? 'Khách' }}</strong>

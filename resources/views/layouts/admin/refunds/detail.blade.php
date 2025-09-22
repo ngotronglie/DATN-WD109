@@ -102,7 +102,7 @@
         <button class="btn btn-success">Duyệt yêu cầu hoàn hàng</button>
     </form>
     {{-- Từ chối yêu cầu hoàn hàng --}}
-    <form action="{{ route('admin.admin.refunds.reject', ['id' => $refund->id]) }}" method="POST" onsubmit="return confirm('Từ chối yêu cầu hoàn hàng?')">
+    <form action="{{ route('admin.refunds.reject', ['id' => $refund->id]) }}" method="POST" onsubmit="return confirm('Từ chối yêu cầu hoàn hàng?')">
         @csrf
         <button class="btn btn-danger">Từ chối</button>
     </form>

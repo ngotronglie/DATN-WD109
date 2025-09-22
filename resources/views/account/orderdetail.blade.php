@@ -48,6 +48,15 @@
         $statusText = $statusLabels[$status] ?? 'Không xác định';
         $badgeClass = $statusColors[$status] ?? 'bg-light text-dark';
 
+        // Tùy biến nhãn trạng thái 7 theo loại yêu cầu hoàn
+        if ((int)$status === 7 && $order->refundRequest) {
+            if (($order->refundRequest->type ?? null) === 'admin_refund') {
+                $statusText = 'Đã xác nhận hoàn lại tiền';
+            } else {
+                $statusText = 'Đã duyệt yêu cầu hoàn hàng';
+            }
+        }
+
         // Không còn điều chỉnh nhãn theo phương thức thanh toán cho các trạng thái hoàn hàng/hoàn tiền trung gian.
 
         // Nếu VNPAY chưa thanh toán và đơn còn ở trạng thái chờ (0), hiển thị 'Chờ thanh toán'
@@ -183,9 +192,12 @@
         </form>
         @endif
 
-        {{-- Bước 3: Khi admin đã duyệt hoàn hàng (status = 7), chỉ hiển thị nút 'Đã trả hàng' nếu đơn đã được giao (có delivered_at) --}}
+        {{-- Bước 3: Khi admin đã duyệt hoàn hàng (status = 7) và KHÁCH là người yêu cầu (type != admin_refund) --}}
         @php $isVnp = strtolower((string)$order->payment_method) === 'vnpay'; @endphp
-        @if ($order->status == 7 && $order->refundRequest && !empty($order->delivered_at))
+        @if ($order->status == 7 && $order->refundRequest && ($order->refundRequest->type !== 'admin_refund'))
+        <div class="alert alert-info mt-2 rounded-4 d-flex justify-content-between align-items-center">
+            <span>Yêu cầu hoàn hàng của bạn đã được duyệt. Vui lòng gửi/trả hàng lại cho shop. Sau khi đã gửi, hãy nhấn nút "Đã trả hàng" để chúng tôi bắt đầu quy trình hoàn tiền.</span>
+        </div>
         <form action="{{ route('user.orders.markReturned', $order->id) }}" method="POST" class="text-end mt-2">
             @csrf
             <button type="submit" class="btn btn-outline-primary rounded-pill">Đã trả hàng</button>

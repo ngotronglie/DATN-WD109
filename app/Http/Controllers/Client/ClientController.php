@@ -383,6 +383,7 @@ class ClientController extends Controller
         // Lấy danh sách bình luận của sản phẩm
         $comments = \App\Models\ProductComment::with(['user', 'replies.user'])
             ->where('product_id', $product->id)
+            ->where('is_hidden', false)
             ->whereNull('parent_id')
             ->latest()
             ->get();
@@ -433,6 +434,7 @@ class ClientController extends Controller
         $comments = \App\Models\ProductComment::with(['user', 'replies.user'])
             ->where('product_id', $product->id)
             ->where('flash_sale_id', $flashSale->id)
+            ->where('is_hidden', false)
             ->whereNull('parent_id')
             ->latest()
             ->get();
@@ -1338,17 +1340,11 @@ class ClientController extends Controller
             return redirect('/checkout')->with('error', 'Không tìm thấy đơn hàng');
         }
 
-        // Cấu hình VNPAY từ ENV
-        $vnp_TmnCode = trim((string) env('VNP_TMN_CODE', ''));
-        $vnp_HashSecret = trim((string) env('VNP_HASH_SECRET', ''));
-        $vnp_Url = trim((string) env('VNP_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'));
-        // Ưu tiên ENV cho return URL nếu có, nếu không dùng route đặt tên 'vnpay.return'
-        $vnp_Returnurl = trim((string) env('VNP_RETURN_URL', route('vnpay.return')));
-
-        if (empty($vnp_TmnCode) || empty($vnp_HashSecret)) {
-            \Log::error('[VNPAY] Thiếu cấu hình VNP_TMN_CODE hoặc VNP_HASH_SECRET');
-            return redirect('/checkout')->with('error', 'Thiếu cấu hình VNPAY. Vui lòng liên hệ quản trị.');
-        }
+        // Cấu hình VNPAY sandbox
+        $vnp_TmnCode = "M1NSFU0N"; // Mã website tại VNPAY
+        $vnp_HashSecret = "WX2DAEEQH8V9PGTXRZB6DY8KRCJPQDBC"; // Chuỗi bí mật
+        $vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
+        $vnp_Returnurl = route('vnpay.return');
         $vnp_TxnRef = $order->order_code;
         $vnp_OrderInfo = 'Thanh toan don hang ' . $order->order_code;
         $vnp_OrderType = 'billpayment';
@@ -1370,37 +1366,26 @@ class ClientController extends Controller
             'vnp_ReturnUrl' => $vnp_Returnurl,
             'vnp_TxnRef' => $vnp_TxnRef,
         );
-        // Tùy chọn: thời gian hết hạn thanh toán
-        $inputData['vnp_ExpireDate'] = date('YmdHis', time() + 15 * 60);
-
-        // Chuẩn hóa dữ liệu trước khi ký (tránh khoảng trắng/ký tự ẩn)
-        foreach ($inputData as $k => $v) {
-            if (is_string($v)) { $inputData[$k] = trim($v); }
-            elseif (is_numeric($v)) { $inputData[$k] = (string) $v; }
-        }
 
         ksort($inputData);
-        // Xây dựng query string (URL encoded) và hash data (KHÔNG encode)
-        $hashParts = [];
+        $query = "";
+        $hashdata = '';
+        $i = 0;
         foreach ($inputData as $key => $value) {
-            $hashParts[] = $key . '=' . $value;
+            if ($i == 1) {
+                $hashdata .= '&' . urlencode($key) . "=" . urlencode($value);
+            } else {
+                $hashdata .= urlencode($key) . "=" . urlencode($value);
+                $i = 1;
+            }
+            $query .= urlencode($key) . "=" . urlencode($value) . '&';
         }
-        $hashData = implode('&', $hashParts);
-        // Dùng http_build_query với RFC3986 để encode chính xác (space => %20)
-        $queryString = http_build_query($inputData, '', '&', PHP_QUERY_RFC3986);
 
-        // Gắn secure hash
-        $vnp_Url = $vnp_Url . '?' . $queryString;
-        $vnpSecureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
-        $vnp_Url .= '&vnp_SecureHashType=HMACSHA512&vnp_SecureHash=' . $vnpSecureHash;
-
-        // Ghi log hỗ trợ chẩn đoán chữ ký (xóa khi production)
-        try {
-            \Log::info('[VNPAY] InputData', $inputData);
-            \Log::info('[VNPAY] HashData', ['hashData' => $hashData]);
-            if (!empty($vnpSecureHash)) { \Log::info('[VNPAY] SecureHash', ['vnp_SecureHash' => $vnpSecureHash]); }
-            \Log::info('[VNPAY] Redirect URL', ['url' => $vnp_Url]);
-        } catch (\Throwable $e) {}
+        $vnp_Url = $vnp_Url . "?" . $query;
+        if (isset($vnp_HashSecret)) {
+            $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+            $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
+        }
 
         return redirect($vnp_Url);
     }
@@ -1410,39 +1395,9 @@ class ClientController extends Controller
      */
     public function vnpayReturn(Request $request)
     {
-        // Lấy tham số trả về
-        $inputData = $request->query();
-        $vnp_SecureHash = $inputData['vnp_SecureHash'] ?? '';
-        unset($inputData['vnp_SecureHashType'], $inputData['vnp_SecureHash']);
-        ksort($inputData);
-        // Tạo chuỗi hashData theo đúng cách khi tạo URL thanh toán (không encode lại)
-        $hashParts = [];
-        foreach ($inputData as $key => $value) { $hashParts[] = $key . '=' . $value; }
-        $hashData = implode('&', $hashParts);
-
-        $vnp_HashSecret = trim((string) env('VNP_HASH_SECRET', ''));
-        $computedHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
-
         $vnp_ResponseCode = $request->input('vnp_ResponseCode');
         $vnp_TxnRef = $request->input('vnp_TxnRef');
-        $vnp_Amount = (int) $request->input('vnp_Amount');
         $order = \App\Models\Order::where('order_code', $vnp_TxnRef)->first();
-
-        // Kiểm tra chữ ký
-        if (empty($vnp_HashSecret) || strtolower($computedHash) !== strtolower($vnp_SecureHash)) {
-            \Log::warning('[VNPAY] Sai chữ ký', [
-                'hashData' => $hashData,
-                'computed' => $computedHash,
-                'received' => $vnp_SecureHash,
-            ]);
-            return view('layouts.user.vnpay_fail', ['order' => $order, 'message' => 'Sai chữ ký']);
-        }
-
-        // Kiểm tra số tiền khớp (VNP trả vnp_Amount x100)
-        if ($order && $vnp_Amount !== ((int) $order->total_amount) * 100) {
-            \Log::warning('[VNPAY] Sai số tiền', ['vnp_Amount' => $vnp_Amount, 'order_total' => $order->total_amount]);
-            return view('layouts.user.vnpay_fail', ['order' => $order, 'message' => 'Sai số tiền']);
-        }
 
         if ($order && $vnp_ResponseCode == '00') {
             // Đánh dấu đã thanh toán online (2 = chuyển khoản)

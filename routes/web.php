@@ -255,13 +255,15 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Contact
     Route::resource('contacts', ContactController::class);
+    Route::post('contacts/{contact}/status', [ContactController::class, 'updateStatus'])->name('contacts.updateStatus');
+    Route::post('contacts/{contact}/mark-replied', [ContactController::class, 'markAsReplied'])->name('contacts.markReplied');
 
     // Orders
     Route::resource('orders', OrderController::class);
     Route::post('/orders/{id}/cancel', [OrderController::class, 'cancelOrder'])->name('orders.cancel');
     Route::post('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::get('orders/{order}/detail', [OrderController::class, 'show'])->name('orders.detail');
-    Route::post('/admin/orders/{refund}/confirm-receive-back', [OrderController::class, 'confirmReceiveBack'])->name('orders.confirmReceiveBack');
+    Route::post('orders/{refund}/confirm-receive-back', [OrderController::class, 'confirmReceiveBack'])->name('orders.confirmReceiveBack');
     
     // Delivery actions
     Route::post('/orders/{id}/delivery-success', [OrderController::class, 'deliverySuccess'])->name('orders.deliverySuccess');
@@ -285,12 +287,11 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('/orders/{id}/refund/initiate', [OrderController::class, 'initiateRefund'])->name('orders.refund.initiate');
 
 
-    // routes/web.php
     // Xác thực hoàn hàng
-    Route::post('/admin/orders/{id}/refund/verify', action: [OrderController::class, 'verify'])->name('admin.refunds.verify');
+    Route::post('orders/{id}/refund/verify', [OrderController::class, 'verify'])->name('refunds.verify');
 
     // Từ chối yêu cầu hoàn hàng
-    Route::post('/admin/orders/{id}/refund/reject', [OrderController::class, 'reject'])->name('admin.refunds.reject');
+    Route::post('orders/{id}/refund/reject', [OrderController::class, 'reject'])->name('refunds.reject');
 
 
 
@@ -299,8 +300,15 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
 
 
-    // Comments (admin)
-    Route::resource('comments', CommentController::class)->only(['index', 'destroy']);
+    // Comments (admin) → chuyển sang quản lý Bình luận SẢN PHẨM tại /admin/comments
+    Route::get('comments', [\App\Http\Controllers\Admin\ProductCommentController::class, 'index'])->name('comments.index');
+    Route::delete('comments/{comment}', [\App\Http\Controllers\Admin\ProductCommentController::class, 'destroy'])->name('comments.destroy');
+    Route::post('comments/{comment}/toggle', [\App\Http\Controllers\Admin\ProductCommentController::class, 'toggleVisibility'])->name('comments.toggle');
+
+    // Giữ đường dẫn riêng nếu cần: /admin/product-comments (tùy chọn)
+    Route::get('product-comments', [\App\Http\Controllers\Admin\ProductCommentController::class, 'index'])->name('product-comments.index');
+    Route::delete('product-comments/{comment}', [\App\Http\Controllers\Admin\ProductCommentController::class, 'destroy'])->name('product-comments.destroy');
+    Route::post('product-comments/{comment}/toggle', [\App\Http\Controllers\Admin\ProductCommentController::class, 'toggleVisibility'])->name('product-comments.toggle');
 
     // Favorites (admin)
     Route::resource('favorites', AdminFavoriteController::class);

@@ -119,6 +119,15 @@
                                 $statusText = $statusLabels[$status] ?? 'Không xác định';
                                 $badgeClass = $statusColors[$status] ?? 'bg-light text-dark';
 
+                                // Tùy biến nhãn trạng thái 7 tương tự trang chi tiết
+                                if ((int)$status === 7 && $order->refundRequest) {
+                                    if (($order->refundRequest->type ?? null) === 'admin_refund') {
+                                        $statusText = 'Đã xác nhận hoàn lại tiền';
+                                    } else {
+                                        $statusText = 'Đã duyệt yêu cầu hoàn hàng';
+                                    }
+                                }
+
                                 // Nếu là VNPAY và chưa thanh toán, hiển thị 'Chờ thanh toán' (chỉ khi status == 0)
                                 if ((int)$order->status === 0 && strtolower((string)$order->payment_method) === 'vnpay' && (int)$order->status_method === 0) {
                                     $statusText = 'Chờ thanh toán';

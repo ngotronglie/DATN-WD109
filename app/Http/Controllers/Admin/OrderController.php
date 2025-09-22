@@ -191,6 +191,7 @@ class OrderController extends Controller
         $refund = RefundRequest::create([
             'order_id' => $order->id,
             'user_id' => $order->user_id,
+            'type' => 'admin_refund',
             'reason' => $request->input('reason'),
             'refund_requested_at' => now(),
         ]);

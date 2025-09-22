@@ -16,12 +16,8 @@ class ContactController extends Controller
 
     public function show(Contact $contact)
     {
-        // Đánh dấu đã đọc nếu chưa đọc
-        if ($contact->status === 'pending') {
-            $contact->update(['status' => 'read']);
-        }
-        
-        return view('admin.contacts.show', compact('contact'));
+        // Hiển thị chi tiết liên hệ; không thay đổi trạng thái ngoài 2 trạng thái hỗ trợ trong UI
+        return view('layouts.admin.contact.show', compact('contact'));
     }
 
     public function updateStatus(Request $request, Contact $contact)

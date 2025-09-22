@@ -23,7 +23,10 @@ class UserOrderController extends Controller
             return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để xem đơn hàng.');
         }
 
-        $orders = Order::where('user_id', $user->id)->orderByDesc('created_at')->get();
+        $orders = Order::with('refundRequest')
+            ->where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->get();
 
         return view('account.order', compact('orders'));
     }
@@ -102,6 +105,7 @@ class UserOrderController extends Controller
         RefundRequest::create([
             'order_id' => $order->id,
             'user_id' => auth()->id(),
+            'type' => 'return',
             'reason' => $request->reason === 'Khác' ? ($request->reason_input ?? 'Khác') : $request->reason,
             'image' => $imagePath,
             'refund_requested_at' => now(),
