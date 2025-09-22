@@ -4,8 +4,8 @@
           <div class="d-flex align-items-center">
               <!-- Logo -->
               <div class="logo me-auto">
-                  <a href="{{ route('home') }}">
-                      <img src="{{ asset('frontend/img/logo/Techzone.png') }}" alt="Logo" height="25">
+                  <a href="{{ route('home') }}" class="text-decoration-none">
+                      <span class="logo-text">DATN Shop</span>
                   </a>
               </div>
               <!-- Menu -->
@@ -60,48 +60,12 @@
               <a href="{{ route('wishlist') }}" class="fs-4" title="Yêu thích">❤️</a>
 
               <!-- Icon Giỏ hàng -->
-              <a href="{{ route('cart') }}" class="fs-3 position-relative" title="Giỏ hàng">
+              <a href="{{ route('cart') }}" class="fs-3" title="Giỏ hàng">
                   <i class="zmdi zmdi-shopping-cart-plus"></i>
-                  <span id="cart-count-badge" class="position-absolute translate-middle badge rounded-pill bg-danger" style="top: 6px; left: 18px; font-size: 10px; min-width: 18px;">
-                      0
-                  </span>
               </a>
           </div>
       </div>
   </header>
-
-  <script>
-    // Helpers để cập nhật badge giỏ hàng toàn trang (luôn khả dụng cho cả khách và đã đăng nhập)
-    window.setCartBadge = function(count) {
-        try {
-            const badge = document.getElementById('cart-count-badge');
-            if (badge) {
-                const c = Math.max(0, parseInt(count || 0, 10) || 0);
-                badge.innerText = String(c);
-                badge.style.display = c > 0 ? '' : 'none';
-            }
-        } catch (_) {}
-    };
-
-    window.refreshCartBadgeByApi = async function() {
-        try {
-            const res = await fetch('/api/cart', { credentials: 'same-origin' });
-            const data = await res.json();
-            if (data && data.success) {
-                const items = Array.isArray(data.data) ? data.data : [];
-                const totalQty = items.reduce((sum, it) => sum + (parseInt(it.quantity || it.cart_quantity || 0, 10) || 0), 0);
-                window.setCartBadge(totalQty);
-            } else {
-                window.setCartBadge(0);
-            }
-        } catch (_) { window.setCartBadge(0); }
-    };
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Đồng bộ badge khi tải trang
-        window.refreshCartBadgeByApi();
-    });
-  </script>
 
   <style>
 /* ===== HEADER ===== */
@@ -120,6 +84,20 @@ header {
 /* Logo */
 .logo img {
     height: 22px; /* Tăng thêm kích thước logo */
+}
+
+.logo-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #00aaff !important;
+    text-shadow: 0 2px 4px rgba(0,170,255,0.3);
+    transition: all 0.3s ease;
+}
+
+.logo-text:hover {
+    color: #ffffff !important;
+    transform: scale(1.05);
 }
 
 /* Menu chính */

@@ -28,3 +28,6 @@ Route::prefix('admin/vouchers')->controller(App\Http\Controllers\Admin\VoucherCo
     Route::delete('/{id}', 'destroy');
 });
 
+// API cho Client
+Route::get('/product-variants-popup/{productId}', [App\Http\Controllers\Client\ClientController::class, 'getProductVariantsPopup']);
+

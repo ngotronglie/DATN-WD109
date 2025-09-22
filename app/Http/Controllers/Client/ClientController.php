@@ -35,12 +35,17 @@ class ClientController extends Controller
     private function getImageUrl($imagePath)
     {
         if (!$imagePath) {
-            return null;
+            return 'https://via.placeholder.com/300x300?text=No+Image';
         }
         
         // Nếu ảnh đã có URL đầy đủ, sử dụng trực tiếp
         if (strpos($imagePath, 'http') === 0) {
             return $imagePath;
+        }
+        
+        // Nếu đường dẫn bắt đầu bằng /, sử dụng trực tiếp
+        if (strpos($imagePath, '/') === 0) {
+            return asset($imagePath);
         }
         
         // Nếu chỉ có đường dẫn tương đối, sử dụng asset()
@@ -1412,6 +1417,98 @@ class ClientController extends Controller
             }
 
             return view('layouts.user.vnpay_fail', ['order' => $order]);
+        }
+    }
+
+    /**
+     * API để lấy thông tin biến thể sản phẩm cho popup
+     */
+    public function getProductVariantsPopup($productId)
+    {
+        try {
+            // Lấy thông tin sản phẩm
+            $product = Product::find($productId);
+            if (!$product) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sản phẩm không tồn tại'
+                ]);
+            }
+
+            // Debug log để kiểm tra dữ liệu sản phẩm
+            \Log::info('Product Debug:', [
+                'id' => $product->id,
+                'name' => $product->name,
+                'image' => $product->image,
+                'price' => $product->price,
+                'all_attributes' => $product->getAttributes()
+            ]);
+
+            // Lấy tất cả biến thể của sản phẩm
+            $variants = ProductVariant::where('product_id', $productId)
+                ->with(['color', 'capacity'])
+                ->get();
+
+            if ($variants->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sản phẩm không có biến thể'
+                ]);
+            }
+
+            // Lấy danh sách màu sắc và dung lượng
+            $colors = $variants->pluck('color')->filter()->unique('id')->values();
+            $capacities = $variants->pluck('capacity')->filter()->unique('id')->values();
+
+            // Format dữ liệu trả về
+            $formattedVariants = $variants->map(function ($variant) {
+                return [
+                    'id' => $variant->id,
+                    'color_id' => $variant->color_id,
+                    'capacity_id' => $variant->capacity_id,
+                    'price' => $variant->price,
+                    'price_sale' => $variant->price_sale,
+                    'quantity' => $variant->quantity,
+                    'color_name' => $variant->color ? $variant->color->name : null,
+                    'capacity_name' => $variant->capacity ? $variant->capacity->name : null,
+                ];
+            });
+
+            $formattedColors = $colors->map(function ($color) {
+                return [
+                    'id' => $color->id,
+                    'name' => $color->name,
+                ];
+            });
+
+            $formattedCapacities = $capacities->map(function ($capacity) {
+                return [
+                    'id' => $capacity->id,
+                    'name' => $capacity->name,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'product' => [
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'product_image' => $this->getImageUrl($product->image),
+                        'product_price' => $product->price ?? 0,
+                        'product_price_discount' => 0, // Giá giảm sẽ lấy từ variant
+                    ],
+                    'variants' => $formattedVariants,
+                    'colors' => $formattedColors,
+                    'capacities' => $formattedCapacities,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ]);
         }
     }
 }
