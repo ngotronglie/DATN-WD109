@@ -20,7 +20,7 @@ class UserOrderController extends Controller
 
         if (!$user) {
             // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập
-            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để xem đơn hàng.');
+            return redirect()->route('auth.login')->with('error', 'Vui lòng đăng nhập để xem đơn hàng.');
         }
 
         $orders = Order::where('user_id', $user->id)->orderByDesc('created_at')->get();

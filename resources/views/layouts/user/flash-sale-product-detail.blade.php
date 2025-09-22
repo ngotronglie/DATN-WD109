@@ -232,7 +232,7 @@
                             </div>
                         @else
                             <div class="alert alert-info mt-3">
-                                Vui lòng <a href="{{ route('login') }}">đăng nhập</a> để bình luận.
+                                Vui lòng <a href="{{ route('auth.login') }}">đăng nhập</a> để bình luận.
                             </div>
                         @endauth
                     </div>

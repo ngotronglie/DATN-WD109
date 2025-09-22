@@ -17,8 +17,10 @@
                 <div class="col-lg-4 text-end">
                     @if($flashSales->isNotEmpty())
                         <div class="countdown-widget">
-                            <div class="countdown-label text-white-50 mb-2">Kết thúc trong</div>
-                            <div class="countdown-display" data-end-time="{{ $flashSales->first()->end_time->toISOString() }}">
+                            <div class="countdown-label text-white-50 mb-2" id="countdown-label">Kết thúc trong</div>
+                            <div class="countdown-display" 
+                                 data-start-time="{{ $flashSales->first()->start_time->toISOString() }}"
+                                 data-end-time="{{ $flashSales->first()->end_time->toISOString() }}">
                                 <div class="time-unit">
                                     <span class="time-number" id="page-hours">00</span>
                                     <small class="time-label">Giờ</small>
@@ -91,17 +93,17 @@
                                         {{-- Product Image --}}
                                         <div class="product-image-container">
                                             <a href="{{ route('flash-sale.product.detail', $flashProduct->productVariant->product->slug) }}">
-                                                <img src="{{ $flashProduct->productVariant->image ? (str_starts_with($flashProduct->productVariant->image, 'http') ? $flashProduct->productVariant->image : asset('storage/' . $flashProduct->productVariant->image)) : asset('images/no-image.png') }}" 
-                                                     alt="{{ $flashProduct->productVariant->product->name }}" 
+                                                <img src="{{ $flashProduct->productVariant->image ? (str_starts_with($flashProduct->productVariant->image, 'http') ? $flashProduct->productVariant->image : asset('storage/' . $flashProduct->productVariant->image)) : asset('images/no-image.png') }}"
+                                                     alt="{{ $flashProduct->productVariant->product->name }}"
                                                      class="product-image"
                                                      onerror="this.src='{{ asset('images/no-image.png') }}'">
                                             </a>
-                                            
+
                                             {{-- Discount Badge --}}
                                             <div class="discount-badge">
                                                 -{{ $flashProduct->getDiscountPercentage() }}%
                                             </div>
-                                            
+
                                             {{-- Priority Badge --}}
                                             @if($flashProduct->priority > 0)
                                                 <div class="priority-badge">
@@ -117,7 +119,7 @@
                                                     {{ $flashProduct->productVariant->product->name }}
                                                 </a>
                                             </h5>
-                                            
+
                                             {{-- Variant Info --}}
                                             <div class="variant-tags mb-2">
                                                 @if($flashProduct->productVariant->color)
@@ -128,40 +130,53 @@
                                                 @endif
                                             </div>
 
-                                            {{-- Price --}}
+                                            {{-- Price Info --}}
                                             <div class="price-info mb-3">
-                                                <div class="price-row">
-                                                    <span class="sale-price">{{ number_format($flashProduct->sale_price, 0, ',', '.') }}₫</span>
-                                                    <span class="original-price">{{ number_format($flashProduct->original_price, 0, ',', '.') }}₫</span>
-                                                </div>
-                                                <div class="savings">
-                                                    Tiết kiệm: <strong class="text-success">{{ number_format($flashProduct->getSavingAmount(), 0, ',', '.') }}₫</strong>
-                                                </div>
-                                            </div>
-
-
-                                            {{-- Action Buttons --}}
-                                            <div class="product-actions">
-                                                @if($flashProduct->remaining_stock > 0)
-                                                    <button class="btn btn-danger btn-buy-now w-100 mb-2" 
-                                                            data-variant-id="{{ $flashProduct->productVariant->id }}"
-                                                            data-flash-price="{{ $flashProduct->sale_price }}">
-                                                        <i class="fas fa-shopping-cart me-2"></i>
-                                                        Mua ngay
-                                                    </button>
-                                                    <button class="btn btn-outline-secondary btn-add-to-cart w-100" 
-                                                            data-variant-id="{{ $flashProduct->productVariant->id }}"
-                                                            data-flash-price="{{ $flashProduct->sale_price }}">
-                                                        <i class="fas fa-cart-plus me-2"></i>
-                                                        Thêm vào giỏ
-                                                    </button>
+                                                @if($flashSale->start_time > now())
+                                                    {{-- Upcoming Flash Sale --}}
+                                                    <div class="upcoming-price">
+                                                        <div class="original-price-value">₫{{ number_format($flashProduct->original_price, 0, ',', '.') }}</div>
+                                                        <div class="sale-price-placeholder">
+                                                            <span class="price-char">?</span>
+                                                            <span class="price-char">?</span>
+                                                            <span class="price-char">?</span>
+                                                            <span class="price-char">?</span>
+                                                            <span class="price-char">₫</span>
+                                                        </div>
+                                                        <div class="discount-badge">-{{ $flashProduct->getDiscountPercentage() }}%</div>
+                                                    </div>
                                                 @else
-                                                    <button class="btn btn-secondary w-100" disabled>
-                                                        <i class="fas fa-times me-2"></i>
-                                                        Hết hàng
-                                                    </button>
+                                                    {{-- Active Flash Sale --}}
+                                                    <div class="price-row">
+                                                        <span class="sale-price">{{ number_format($flashProduct->sale_price, 0, ',', '.') }}₫</span>
+                                                        <span class="original-price">{{ number_format($flashProduct->original_price, 0, ',', '.') }}₫</span>
+                                                    </div>
+                                                    <div class="savings">
+                                                        Tiết kiệm: <strong class="text-success">{{ number_format($flashProduct->getSavingAmount(), 0, ',', '.') }}₫</strong>
+                                                    </div>
                                                 @endif
                                             </div>
+
+                                            {{-- Action Icons --}}
+                                            <div class="product-actions-bottom">
+                                                @if($flashProduct->remaining_stock > 0)
+                                                    <button class="action-btn add-to-favorite" data-product-id="{{ $flashProduct->productVariant->product->id }}" title="Thêm vào yêu thích" onclick="addToFavorite(event, {{ $flashProduct->productVariant->product->id }}); return false;">
+                                                        <i class="fas fa-heart"></i>
+                                                    </button>
+                                                    <button class="action-btn add-to-cart" title="Thêm vào giỏ hàng"
+                                                            data-variant-id="{{ $flashProduct->productVariant->id }}"
+                                                            data-flash-price="{{ $flashProduct->sale_price }}"
+                                                            onclick="addFlashSaleToCart(event, {{ $flashProduct->productVariant->id }}, {{ $flashProduct->sale_price }})">
+                                                        <i class="fas fa-shopping-cart"></i>
+                                                    </button>
+                                                @else
+                                                    <div class="out-of-stock-label-bottom">
+                                                        <i class="fas fa-times me-1"></i>
+                                                        Hết hàng
+                                                    </div>
+                                                @endif
+                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -318,12 +333,17 @@
     transition: all 0.3s ease;
     overflow: hidden;
     border: 2px solid transparent;
+    position: relative;
 }
 
 .flash-product-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 20px 40px rgba(0,0,0,0.15);
     border-color: #dc3545;
+}
+
+.flash-product-card:hover .product-actions {
+    opacity: 1;
 }
 
 .product-image-container {
@@ -438,6 +458,262 @@
     color: #6c757d;
 }
 
+/* Upcoming Price Styles */
+.upcoming-price {
+    text-align: center;
+    padding: 8px 0 4px;
+}
+
+.original-price-value {
+    color: #666;
+    font-size: 1rem;
+    text-decoration: line-through;
+    margin-bottom: 8px;
+}
+
+.sale-price-placeholder {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+    height: 32px;
+    align-items: center;
+}
+
+.price-char {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 24px;
+    background: #f5f5f5;
+    border-radius: 2px;
+    margin: 0 1px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #999;
+    position: relative;
+    overflow: hidden;
+}
+
+.price-char:last-child {
+    background: none;
+    color: #dc3545;
+    font-weight: 400;
+    margin-left: 2px;
+}
+
+.upcoming-price .discount-badge {
+    background: #dc3545;
+    color: white;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+/* Action Icons - Bottom */
+.product-actions-bottom {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 15px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 10px;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: #f8f9fa;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+}
+
+.action-btn:hover {
+    background: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn.add-to-favorite {
+    color: #999;
+}
+
+.action-btn.add-to-favorite[data-favorited="true"],
+.action-btn.add-to-favorite:hover {
+    color: #ff4757;
+    background: #fff5f5;
+}
+
+.action-btn.add-to-cart {
+    color: #666;
+}
+
+.action-btn.add-to-cart:hover {
+    color: #2ecc71;
+    background: #f0fff4;
+}
+
+.out-of-stock-label-bottom {
+    background: #6c757d;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    width: 100%;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: scale(0.7);
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+.modal-overlay.show .modal-content {
+    transform: scale(1);
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.modal-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+    color: #28a745;
+}
+
+.modal-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.modal-message {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 25px;
+}
+
+.success-icon {
+    color: #28a745;
+}
+
+.error-icon {
+    color: #dc3545;
+}
+
+.warning-icon {
+    color: #ffc107;
+}
+
+.info-icon {
+    color: #17a2b8;
+}
+
+.modal-actions {
+    margin-top: 20px;
+}
+
+.modal-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    text-decoration: none;
+    min-width: 150px;
+}
+
+.modal-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.modal-button:active {
+    transform: translateY(0);
+}
+
+.modal-button.login-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.modal-button.login-btn:hover {
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
 .stock-section {
     background: #f8f9fa;
     padding: 15px;
@@ -491,19 +767,19 @@
     .page-title {
         font-size: 2rem;
     }
-    
+
     .countdown-widget {
         margin-top: 20px;
     }
-    
+
     .time-number {
         font-size: 1.4rem;
     }
-    
+
     .flash-sale-section {
         padding: 20px;
     }
-    
+
     .product-image-container {
         height: 200px;
     }
@@ -513,16 +789,16 @@
     .countdown-display {
         gap: 5px;
     }
-    
+
     .time-unit {
         padding: 8px 10px;
         min-width: 50px;
     }
-    
+
     .time-number {
         font-size: 1.2rem;
     }
-    
+
     .sale-price {
         font-size: 1.2rem;
     }
@@ -535,11 +811,37 @@ document.addEventListener('DOMContentLoaded', function() {
     // Countdown Timer for page header
     const countdownDisplay = document.querySelector('.countdown-display');
     if (countdownDisplay) {
+        const startTime = new Date(countdownDisplay.dataset.startTime).getTime();
         const endTime = new Date(countdownDisplay.dataset.endTime).getTime();
-        
+        const countdownLabel = document.getElementById('countdown-label');
+
         function updatePageCountdown() {
             const now = new Date().getTime();
-            const distance = endTime - now;
+            let targetTime, labelText;
+
+            // Determine what to count down to
+            if (now < startTime) {
+                // Flash sale hasn't started yet - count down to start time
+                targetTime = startTime;
+                labelText = 'Bắt đầu trong';
+            } else if (now < endTime) {
+                // Flash sale is active - count down to end time
+                targetTime = endTime;
+                labelText = 'Kết thúc trong';
+            } else {
+                // Flash sale has ended
+                countdownLabel.textContent = 'Đã kết thúc';
+                document.getElementById('page-hours').textContent = '00';
+                document.getElementById('page-minutes').textContent = '00';
+                document.getElementById('page-seconds').textContent = '00';
+                return;
+            }
+
+            // Update label
+            countdownLabel.textContent = labelText;
+
+            // Calculate time remaining
+            const distance = targetTime - now;
             
             if (distance < 0) {
                 document.getElementById('page-hours').textContent = '00';
@@ -547,39 +849,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('page-seconds').textContent = '00';
                 return;
             }
-            
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            document.getElementById('page-hours').textContent = hours.toString().padStart(2, '0');
+
+            // Include days in hours if there are days remaining
+            const totalHours = days * 24 + hours;
+
+            document.getElementById('page-hours').textContent = totalHours.toString().padStart(2, '0');
             document.getElementById('page-minutes').textContent = minutes.toString().padStart(2, '0');
             document.getElementById('page-seconds').textContent = seconds.toString().padStart(2, '0');
         }
-        
+
         updatePageCountdown();
         setInterval(updatePageCountdown, 1000);
     }
-    
-    // Add to Cart functionality
-    document.querySelectorAll('.btn-add-to-cart').forEach(button => {
-        button.addEventListener('click', function() {
-            const variantId = this.dataset.variantId;
-            const flashPrice = this.dataset.flashPrice;
-            
-            addToCart(variantId, 1, flashPrice);
-        });
-    });
-    
-    // Buy Now functionality
-    document.querySelectorAll('.btn-buy-now').forEach(button => {
-        button.addEventListener('click', function() {
-            const variantId = this.dataset.variantId;
-            const flashPrice = this.dataset.flashPrice;
-            
-            buyNow(variantId, flashPrice);
-        });
-    });
+
+    // Add to Cart functionality - Updated for new icon buttons
+    // Note: The onclick handlers are already defined in HTML, so we don't need event listeners here
+
+    // Kiểm tra các hành động pending sau khi đăng nhập
+    checkPendingActions();
 });
 
 // Add to cart function
@@ -651,18 +943,313 @@ function buyNow(variantId, price) {
     });
 }
 
-// Notification function
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
-    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
+// Hiển thị modal thông báo ở giữa màn hình
+function showModal(message, type = 'info', showLoginLink = false) {
+    const icons = {
+        success: 'fas fa-check-circle success-icon',
+        error: 'fas fa-times-circle error-icon',
+        warning: 'fas fa-exclamation-triangle warning-icon',
+        info: 'fas fa-info-circle info-icon'
+    };
+
+    const titles = {
+        success: 'Thành công!',
+        error: 'Có lỗi!',
+        warning: 'Yêu cầu đăng nhập!',
+        info: 'Thông báo'
+    };
+
+    // Thêm link đăng nhập nếu cần
+    const currentPath = window.location.pathname + window.location.search;
+    const loginButton = showLoginLink ? `
+        <div class="modal-actions">
+            <a href="/login?redirect=${encodeURIComponent(currentPath)}" class="modal-button login-btn">
+                <i class="fas fa-sign-in-alt me-2"></i>
+                Đăng nhập ngay
+            </a>
+        </div>
+    ` : '';
+
+    const modalHtml = `
+            <div class="modal-overlay" id="notificationModal">
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <i class="${icons[type]} modal-icon"></i>
+                    <h3 class="modal-title">${titles[type]}</h3>
+                    <p class="modal-message">${message}</p>
+                    ${loginButton}
+                </div>
+            </div>
+        `;
+
+    // Xóa modal cũ nếu có
+    const oldModal = document.getElementById('notificationModal');
+    if (oldModal) {
+        oldModal.remove();
+    }
+
+    // Thêm modal mới
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Hiển thị animation
     setTimeout(() => {
-        notification.remove();
-    }, 3000);
+        const modal = document.getElementById('notificationModal');
+        if (modal) {
+            modal.classList.add('show');
+        }
+    }, 100);
+
+    // Tự động đóng sau 5 giây nếu có link đăng nhập, 3 giây nếu không
+    const autoCloseTime = showLoginLink ? 5000 : 3000;
+    setTimeout(function() {
+        closeModal();
+    }, autoCloseTime);
+}
+
+// Đóng modal
+function closeModal() {
+    const modal = document.getElementById('notificationModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    }
+}
+
+// Add to Favorite function
+function addToFavorite(event, productId) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const button = event.target.closest('.add-to-favorite');
+    const icon = button.querySelector('i');
+
+    // Kiểm tra xem user đã đăng nhập chưa
+    @auth
+    // Kiểm tra nếu đã yêu thích rồi thì hiển thị thông báo
+    if (button.getAttribute('data-favorited') === 'true') {
+        showModal('Sản phẩm đã có trong danh sách yêu thích!', 'info');
+        return;
+    }
+
+    showModal('Đang thêm sản phẩm vào yêu thích...', 'info');
+
+    // Tạo form data
+    const formData = new FormData();
+    formData.append('product_id', productId);
+    formData.append('_token', '{{ csrf_token() }}');
+
+    // Gửi request
+    fetch('/favorites', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Thay đổi màu icon thành đỏ
+            icon.style.color = '#e74c3c';
+            button.setAttribute('data-favorited', 'true');
+
+            // Hiển thị thông báo thành công
+            showModal('Đã thêm sản phẩm vào danh sách yêu thích!', 'success');
+        } else {
+            // Kiểm tra nếu sản phẩm đã có trong yêu thích thì hiển thị thông báo thông tin
+            if (data.message && data.message.includes('đã có trong danh sách yêu thích')) {
+                icon.style.color = '#e74c3c';
+                button.setAttribute('data-favorited', 'true');
+                showModal(data.message, 'info');
+            } else {
+                showModal(data.message || 'Có lỗi xảy ra!', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showModal('Có lỗi xảy ra khi thêm vào yêu thích!', 'error');
+    });
+    @else
+    // Nếu chưa đăng nhập, lưu thông tin sản phẩm và hiển thị thông báo
+    localStorage.setItem('pendingFavorite', JSON.stringify({
+        productId: productId,
+        action: 'favorite',
+        timestamp: Date.now()
+    }));
+    showModal('Bạn cần đăng nhập để thêm sản phẩm vào danh sách yêu thích của mình.', 'warning', true);
+    @endauth
+}
+
+// Add Flash Sale to Cart function
+function addFlashSaleToCart(event, variantId, flashPrice) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Kiểm tra đăng nhập trước khi thêm vào giỏ hàng
+    @guest
+    localStorage.setItem('pendingCart', JSON.stringify({
+        variantId: variantId,
+        flashPrice: flashPrice,
+        action: 'cart',
+        timestamp: Date.now()
+    }));
+    showModal('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.', 'warning', true);
+    return;
+    @endguest
+
+    fetch('/api/add-to-cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            variant_id: variantId,
+            quantity: 1,
+            flash_price: flashPrice
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showModal('Đã thêm vào giỏ hàng!', 'success');
+            try {
+                if (typeof window.setCartBadge === 'function' && data.cart_count !== undefined) {
+                    window.setCartBadge(data.cart_count);
+                } else if (typeof window.refreshCartBadgeByApi === 'function') {
+                    window.refreshCartBadgeByApi();
+                }
+            } catch (_) {}
+        } else {
+            showModal(data.message || 'Có lỗi xảy ra!', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showModal('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
+    });
+}
+
+// Kiểm tra và thực hiện các hành động pending sau khi đăng nhập
+function checkPendingActions() {
+    @auth
+    // Kiểm tra pending favorite
+    const pendingFavorite = localStorage.getItem('pendingFavorite');
+    if (pendingFavorite) {
+        try {
+            const favoriteData = JSON.parse(pendingFavorite);
+            // Kiểm tra timestamp để tránh thực hiện hành động cũ (trong vòng 5 phút)
+            if (Date.now() - favoriteData.timestamp < 300000) {
+                localStorage.removeItem('pendingFavorite');
+                // Tự động thêm vào yêu thích
+                addToFavoriteAfterLogin(favoriteData.productId);
+            } else {
+                localStorage.removeItem('pendingFavorite');
+            }
+        } catch (e) {
+            localStorage.removeItem('pendingFavorite');
+        }
+    }
+
+    // Kiểm tra pending cart
+    const pendingCart = localStorage.getItem('pendingCart');
+    if (pendingCart) {
+        try {
+            const cartData = JSON.parse(pendingCart);
+            // Kiểm tra timestamp để tránh thực hiện hành động cũ (trong vòng 5 phút)
+            if (Date.now() - cartData.timestamp < 300000) {
+                localStorage.removeItem('pendingCart');
+                // Tự động thêm vào giỏ hàng
+                addToCartAfterLogin(cartData.variantId, cartData.flashPrice);
+            } else {
+                localStorage.removeItem('pendingCart');
+            }
+        } catch (e) {
+            localStorage.removeItem('pendingCart');
+        }
+    }
+    @endauth
+}
+
+// Thêm vào yêu thích sau khi đăng nhập
+function addToFavoriteAfterLogin(productId) {
+    const formData = new FormData();
+    formData.append('product_id', productId);
+    formData.append('_token', '{{ csrf_token() }}');
+
+    fetch('/favorites', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showModal('Đã tự động thêm sản phẩm vào danh sách yêu thích sau khi đăng nhập!', 'success');
+            // Cập nhật UI nếu button vẫn còn trên trang
+            const button = document.querySelector(`[data-product-id="${productId}"]`);
+            if (button) {
+                const icon = button.querySelector('i');
+                if (icon) icon.style.color = '#e74c3c';
+                button.setAttribute('data-favorited', 'true');
+            }
+        } else {
+            if (data.message && data.message.includes('đã có trong danh sách yêu thích')) {
+                showModal('Sản phẩm đã có trong danh sách yêu thích của bạn!', 'info');
+            } else {
+                showModal(data.message || 'Có lỗi khi thêm vào yêu thích!', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showModal('Có lỗi xảy ra khi thêm vào yêu thích!', 'error');
+    });
+}
+
+// Thêm vào giỏ hàng sau khi đăng nhập
+function addToCartAfterLogin(variantId, flashPrice) {
+    fetch('/api/add-to-cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            variant_id: variantId,
+            quantity: 1,
+            flash_price: flashPrice
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showModal('Đã tự động thêm sản phẩm vào giỏ hàng sau khi đăng nhập!', 'success');
+            try {
+                if (typeof window.setCartBadge === 'function' && data.cart_count !== undefined) {
+                    window.setCartBadge(data.cart_count);
+                } else if (typeof window.refreshCartBadgeByApi === 'function') {
+                    window.refreshCartBadgeByApi();
+                }
+            } catch (_) {}
+        } else {
+            showModal(data.message || 'Có lỗi khi thêm vào giỏ hàng!', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showModal('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
+    });
 }
 
 // Update cart count function

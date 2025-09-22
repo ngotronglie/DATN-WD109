@@ -28,7 +28,7 @@ use App\Models\User;
 class ClientController extends Controller
 {
 
-   
+
     /**
      * Helper function to get proper image URL
      */
@@ -37,17 +37,17 @@ class ClientController extends Controller
         if (!$imagePath) {
             return 'https://via.placeholder.com/300x300?text=No+Image';
         }
-        
+
         // Nếu ảnh đã có URL đầy đủ, sử dụng trực tiếp
         if (strpos($imagePath, 'http') === 0) {
             return $imagePath;
         }
-        
+
         // Nếu đường dẫn bắt đầu bằng /, sử dụng trực tiếp
         if (strpos($imagePath, '/') === 0) {
             return asset($imagePath);
         }
-        
+
         // Nếu chỉ có đường dẫn tương đối, sử dụng asset()
         return asset($imagePath);
     }
@@ -163,6 +163,20 @@ class ClientController extends Controller
             ->map(function($product) {
                 // Prefer in-stock variant with sale > 0, else any sale > 0, else fallback
                 $variant = $product->variants->firstWhere('price_sale', '>', 0) ?? $product->variants->first();
+                
+                // Check if any variant of this product is in an active flash sale
+                $hasFlashSale = false;
+                if ($variant) {
+                    $hasFlashSale = \App\Models\FlashSaleProduct::whereHas('flashSale', function($q) {
+                        $q->where('is_active', 1)
+                          ->where('start_time', '<=', now())
+                          ->where('end_time', '>=', now());
+                    })
+                    ->whereIn('product_variant_id', $product->variants->pluck('id'))
+                    ->where('remaining_stock', '>', 0)
+                    ->exists();
+                }
+                
                 return (object) [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
@@ -171,6 +185,7 @@ class ClientController extends Controller
                     'product_image' => $this->getImageUrl($variant ? $variant->image : null),
                     'product_price' => $variant ? $variant->price : 0,
                     'product_price_discount' => $variant && $variant->price_sale > 0 ? $variant->price_sale : 0,
+                    'has_flash_sale' => $hasFlashSale,
                 ];
             });
 
@@ -184,6 +199,20 @@ class ClientController extends Controller
             ->get()
             ->map(function($product) {
                 $variant = $product->variants->firstWhere('quantity', '>', 0) ?? $product->variants->first();
+                
+                // Check if any variant of this product is in an active flash sale
+                $hasFlashSale = false;
+                if ($variant) {
+                    $hasFlashSale = \App\Models\FlashSaleProduct::whereHas('flashSale', function($q) {
+                        $q->where('is_active', 1)
+                          ->where('start_time', '<=', now())
+                          ->where('end_time', '>=', now());
+                    })
+                    ->whereIn('product_variant_id', $product->variants->pluck('id'))
+                    ->where('remaining_stock', '>', 0)
+                    ->exists();
+                }
+                
                 return (object) [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
@@ -192,6 +221,7 @@ class ClientController extends Controller
                     'product_image' => $variant ? $variant->image : null,
                     'product_price' => $variant ? $variant->price : 0,
                     'product_price_discount' => 0,
+                    'has_flash_sale' => $hasFlashSale,
                 ];
             });
         $banners = \App\Models\Banner::where('is_active', 1)->orderByDesc('id')->get();
@@ -202,17 +232,38 @@ class ClientController extends Controller
             ->where('Is_active', 1)
             ->orderBy('created_at', 'desc')
             ->take(12)
-            ->get();
-            
+            ->get()
+            ->map(function($product) {
+                // Get the first available variant
+                $variant = $product->variants->first();
+                
+                // Check if any variant of this product is in an active flash sale
+                $hasFlashSale = false;
+                if ($product->variants->isNotEmpty()) {
+                    $hasFlashSale = \App\Models\FlashSaleProduct::whereHas('flashSale', function($q) {
+                        $q->where('is_active', 1)
+                          ->where('start_time', '<=', now())
+                          ->where('end_time', '>=', now());
+                    })
+                    ->whereIn('product_variant_id', $product->variants->pluck('id'))
+                    ->where('remaining_stock', '>', 0)
+                    ->exists();
+                }
+                
+                // Add flash sale info to the product object
+                $product->has_flash_sale = $hasFlashSale;
+                return $product;
+            });
+
         // Lấy tất cả flash sales có bật is_active, gồm sắp diễn ra, đang diễn ra, đã kết thúc (ưu tiên đang diễn ra)
         $flashSales = FlashSale::where('is_active', true)
-            ->orderByRaw("CASE 
+            ->orderByRaw("CASE
                 WHEN start_time <= NOW() AND end_time >= NOW() THEN 0  -- ongoing
                 WHEN start_time > NOW() THEN 1                          -- upcoming
                 ELSE 2                                                  -- ended
             END")
             ->orderBy('start_time', 'asc')
-            ->with(['flashSaleProductsByPriority.productVariant.product', 
+            ->with(['flashSaleProductsByPriority.productVariant.product',
                     'flashSaleProductsByPriority.productVariant.color',
                     'flashSaleProductsByPriority.productVariant.capacity'])
             ->get();
@@ -223,7 +274,7 @@ class ClientController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(4) // Chỉ lấy 4 bài viết cho trang chủ
             ->get();
-        
+
         return view('layouts.user.main', [
             'categories' => $categories,
             'banners' => $banners,
@@ -285,14 +336,14 @@ class ClientController extends Controller
         // Lấy tất cả flash sales có bật is_active
         $flashSales = FlashSale::where('is_active', true)
             ->orderBy('start_time', 'asc')
-            ->with(['flashSaleProductsByPriority.productVariant.product', 
+            ->with(['flashSaleProductsByPriority.productVariant.product',
                     'flashSaleProductsByPriority.productVariant.color',
                     'flashSaleProductsByPriority.productVariant.capacity'])
             ->get();
-        
+
         // Lấy categories để hiển thị filter
         $categories = Categories::whereNull('Parent_id')->where('Is_active', 1)->get();
-        
+
         return view('layouts.user.flash-sales', compact('flashSales', 'categories'));
     }
 
@@ -391,14 +442,14 @@ class ClientController extends Controller
         $colors = Color::all();
         $capacities = Capacity::all();
         $categories = \App\Models\Categories::with('children')->whereNull('Parent_id')->get();
-        
+
         // Lấy danh sách bình luận của sản phẩm
         $comments = \App\Models\ProductComment::with(['user', 'replies.user'])
             ->where('product_id', $product->id)
             ->whereNull('parent_id')
             ->latest()
             ->get();
-        
+
         return view('layouts.user.productDetail', compact('product', 'variants', 'colors', 'capacities', 'categories', 'comments'));
     }
 
@@ -408,7 +459,7 @@ class ClientController extends Controller
         if (!request()->ajax() && request()->header('Purpose') !== 'prefetch') {
             $product->increment('view_count');
         }
-        
+
         // Tìm flash sale đang hoạt động cho sản phẩm này
         $flashSale = FlashSale::where('is_active', 1)
             ->where('start_time', '<=', now())
@@ -419,28 +470,28 @@ class ClientController extends Controller
                 });
             })
             ->first();
-            
+
         if (!$flashSale) {
             // Nếu không có flash sale, chuyển về trang chi tiết thường
             return redirect()->route('product.detail', $slug);
         }
-        
+
         // Lấy thông tin flash sale product
         $flashSaleProduct = $flashSale->flashSaleProducts()
             ->whereHas('productVariant', function($query) use ($product) {
                 $query->where('product_id', $product->id);
             })
             ->first();
-            
+
         if (!$flashSaleProduct) {
             return redirect()->route('product.detail', $slug);
         }
-        
+
         $variants = $product->variants()->where('quantity', '>', 0)->get();
         $colors = Color::all();
         $capacities = Capacity::all();
         $categories = \App\Models\Categories::with('children')->whereNull('Parent_id')->get();
-        
+
         // Lấy danh sách bình luận của sản phẩm trong flash sale
         $comments = \App\Models\ProductComment::with(['user', 'replies.user'])
             ->where('product_id', $product->id)
@@ -448,12 +499,12 @@ class ClientController extends Controller
             ->whereNull('parent_id')
             ->latest()
             ->get();
-        
+
         return view('layouts.user.flash-sale-product-detail', compact(
-            'product', 
-            'variants', 
-            'colors', 
-            'capacities', 
+            'product',
+            'variants',
+            'colors',
+            'capacities',
             'categories',
             'flashSale',
             'flashSaleProduct',
@@ -470,14 +521,14 @@ class ClientController extends Controller
         ]);
 
         $product = Product::findOrFail($productId);
-        
+
         $commentData = [
             'product_id' => $product->id,
             'user_id' => auth()->id(),
             'content' => $request->input('content'),
             'parent_id' => $request->input('parent_id')
         ];
-        
+
         // Nếu có flash_sale_id và sản phẩm đang trong flash sale
         if ($request->has('flash_sale_id')) {
             $flashSale = \App\Models\FlashSale::find($request->input('flash_sale_id'));
@@ -503,7 +554,7 @@ class ClientController extends Controller
 
             // Lấy thông tin sản phẩm
             $product = Product::findOrFail($validated['product_id']);
-            
+
             // Tìm biến thể phù hợp
             $variant = ProductVariant::with(['color', 'capacity', 'product.category'])
                 ->where('product_id', $validated['product_id'])
@@ -541,9 +592,9 @@ class ClientController extends Controller
                 'price' => (float) $variant->price,
                 'price_sale' => $variant->price_sale ? (float) $variant->price_sale : null,
                 'stock' => (int) $variant->quantity,
-                'image' => $variant->image 
-                    ? (str_starts_with($variant->image, 'http') 
-                        ? $variant->image 
+                'image' => $variant->image
+                    ? (str_starts_with($variant->image, 'http')
+                        ? $variant->image
                         : asset('storage/' . $variant->image))
                     : asset('images/no-image.png'),
                 'is_flash_sale' => (bool) $flashSaleProduct,
@@ -567,7 +618,7 @@ class ClientController extends Controller
                 'errors' => $e->errors(),
                 'code' => 422
             ], 422);
-            
+
         } catch (\Exception $e) {
             \Log::error('Lỗi khi lấy thông tin biến thể: ' . $e->getMessage());
             return response()->json([
@@ -633,7 +684,7 @@ class ClientController extends Controller
                 ->where('color_id', $colorId)
                 ->where('capacity_id', $capacityId)
                 ->first();
-                
+
             if (!$variant) {
                 return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại hoặc đã hết hàng']);
             }
@@ -650,23 +701,33 @@ class ClientController extends Controller
             return response()->json(['success' => false, 'message' => 'Số lượng không hợp lệ']);
         }
 
-        // Kiểm tra số lượng tồn kho cho flash sale
+        // Kiểm tra và xử lý flash sale
+        $useFlashSale = false;
+        $flashSaleProduct = null;
+
         if ($isFlashSale && $flashSaleId) {
             $flashSaleProduct = \App\Models\FlashSaleProduct::where('flash_sale_id', $flashSaleId)
                 ->where('product_variant_id', $variantId)
                 ->first();
-                
-            if (!$flashSaleProduct || $flashSaleProduct->remaining_stock < $quantity) {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'Sản phẩm flash sale đã hết hàng hoặc vượt quá số lượng cho phép'
-                ]);
+
+            // Debug log để kiểm tra
+            \Log::info('Flash Sale Debug', [
+                'flash_sale_id' => $flashSaleId,
+                'variant_id' => $variantId,
+                'quantity' => $quantity,
+                'flash_sale_product' => $flashSaleProduct ? $flashSaleProduct->toArray() : null
+            ]);
+
+            if ($flashSaleProduct && $flashSaleProduct->remaining_stock > 0 && $flashSaleProduct->remaining_stock >= $quantity) {
+                // Flash sale khả dụng và đủ số lượng
+                $useFlashSale = true;
             }
-        } else {
-            // Kiểm tra tồn kho thông thường
-            if ($quantity > $variant->quantity) {
-                return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
-            }
+            // Nếu không có flash sale hoặc hết hàng flash sale, fallback về giá thường
+        }
+
+        // Kiểm tra tồn kho thông thường (luôn kiểm tra để đảm bảo có hàng)
+        if ($quantity > $variant->quantity) {
+            return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
         }
 
         $cartData = [
@@ -675,28 +736,21 @@ class ClientController extends Controller
         ];
 
         // Set the correct price based on whether it's a flash sale or regular product
-        if ($isFlashSale && $flashSaleId) {
-            // Only apply flash price if the variant is part of an ongoing flash sale
-            $fsp = \App\Models\FlashSaleProduct::where('flash_sale_id', $flashSaleId)
-                ->where('product_variant_id', $variantId)
-                ->whereHas('flashSale', function ($q) { $q->ongoing(); })
-                ->first();
-            if ($fsp) {
-                $cartData['is_flash_sale'] = true;
-                $cartData['flash_sale_id'] = $flashSaleId;
-                $cartData['price'] = (float) $fsp->sale_price; // Flash sale price
-            } else {
-                $cartData['price'] = $variant->price_sale ?? $variant->price;
-            }
+        // Xác định giá sử dụng
+        if ($useFlashSale && $flashSaleProduct) {
+            // Sử dụng giá flash sale
+            $cartData['is_flash_sale'] = true;
+            $cartData['flash_sale_id'] = $flashSaleId;
+            $cartData['price'] = (float) $flashSaleProduct->sale_price;
         } else {
-            // For regular products, use sale price if available, otherwise use regular price
+            // Sử dụng giá thường (có thể là giá sale hoặc giá gốc)
             $cartData['price'] = $variant->price_sale ?? $variant->price;
         }
 
         if (Auth::check()) {
             $user = Auth::user();
             $cart = Cart::firstOrCreate(['user_id' => $user->id]);
-            
+
             // Tìm sản phẩm trong giỏ hàng
             $item = CartItem::where('cart_id', $cart->id)
                 ->where('product_variant_id', $variantId)
@@ -711,13 +765,13 @@ class ClientController extends Controller
                 $newQty = $item->quantity + $quantity;
                 if ($isFlashSale && $flashSaleProduct && $newQty > $flashSaleProduct->remaining_stock) {
                     return response()->json([
-                        'success' => false, 
+                        'success' => false,
                         'message' => 'Vượt quá số lượng tồn kho cho flash sale'
                     ]);
                 } elseif (!$isFlashSale && $newQty > $variant->quantity) {
                     return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
                 }
-                
+
                 $item->quantity = $newQty;
                 if ($isFlashSale) {
                     // keep flash price only if still ongoing
@@ -741,51 +795,44 @@ class ClientController extends Controller
                     'quantity' => $quantity,
                     'price' => $isFlashSale ? $flashSalePrice : ($variant->price_sale ?? $variant->price)
                 ];
-                
-                if ($isFlashSale) {
-                    $fsp = \App\Models\FlashSaleProduct::where('flash_sale_id', $flashSaleId)
-                        ->where('product_variant_id', $variantId)
-                        ->whereHas('flashSale', function ($q) { $q->ongoing(); })
-                        ->first();
-                    if ($fsp) {
-                        $itemData['flash_sale_id'] = $flashSaleId;
-                        $itemData['price'] = (float) $fsp->sale_price;
-                    } else {
-                        $itemData['price'] = $variant->price_sale ?? $variant->price;
-                    }
+
+                if ($useFlashSale && $flashSaleProduct) {
+                    $itemData['flash_sale_id'] = $flashSaleId;
+                    $itemData['price'] = (float) $flashSaleProduct->sale_price;
+                } else {
+                    $itemData['price'] = $variant->price_sale ?? $variant->price;
                 }
-                
                 CartItem::create($itemData);
             }
-            
+
             $cartCount = $cart->items()->sum('quantity');
             return response()->json([
-                'success' => true, 
-                'type' => 'db', 
+                'success' => true,
+                'type' => 'db',
                 'message' => 'Đã thêm vào giỏ hàng!',
                 'cart_count' => $cartCount
             ]);
-            
+
         } else {
             $cart = Session::get('cart', []);
             $found = false;
-            
+
             foreach ($cart as &$item) {
                 $isSameVariant = $item['product_variant_id'] == $variantId;
                 $isSameFlashSale = ($item['flash_sale_id'] ?? null) == $flashSaleId;
-                
+
                 if ($isSameVariant && ($isFlashSale ? $isSameFlashSale : !isset($item['flash_sale_id']))) {
                     $newQty = $item['quantity'] + $quantity;
-                    
+
                     if ($isFlashSale && $flashSaleProduct && $newQty > $flashSaleProduct->remaining_stock) {
                         return response()->json([
-                            'success' => false, 
+                            'success' => false,
                             'message' => 'Vượt quá số lượng tồn kho cho flash sale'
                         ]);
                     } elseif (!$isFlashSale && $newQty > $variant->quantity) {
                         return response()->json(['success' => false, 'message' => 'Vượt quá số lượng tồn kho']);
                     }
-                    
+
                     $item['quantity'] = $newQty;
                     if ($isFlashSale) {
                         $item['price'] = $flashSalePrice;
@@ -795,29 +842,29 @@ class ClientController extends Controller
                     break;
                 }
             }
-            
+
             if (!$found) {
                 $newItem = [
                     'product_variant_id' => $variantId,
                     'quantity' => $quantity,
                     'price' => $isFlashSale ? $flashSalePrice : ($variant->price_sale ?? $variant->price)
                 ];
-                
+
                 if ($isFlashSale) {
                     $newItem['flash_sale_id'] = $flashSaleId;
                 }
-                
+
                 $cart[] = $newItem;
             }
-            
+
             Session::put('cart', $cart);
-            
+
             // Tính tổng số lượng sản phẩm trong giỏ hàng
             $cartCount = array_sum(array_column($cart, 'quantity'));
-            
+
             return response()->json([
-                'success' => true, 
-                'type' => 'session', 
+                'success' => true,
+                'type' => 'session',
                 'message' => 'Đã thêm vào giỏ hàng!',
                 'cart_count' => $cartCount
             ]);
@@ -874,30 +921,66 @@ class ClientController extends Controller
                 if (!$variant) {
                     return null;
                 }
-                
-                $isFlashSale = !is_null($item->flash_sale_id);
-                
-                // Always use the price stored in the cart item if available
+
+                // Kiểm tra xem biến thể này có thực sự trong flash sale không
+                $isFlashSale = false;
                 $effectivePrice = $item->price;
-                
-                // If no price is set in cart item, fall back to variant's sale price or regular price
-                if (is_null($effectivePrice)) {
-                    $effectivePrice = $variant->price_sale ?? $variant->price;
-                }
-                
-                // For flash sale items, ensure we have the correct original price
                 $originalPrice = $variant->price;
-                if ($isFlashSale) {
+
+                // Nếu có flash_sale_id, kiểm tra biến thể có trong flash sale không
+                if (!is_null($item->flash_sale_id)) {
                     $fsp = \App\Models\FlashSaleProduct::where('flash_sale_id', $item->flash_sale_id)
                         ->where('product_variant_id', $item->product_variant_id)
-                        ->whereHas('flashSale', function ($q) { $q->ongoing(); })
                         ->first();
+                    
+                    // Debug log
+                    \Log::info('Cart Flash Sale Check', [
+                        'cart_item_id' => $item->id,
+                        'flash_sale_id' => $item->flash_sale_id,
+                        'variant_id' => $item->product_variant_id,
+                        'fsp_found' => $fsp ? 'yes' : 'no',
+                        'fsp_data' => $fsp ? $fsp->toArray() : null
+                    ]);
+                    
                     if ($fsp) {
-                        $effectivePrice = (float) $fsp->sale_price;
-                        $originalPrice = (float) ($fsp->original_price ?? $variant->price);
+                        // Kiểm tra flash sale có đang hoạt động không
+                        $flashSale = \App\Models\FlashSale::where('id', $item->flash_sale_id)
+                            ->where('is_active', 1)
+                            ->where('start_time', '<=', now())
+                            ->where('end_time', '>=', now())
+                            ->first();
+                        
+                        \Log::info('Flash Sale Status', [
+                            'flash_sale_found' => $flashSale ? 'yes' : 'no',
+                            'remaining_stock' => $fsp->remaining_stock,
+                            'flash_sale_data' => $flashSale ? $flashSale->toArray() : null
+                        ]);
+                            
+                        if ($flashSale && $fsp->remaining_stock > 0) {
+                            // Biến thể có trong flash sale và flash sale đang hoạt động
+                            $isFlashSale = true;
+                            $effectivePrice = (float) $fsp->sale_price;
+                            $originalPrice = (float) ($fsp->original_price ?? $variant->price);
+                            \Log::info('Flash Sale Applied', ['is_flash_sale' => true]);
+                        } else {
+                            // Flash sale hết hạn hoặc hết hàng, dùng giá thường
+                            $effectivePrice = $variant->price_sale ?? $variant->price;
+                            $originalPrice = $variant->price;
+                            \Log::info('Flash Sale NOT Applied - expired or no stock');
+                        }
+                    } else {
+                        // Biến thể không có trong flash sale, dùng giá thường
+                        $effectivePrice = $variant->price_sale ?? $variant->price;
+                        $originalPrice = $variant->price;
+                        \Log::info('Flash Sale NOT Applied - variant not in flash sale');
+                    }
+                } else {
+                    // Không có flash_sale_id, dùng giá thường
+                    if (is_null($effectivePrice)) {
+                        $effectivePrice = $variant->price_sale ?? $variant->price;
                     }
                 }
-                
+
                 return [
                     'id' => $item->id,
                     'variant_id' => $item->product_variant_id,
@@ -916,17 +999,17 @@ class ClientController extends Controller
             $variantIds = array_column($cart, 'product_variant_id');
             $variants = ProductVariant::with('product', 'color', 'capacity')->whereIn('id', $variantIds)->get();
             $result = [];
-            
+
             foreach ($cart as $item) {
                 $variant = $variants->where('id', $item['product_variant_id'])->first();
                 if (!$variant) continue;
-                
+
                 $isFlashSale = !empty($item['flash_sale_id']);
-                
+
                 // Use the price from the cart item if available, otherwise use variant's price
                 $effectivePrice = $item['price'] ?? ($variant->price_sale ?? $variant->price);
                 $originalPrice = $variant->price;
-                
+
                 if ($isFlashSale && !empty($item['flash_sale_id'])) {
                     $fsp = \App\Models\FlashSaleProduct::where('flash_sale_id', $item['flash_sale_id'])
                         ->where('product_variant_id', $variant->id)
@@ -937,7 +1020,7 @@ class ClientController extends Controller
                         $originalPrice = (float) ($fsp->original_price ?? $variant->price);
                     }
                 }
-                
+
                 $result[] = [
                     'id' => null,
                     'variant_id' => $variant->id,
@@ -952,7 +1035,7 @@ class ClientController extends Controller
                 ];
             }
         }
-        
+
         return response()->json(['success' => true, 'data' => $result]);
         return response()->json($provinces);
     }
@@ -961,13 +1044,13 @@ class ClientController extends Controller
         if (!Schema::hasTable('devvn_quanhuyen') || !Schema::hasTable('tinhthanh')) {
             return response()->json([]);
         }
-        
+
         // Lấy mã tỉnh từ ID
         $province = DB::table('tinhthanh')->where('id', $provinceId)->first();
         if (!$province) {
             return response()->json([]);
         }
-        
+
         $districts = DB::table('devvn_quanhuyen')
             ->where('matp', $province->ma_tinh)
             ->get(['id', 'name as ten_quan_huyen']);
@@ -979,17 +1062,17 @@ class ClientController extends Controller
         if (!Schema::hasTable('devvn_xaphuongthitran')) {
             return response()->json([]);
         }
-        
+
         // Lấy maqh từ bảng devvn_quanhuyen dựa trên districtId
         $district = DB::table('devvn_quanhuyen')
             ->where('id', $districtId)
               ->orWhere('maqh', $districtId)
             ->first();
-            
+
         if (!$district) {
             return response()->json([]);
         }
-        
+
         $wards = DB::table('devvn_xaphuongthitran')
             ->where('maqh', $district->maqh)
             ->get(['xaid as id', 'name as ten_phuong_xa']);

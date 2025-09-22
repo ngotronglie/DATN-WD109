@@ -244,7 +244,7 @@
                             @else
                         <div class="login-required">
                             <i class="zmdi zmdi-account-circle"></i>
-                            <p>Bạn cần <a href="{{ route('login') }}">đăng nhập</a> để bình luận.</p>
+                            <p>Bạn cần <a href="{{ route('auth.login') }}">đăng nhập</a> để bình luận.</p>
                         </div>
                         @endif
                     </div>

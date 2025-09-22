@@ -445,18 +445,18 @@
             const tr = document.createElement('tr');
             const isFlash = !!item.is_flash_sale;
             const priceHtml = isFlash
-                ? `<div><span class="text-danger fw-bold">${formatCurrency(item.price)}</span> <small class="text-muted text-decoration-line-through ms-1">${formatCurrency(item.original_price || item.price)}</small></div><span class="badge bg-warning text-dark">Flash Sale</span>`
+                ? `<div><span class="text-danger fw-bold">${formatCurrency(item.price)}</span> <small class="text-muted text-decoration-line-through ms-1">${formatCurrency(item.original_price || item.price)}</small></div><span class="badge bg-danger text-white flash-sale-badge"><i class="bi bi-lightning-fill me-1"></i>Flash Sale</span>`
                 : `<span class="fw-semibold">${formatCurrency(item.price)}</span>`;
             tr.innerHTML = `
             <td>
-    <div style="display: flex; align-items: center;">
+    <div style="display: flex; align-items: center;" class="${isFlash ? 'flash-sale-item' : ''}">
         <!-- Ảnh sản phẩm -->
         <img src="${item.image}" alt="${item.name}" 
-             style="width:40px; height:40px; object-fit:cover; margin-right:8px;">
+             style="width:40px; height:40px; object-fit:cover; margin-right:8px; ${isFlash ? 'border: 2px solid #dc3545; border-radius: 4px;' : ''}">
 
         <!-- Thông tin sản phẩm -->
         <div>
-            <div style="font-weight: 500;">${item.name}</div>
+            <div style="font-weight: 500;">${item.name} ${isFlash ? '<i class="bi bi-lightning-fill text-danger ms-1" title="Sản phẩm Flash Sale"></i>' : ''}</div>
             <div style="font-size: 12px; color: #555;">
                 <span>${item.color}</span> | <span>${item.capacity}</span>
             </div>
@@ -979,6 +979,47 @@
         background-repeat: no-repeat;
         background-position: right 0.75rem center;
         background-size: 16px 12px;
+    }
+
+    /* Flash Sale Styles */
+    .flash-sale-item {
+        background: linear-gradient(90deg, rgba(220, 53, 69, 0.05), rgba(255, 255, 255, 0.05));
+        border-radius: 8px;
+        padding: 8px;
+        margin: -4px;
+        border-left: 4px solid #dc3545;
+    }
+
+    .flash-sale-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        animation: flashPulse 2s infinite;
+        box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+    }
+
+    @keyframes flashPulse {
+        0%, 100% { 
+            transform: scale(1);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+        50% { 
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.5);
+        }
+    }
+
+    /* Flash sale row highlight */
+    tr:has(.flash-sale-item) {
+        background: rgba(220, 53, 69, 0.02);
+        border-left: 3px solid #dc3545;
+    }
+
+    tr:has(.flash-sale-item):hover {
+        background: rgba(220, 53, 69, 0.05);
     }
 </style>
 

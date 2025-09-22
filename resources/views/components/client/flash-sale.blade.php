@@ -96,11 +96,6 @@
                                     {{-- Product Info --}}
                                     <div class="product-details">
                                         <div class="product-name" title="{{ $flashProduct->productVariant->product->name }}">{{ $flashProduct->productVariant->product->name }}</div>
-                                        <div class="product-price">
-                                            <span class="sale-price">₫{{ number_format($flashProduct->sale_price, 0, ',', '.') }}</span>
-                                            <span class="original-price">₫{{ number_format($flashProduct->original_price, 0, ',', '.') }}</span>
-                                        </div>
-                                        <div class="status-pill status-{{ $flashSale->status_code }}">{{ $flashSale->status_label }}</div>
                                         
                                         @if($flashSale->start_time > now())
                                             <div class="upcoming-price">
@@ -128,6 +123,27 @@
 
                                     </div>
                                 </a>
+                                
+                                {{-- Action Icons --}}
+                                @if($flashSale->start_time <= now())
+                                    <div class="product-actions">
+                                        {{-- Favorite Icon --}}
+                                        <button class="action-btn add-to-favorite" 
+                                                data-product-id="{{ $flashProduct->productVariant->product->id }}"
+                                                data-favorited="false"
+                                                onclick="addToFavorite(event, {{ $flashProduct->productVariant->product->id }})"
+                                                title="Thêm vào yêu thích">
+                                            <i class="zmdi zmdi-favorite"></i>
+                                        </button>
+                                        
+                                        {{-- Cart Icon --}}
+                                        <button class="action-btn add-to-cart" 
+                                                onclick="showFlashSaleVariantPopup(event, {{ $flashProduct->productVariant->product->id }}, {{ $flashSale->id }}, {{ $flashProduct->sale_price }})"
+                                                title="Thêm vào giỏ hàng">
+                                            <i class="zmdi zmdi-shopping-cart"></i>
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endif
@@ -556,6 +572,187 @@
 
     .product-name { font-size: 11px; }
 }
+
+/* Action Icons Styles */
+.product-actions {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.flash-product-card:hover .product-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn.add-to-favorite:hover {
+    background: #ee4d2d;
+    color: white;
+}
+
+.action-btn.add-to-cart:hover {
+    background: #27ae60;
+    color: white;
+}
+
+.action-btn i {
+    font-size: 14px;
+}
+
+/* Modal Notification Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.show .modal-content {
+    transform: scale(1);
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #999;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.modal-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.success-icon { color: #27ae60; }
+.error-icon { color: #e74c3c; }
+.warning-icon { color: #f39c12; }
+.info-icon { color: #3498db; }
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.modal-message {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 0;
+}
+
+/* Modal Actions and Login Button Styles */
+.modal-actions {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.modal-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    min-width: 140px;
+}
+
+.login-btn {
+    background: linear-gradient(135deg, #ee4d2d 0%, #ff6b35 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(238, 77, 45, 0.3);
+}
+
+.login-btn:hover {
+    background: linear-gradient(135deg, #d73527 0%, #e55a2b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(238, 77, 45, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.login-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(238, 77, 45, 0.3);
+}
+
+.login-btn i {
+    margin-right: 8px;
+    font-size: 16px;
+}
 </style>
 
 {{-- JavaScript --}}
@@ -577,7 +774,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (startTime && now < startTime) {
                 // Upcoming
                 const distance = startTime - now;
-                statusLabel.textContent = 'Chưa bắt đầu';
+                statusLabel.textContent = '';
                 if (distance <= 0) {
                     statusLabel.textContent = 'Đã bắt đầu';
                 }
@@ -615,5 +812,176 @@ document.addEventListener('DOMContentLoaded', function() {
         setInterval(updateCountdown, 1000);
     }
 });
+
+// Function để xử lý thêm sản phẩm flash sale vào giỏ hàng
+function showFlashSaleVariantPopup(event, productId, flashSaleId, flashSalePrice) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    @guest
+    // Lưu pending action vào localStorage cho flash sale
+    localStorage.setItem('pendingAction', JSON.stringify({
+        type: 'flash_sale_cart',
+        productId: productId,
+        flashSaleId: flashSaleId,
+        flashSalePrice: flashSalePrice,
+        timestamp: Date.now()
+    }));
+    showFlashSaleModal('Bạn cần đăng nhập để thêm sản phẩm flash sale vào giỏ hàng của mình.', 'warning', true);
+    return;
+    @endguest
+
+    // Gọi API kiểm tra số lượng biến thể trước
+    fetch(`/api/product-variants-popup/${productId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const variants = data.data.variants;
+                
+                // Nếu chỉ có 1 biến thể, thêm trực tiếp vào giỏ hàng với thông tin flash sale
+                if (variants.length === 1) {
+                    addSingleFlashSaleVariantToCart(variants[0], flashSaleId, flashSalePrice);
+                } else {
+                    // Nếu có nhiều biến thể, hiển thị popup với thông tin flash sale
+                    showFlashSaleVariantSelectionPopup(data.data, flashSaleId, flashSalePrice);
+                }
+            } else {
+                throw new Error(data.message || 'Có lỗi xảy ra');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showFlashSaleModal('Có lỗi khi tải thông tin sản phẩm flash sale!', 'error');
+        });
+}
+
+// Thêm sản phẩm flash sale có 1 biến thể trực tiếp vào giỏ hàng
+function addSingleFlashSaleVariantToCart(variant, flashSaleId, flashSalePrice) {
+    showFlashSaleModal('Đang thêm sản phẩm flash sale vào giỏ hàng...', 'info');
+
+    // Tạo form data với thông tin flash sale
+    const formData = new FormData();
+    formData.append('product_variant_id', variant.id);
+    formData.append('quantity', 1);
+    formData.append('is_flash_sale', true);
+    formData.append('flash_sale_id', flashSaleId);
+    formData.append('flash_sale_price', flashSalePrice);
+    formData.append('_token', '{{ csrf_token() }}');
+
+    // Gửi request
+    fetch('/api/add-to-cart', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showFlashSaleModal('Đã thêm sản phẩm flash sale vào giỏ hàng!', 'success');
+            
+            // Cập nhật số lượng giỏ hàng nếu có element hiển thị
+            if (typeof updateCartCount === 'function') {
+                updateCartCount();
+            }
+        } else {
+            showFlashSaleModal(data.message || 'Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showFlashSaleModal('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
+    });
+}
+
+// Hiển thị popup chọn biến thể cho sản phẩm flash sale có nhiều biến thể
+function showFlashSaleVariantSelectionPopup(data, flashSaleId, flashSalePrice) {
+    // Sử dụng popup có sẵn từ component product nhưng với thông tin flash sale
+    if (typeof showVariantSelectionPopup === 'function') {
+        // Thêm thông tin flash sale vào data
+        data.flashSaleId = flashSaleId;
+        data.flashSalePrice = flashSalePrice;
+        showVariantSelectionPopup(data);
+    } else {
+        showFlashSaleModal('Vui lòng chọn biến thể sản phẩm để thêm vào giỏ hàng.', 'info');
+    }
+}
+
+// Hiển thị modal thông báo cho flash sale
+function showFlashSaleModal(message, type = 'info', showLoginLink = false) {
+    const icons = {
+        success: 'zmdi-check-circle success-icon',
+        error: 'zmdi-close-circle error-icon',
+        warning: 'zmdi-alert-triangle warning-icon',
+        info: 'zmdi-info info-icon'
+    };
+
+    const titles = {
+        success: 'Thành công!',
+        error: 'Có lỗi!',
+        warning: 'Yêu cầu đăng nhập!',
+        info: 'Thông báo'
+    };
+
+    const loginButton = showLoginLink ? `
+        <div class="modal-actions">
+            <a href="/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}" class="modal-button login-btn">
+                <i class="fas fa-sign-in-alt me-2"></i>
+                Đăng nhập ngay
+            </a>
+        </div>
+    ` : '';
+
+    const modalHtml = `
+            <div class="modal-overlay" id="flashSaleNotificationModal">
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeFlashSaleModal()">
+                        <i class="zmdi zmdi-close"></i>
+                    </button>
+                    <i class="zmdi ${icons[type]} modal-icon"></i>
+                    <h3 class="modal-title">${titles[type]}</h3>
+                    <p class="modal-message">${message}</p>
+                    ${loginButton}
+                </div>
+            </div>
+        `;
+
+    // Xóa modal cũ nếu có
+    const oldModal = document.getElementById('flashSaleNotificationModal');
+    if (oldModal) {
+        oldModal.remove();
+    }
+
+    // Thêm modal mới
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Hiển thị animation
+    setTimeout(() => {
+        const modal = document.getElementById('flashSaleNotificationModal');
+        if (modal) {
+            modal.classList.add('show');
+        }
+    }, 100);
+
+    // Tự động đóng sau thời gian phù hợp
+    setTimeout(function() {
+        closeFlashSaleModal();
+    }, showLoginLink ? 5000 : 3000);
+}
+
+// Đóng modal flash sale
+function closeFlashSaleModal() {
+    const modal = document.getElementById('flashSaleNotificationModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    }
+}
 </script>
 @endif
