@@ -31,12 +31,30 @@ class CapacityController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:capacities',
+            'name' => [
+                'required',
+                'string',
+                'min:1',
+                'max:20',
+                'unique:capacities',
+                'regex:/^[0-9]+[A-Za-z]*$/', // Phải bắt đầu bằng số, có thể có đơn vị
+            ],
+        ], [
+            'name.required' => 'Dung lượng là bắt buộc.',
+            'name.string' => 'Dung lượng phải là chuỗi ký tự.',
+            'name.min' => 'Dung lượng không được để trống.',
+            'name.max' => 'Dung lượng không được vượt quá 20 ký tự.',
+            'name.unique' => 'Dung lượng này đã tồn tại.',
+            'name.regex' => 'Dung lượng phải có định dạng: số + đơn vị (ví dụ: 64GB, 128GB, 1TB). Không được chứa ký tự đặc biệt.',
         ]);
+
+        // Sanitize và format dung lượng
+        $capacityName = trim($request->name);
+        $capacityName = strtoupper($capacityName); // Viết hoa đơn vị (GB, TB)
 
         // Create new capacity with sanitized data
         $capacity = new Capacity();
-        $capacity->name = $request->name;
+        $capacity->name = $capacityName;
         $capacity->save();
 
         return redirect()->route('admin.capacities.index')
