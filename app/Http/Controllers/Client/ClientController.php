@@ -24,6 +24,7 @@ use App\Http\Requests\ContactRequest;
 use App\Models\Contact;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
+use App\Models\Order;
 
 class ClientController extends Controller
 {
@@ -576,6 +577,26 @@ class ClientController extends Controller
             ->where('quantity', '>', 0)
             ->first();
         if ($voucher) {
+            // Yêu cầu đăng nhập để áp dụng voucher và đảm bảo 1 lần/khách hàng
+            if (!Auth::check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vui lòng đăng nhập để sử dụng mã giảm giá.',
+                ], 401);
+            }
+
+            // Kiểm tra đã dùng voucher này trước đó chưa
+            $alreadyUsed = Order::where('user_id', Auth::id())
+                ->where('voucher_id', $voucher->id)
+                ->exists();
+            if ($alreadyUsed) {
+                // Trả về gợi ý để frontend xóa/mất mã giảm giá khỏi ô nhập, nhưng không dùng mã này nữa
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Voucher chỉ dùng được 1 lần cho mỗi khách hàng.',
+                    'should_remove_voucher' => true,
+                ]);
+            }
             return response()->json([
                 'success' => true,
                 'discount' => $voucher->discount,
@@ -1135,6 +1156,24 @@ class ClientController extends Controller
             $userId = auth()->check() ? auth()->id() : 0;
             $orderCode = strtoupper(bin2hex(random_bytes(6)));
 
+            // Nếu truyền voucher_id thì bắt buộc đăng nhập và chỉ cho dùng mỗi voucher 1 lần/khách
+            if (!empty($data['voucher_id'])) {
+                if (!$userId) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Vui lòng đăng nhập để sử dụng mã giảm giá.',
+                        'code' => 401,
+                    ], 401);
+                }
+                $alreadyUsed = Order::where('user_id', $userId)
+                    ->where('voucher_id', (int)$data['voucher_id'])
+                    ->exists();
+                if ($alreadyUsed) {
+                    // Nếu đã dùng voucher này trước đó, bỏ voucher để cho phép đặt đơn bình thường
+                    $data['voucher_id'] = null;
+                }
+            }
+
             // Validate stock for each item before creating order
             if (!empty($data['items']) && is_array($data['items'])) {
                 foreach ($data['items'] as $item) {
@@ -1299,11 +1338,17 @@ class ClientController extends Controller
             return redirect('/checkout')->with('error', 'Không tìm thấy đơn hàng');
         }
 
-        // Cấu hình VNPAY sandbox
-        $vnp_TmnCode = "HRDYTL3E"; // Mã website tại VNPAY
-        $vnp_HashSecret = "MXSQ5VQKM5S176MJD4LHHU0B03Q9MCA8"; // Chuỗi bí mật
-        $vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-        $vnp_Returnurl = route('vnpay.return');
+        // Cấu hình VNPAY từ ENV
+        $vnp_TmnCode = trim((string) env('VNP_TMN_CODE', ''));
+        $vnp_HashSecret = trim((string) env('VNP_HASH_SECRET', ''));
+        $vnp_Url = trim((string) env('VNP_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'));
+        // Ưu tiên ENV cho return URL nếu có, nếu không dùng route đặt tên 'vnpay.return'
+        $vnp_Returnurl = trim((string) env('VNP_RETURN_URL', route('vnpay.return')));
+
+        if (empty($vnp_TmnCode) || empty($vnp_HashSecret)) {
+            \Log::error('[VNPAY] Thiếu cấu hình VNP_TMN_CODE hoặc VNP_HASH_SECRET');
+            return redirect('/checkout')->with('error', 'Thiếu cấu hình VNPAY. Vui lòng liên hệ quản trị.');
+        }
         $vnp_TxnRef = $order->order_code;
         $vnp_OrderInfo = 'Thanh toan don hang ' . $order->order_code;
         $vnp_OrderType = 'billpayment';
@@ -1325,26 +1370,37 @@ class ClientController extends Controller
             'vnp_ReturnUrl' => $vnp_Returnurl,
             'vnp_TxnRef' => $vnp_TxnRef,
         );
+        // Tùy chọn: thời gian hết hạn thanh toán
+        $inputData['vnp_ExpireDate'] = date('YmdHis', time() + 15 * 60);
+
+        // Chuẩn hóa dữ liệu trước khi ký (tránh khoảng trắng/ký tự ẩn)
+        foreach ($inputData as $k => $v) {
+            if (is_string($v)) { $inputData[$k] = trim($v); }
+            elseif (is_numeric($v)) { $inputData[$k] = (string) $v; }
+        }
 
         ksort($inputData);
-        $query = "";
-        $hashdata = '';
-        $i = 0;
+        // Xây dựng query string (URL encoded) và hash data (KHÔNG encode)
+        $hashParts = [];
         foreach ($inputData as $key => $value) {
-            if ($i == 1) {
-                $hashdata .= '&' . urlencode($key) . "=" . urlencode($value);
-            } else {
-                $hashdata .= urlencode($key) . "=" . urlencode($value);
-                $i = 1;
-            }
-            $query .= urlencode($key) . "=" . urlencode($value) . '&';
+            $hashParts[] = $key . '=' . $value;
         }
+        $hashData = implode('&', $hashParts);
+        // Dùng http_build_query với RFC3986 để encode chính xác (space => %20)
+        $queryString = http_build_query($inputData, '', '&', PHP_QUERY_RFC3986);
 
-        $vnp_Url = $vnp_Url . "?" . $query;
-        if (isset($vnp_HashSecret)) {
-            $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
-            $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
-        }
+        // Gắn secure hash
+        $vnp_Url = $vnp_Url . '?' . $queryString;
+        $vnpSecureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+        $vnp_Url .= '&vnp_SecureHashType=HMACSHA512&vnp_SecureHash=' . $vnpSecureHash;
+
+        // Ghi log hỗ trợ chẩn đoán chữ ký (xóa khi production)
+        try {
+            \Log::info('[VNPAY] InputData', $inputData);
+            \Log::info('[VNPAY] HashData', ['hashData' => $hashData]);
+            if (!empty($vnpSecureHash)) { \Log::info('[VNPAY] SecureHash', ['vnp_SecureHash' => $vnpSecureHash]); }
+            \Log::info('[VNPAY] Redirect URL', ['url' => $vnp_Url]);
+        } catch (\Throwable $e) {}
 
         return redirect($vnp_Url);
     }
@@ -1354,9 +1410,39 @@ class ClientController extends Controller
      */
     public function vnpayReturn(Request $request)
     {
+        // Lấy tham số trả về
+        $inputData = $request->query();
+        $vnp_SecureHash = $inputData['vnp_SecureHash'] ?? '';
+        unset($inputData['vnp_SecureHashType'], $inputData['vnp_SecureHash']);
+        ksort($inputData);
+        // Tạo chuỗi hashData theo đúng cách khi tạo URL thanh toán (không encode lại)
+        $hashParts = [];
+        foreach ($inputData as $key => $value) { $hashParts[] = $key . '=' . $value; }
+        $hashData = implode('&', $hashParts);
+
+        $vnp_HashSecret = trim((string) env('VNP_HASH_SECRET', ''));
+        $computedHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+
         $vnp_ResponseCode = $request->input('vnp_ResponseCode');
         $vnp_TxnRef = $request->input('vnp_TxnRef');
+        $vnp_Amount = (int) $request->input('vnp_Amount');
         $order = \App\Models\Order::where('order_code', $vnp_TxnRef)->first();
+
+        // Kiểm tra chữ ký
+        if (empty($vnp_HashSecret) || strtolower($computedHash) !== strtolower($vnp_SecureHash)) {
+            \Log::warning('[VNPAY] Sai chữ ký', [
+                'hashData' => $hashData,
+                'computed' => $computedHash,
+                'received' => $vnp_SecureHash,
+            ]);
+            return view('layouts.user.vnpay_fail', ['order' => $order, 'message' => 'Sai chữ ký']);
+        }
+
+        // Kiểm tra số tiền khớp (VNP trả vnp_Amount x100)
+        if ($order && $vnp_Amount !== ((int) $order->total_amount) * 100) {
+            \Log::warning('[VNPAY] Sai số tiền', ['vnp_Amount' => $vnp_Amount, 'order_total' => $order->total_amount]);
+            return view('layouts.user.vnpay_fail', ['order' => $order, 'message' => 'Sai số tiền']);
+        }
 
         if ($order && $vnp_ResponseCode == '00') {
             // Đánh dấu đã thanh toán online (2 = chuyển khoản)

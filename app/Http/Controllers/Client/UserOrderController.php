@@ -79,15 +79,16 @@ class UserOrderController extends Controller
     {
         $order = Order::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
-        // Chỉ cho phép yêu cầu hoàn hàng khi đơn ở trạng thái ĐÃ GIAO (5)
-        if ((int)$order->status !== 5) {
+        // Cho phép yêu cầu hoàn hàng khi đơn ở trạng thái ĐÃ GIAO (5) hoặc ĐÃ GIAO THÀNH CÔNG (15)
+        if (!in_array((int)$order->status, [5, 15])) {
             return redirect()->route('user.orders.show', $order->id)->with('error', 'Chỉ có thể yêu cầu hoàn hàng khi đơn đã giao.');
         }
 
         $request->validate([
             'reason' => 'required|string|max:1000',
             'reason_input' => 'nullable|string|max:1000',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            // Chấp nhận bất kỳ định dạng ảnh hợp lệ, không giới hạn phần mở rộng
+            'image' => 'nullable|image|max:2048',
             'bank_name' => 'required|string|max:255',
             'bank_number' => 'required|string|max:50',
             'account_name' => 'required|string|max:255',
@@ -169,7 +170,7 @@ class UserOrderController extends Controller
 
         $refund->update($validated);
 
-        return redirect()->route('user.orders.show', $refund->order_id)->with('success', 'Thông tin hoàn hàng đã được cập nhật.');
+        return redirect()->route('user.orders.show', $refund->order_id)->with('success', 'Thông tin ngân hàng để hoàn tiền đã được cập nhật.');
     }
 
     public function confirmReceived($id)
@@ -193,6 +194,29 @@ class UserOrderController extends Controller
         $order->save();
 
         return redirect()->route('user.orders.show', $order->id)->with('success', 'Đã xác nhận nhận hàng. Cảm ơn bạn!');
+    }
+
+    // Bước 3: Khách xác nhận đã trả hàng sau khi admin duyệt (status phải là 7)
+    public function markReturned($id)
+    {
+        $order = Order::where('id', $id)->where('user_id', auth()->id())->with('refundRequest')->firstOrFail();
+
+        // Chỉ cho phép khi admin đã duyệt hoàn hàng (status = 7)
+        if ((int)$order->status !== 7) {
+            return redirect()->back()->with('error', 'Chỉ có thể xác nhận đã trả hàng sau khi yêu cầu được admin duyệt.');
+        }
+
+        // Ghi nhận thời điểm khách xác nhận đã gửi/trả hàng
+        if ($order->refundRequest) {
+            $order->refundRequest->received_back_at = now();
+            $order->refundRequest->save();
+        }
+
+        // Cập nhật sang trạng thái Đã hoàn hàng (8)
+        $order->status = 8;
+        $order->save();
+
+        return redirect()->route('user.orders.show', $order->id)->with('success', 'Bạn đã xác nhận đã trả hàng. Chúng tôi sẽ kiểm tra và hoàn tiền sớm nhất.');
     }
 
     // Đặt lại hàng: đưa toàn bộ sản phẩm từ đơn cũ vào giỏ hàng hiện tại

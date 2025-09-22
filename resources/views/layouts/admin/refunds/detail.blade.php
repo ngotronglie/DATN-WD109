@@ -96,10 +96,12 @@
 
 @if($order && (int)$order->status === 11)
 <div class="d-flex gap-2">
-    <form action="{{ route('admin.orders.confirmReceiveBack', $refund->id) }}" method="POST" onsubmit="return confirm('Duyệt hoàn hàng và chuyển trạng thái sang Đã hoàn hàng?')">
+    {{-- Bước 2: Duyệt yêu cầu hoàn hàng (chuyển đơn sang trạng thái 7) --}}
+    <form action="{{ route('admin.refunds.approveReturn', $refund->id) }}" method="POST" onsubmit="return confirm('Duyệt yêu cầu hoàn hàng? Đơn sẽ chuyển sang trạng thái: Hoàn hàng đã được duyệt.')">
         @csrf
-        <button class="btn btn-success">Duyệt hoàn hàng</button>
+        <button class="btn btn-success">Duyệt yêu cầu hoàn hàng</button>
     </form>
+    {{-- Từ chối yêu cầu hoàn hàng --}}
     <form action="{{ route('admin.admin.refunds.reject', ['id' => $refund->id]) }}" method="POST" onsubmit="return confirm('Từ chối yêu cầu hoàn hàng?')">
         @csrf
         <button class="btn btn-danger">Từ chối</button>

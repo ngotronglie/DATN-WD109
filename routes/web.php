@@ -56,6 +56,8 @@ Route::get('/account/order', [UserOrderController::class, 'index'])->name(name: 
 Route::get('/account/order/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
 Route::post('/account/order/{id}/reorder', [UserOrderController::class, 'reorder'])->name('user.orders.reorder');
 Route::post('/order/{id}/return', [UserOrderController::class, 'returnOrder'])->name('order.return');
+// Khách xác nhận đã trả hàng (sau khi admin duyệt)
+Route::post('/account/order/{id}/mark-returned', [UserOrderController::class, 'markReturned'])->name('user.orders.markReturned');
 Route::post('/refund', [UserOrderController::class, 'store'])->name('refund.store');
 
 Route::get('/account/{id}/fillinfo', [UserOrderController::class, 'fillinfo'])->name('account.fillinfo');
@@ -276,6 +278,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/refunds', [OrderController::class, 'refundRequests'])->name('refunds.list');
     Route::get('/refunds/{id}', [OrderController::class, 'showRefundDetail'])->name('refunds.detail');
     Route::post('/refunds/{id}/approve', [OrderController::class, 'approveRefund'])->name('refunds.approve');
+    // Duyệt yêu cầu hoàn hàng (không phải hoàn tiền)
+    Route::post('/refunds/{id}/approve-return', [OrderController::class, 'approveReturn'])->name('refunds.approveReturn');
     Route::post('/refunds/{id}/upload-proof', [OrderController::class, 'uploadRefundProof'])->name('refunds.uploadProof');
     // Khởi tạo hoàn tiền khi đang đóng gói
     Route::post('/orders/{id}/refund/initiate', [OrderController::class, 'initiateRefund'])->name('orders.refund.initiate');
@@ -323,6 +327,8 @@ Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.show');
 
 Route::get('/vnpay/payment', [ClientController::class, 'vnpayPayment'])->name('vnpay.payment');
 Route::get('/vnpay/return', [ClientController::class, 'vnpayReturn'])->name('vnpay.return');
+// Callback URL theo ENV VNP_RETURN_URL (ví dụ: http://127.0.0.1:8000/api/payment/result)
+Route::get('/api/payment/result', [ClientController::class, 'vnpayReturn'])->name('vnpay.return.env');
 Route::get('/blogs', [\App\Http\Controllers\Client\BlogDetailController::class, 'index'])->name('client.blog.index');
 Route::get('/blog-detail/{slug}', [\App\Http\Controllers\Client\BlogDetailController::class, 'show'])->name('blog.detail.show');
 Route::post('/blogs/{blog}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');

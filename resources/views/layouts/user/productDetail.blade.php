@@ -195,6 +195,20 @@
                                             @endforeach
                                 </div>
                                     @endif
+                                    @auth
+                                        @if(auth()->user()->role_id == 2)
+                                        <div class="admin-reply-form mt-3 ms-4">
+                                            <form method="POST" action="{{ route('product.comments.store', $product->id) }}">
+                                                @csrf
+                                                <input type="hidden" name="parent_id" value="{{ $comment->id }}">
+                                                <div class="mb-2">
+                                                    <textarea name="content" class="form-control form-control-sm" rows="2" placeholder="Phản hồi của Admin..."></textarea>
+                                                </div>
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">Gửi phản hồi</button>
+                                            </form>
+                                        </div>
+                                        @endif
+                                    @endauth
                             </div>
                                                     @endforeach
                         @else
