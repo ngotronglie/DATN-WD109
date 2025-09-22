@@ -216,6 +216,13 @@ class ClientController extends Controller
                     'flashSaleProductsByPriority.productVariant.color',
                     'flashSaleProductsByPriority.productVariant.capacity'])
             ->get();
+
+        // Lấy bài viết mới nhất cho trang chủ (giống BlogDetailController)
+        $latestBlogs = Blog::with('user')
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(4) // Chỉ lấy 4 bài viết cho trang chủ
+            ->get();
         
         return view('layouts.user.main', [
             'categories' => $categories,
@@ -223,7 +230,8 @@ class ClientController extends Controller
             'products' => $products,
             'flashSales' => $flashSales,
             'discountedProducts' => $discountedProducts ?? [],
-            'popularProducts' => $popularProducts ?? []
+            'popularProducts' => $popularProducts ?? [],
+            'latestBlogs' => $latestBlogs
         ]);
 
     }
