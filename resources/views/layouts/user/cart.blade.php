@@ -594,7 +594,7 @@
             }
         } catch (e) {}
 
-        select.addEventListener('change', function() {
+        select.addEventListener('change', async function() {
             const option = this.options[this.selectedIndex];
             if (!this.value) {
                 msg.innerText = 'Không áp dụng voucher';
@@ -604,19 +604,43 @@
                 updateCartSummary();
                 return;
             }
-            const applied = {
-                success: true,
-                id: this.value,
-                code: option.getAttribute('data-code'),
-                discount: Number(option.getAttribute('data-discount')),
-                min_money: Number(option.getAttribute('data-min')),
-                max_money: Number(option.getAttribute('data-max'))
-            };
-            window.currentVoucher = applied;
-            localStorage.setItem('checkout_voucher', JSON.stringify(applied));
-            msg.innerText = `Áp dụng: ${applied.code} - Giảm ${applied.discount}% (tối thiểu ${formatCurrency(applied.min_money)}, tối đa ${formatCurrency(applied.max_money)})`;
-            box.style.border = '2px solid #28a745';
-            updateCartSummary();
+            const code = option.getAttribute('data-code');
+            try {
+                const res = await fetch(`/api/voucher?code=${encodeURIComponent(code)}`);
+                const data = await res.json();
+                if (data && data.success) {
+                    const applied = {
+                        success: true,
+                        id: this.value,
+                        code: code,
+                        discount: Number(data.discount ?? option.getAttribute('data-discount')),
+                        min_money: Number(data.min_money ?? option.getAttribute('data-min')),
+                        max_money: Number(data.max_money ?? option.getAttribute('data-max'))
+                    };
+                    window.currentVoucher = applied;
+                    localStorage.setItem('checkout_voucher', JSON.stringify(applied));
+                    msg.innerText = `Áp dụng: ${applied.code} - Giảm ${applied.discount}% (tối thiểu ${formatCurrency(applied.min_money)}, tối đa ${formatCurrency(applied.max_money)})`;
+                    box.style.border = '2px solid #28a745';
+                    updateCartSummary();
+                } else {
+                    // Nếu BE thông báo đã dùng hoặc không hợp lệ: xóa chọn và thông báo
+                    window.currentVoucher = null;
+                    localStorage.removeItem('checkout_voucher');
+                    this.value = '';
+                    box.style.border = '';
+                    const message = data?.message || 'Mã giảm giá không hợp lệ hoặc đã hết hạn';
+                    msg.innerText = message;
+                    updateCartSummary();
+                }
+            } catch (e) {
+                // Lỗi mạng: không áp dụng voucher
+                window.currentVoucher = null;
+                localStorage.removeItem('checkout_voucher');
+                this.value = '';
+                box.style.border = '';
+                msg.innerText = 'Không thể xác thực mã giảm giá. Vui lòng thử lại.';
+                updateCartSummary();
+            }
         });
     }
 

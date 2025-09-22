@@ -104,7 +104,7 @@
                                         @elseif($stt === 6)
                                         <span class="badge bg-danger">Đã hủy</span>
                                         @elseif($stt === 7)
-                                        <span class="badge bg-warning text-dark">Đã xác nhận yêu cầu hoàn tiền</span>
+                                        <span class="badge bg-warning text-dark">Đã xác nhận hoàn lại tiền</span>
                                         @elseif($stt === 11)
                                         <span class="badge bg-warning text-dark">Đang yêu cầu hoàn hàng</span>
                                         @elseif($stt === 8)
@@ -154,59 +154,64 @@
                                         </a>
                                     </td>
                                     <td class="text-center">
-                                        @php $stt = (int) $order->status; @endphp
-                                        @if($stt === 0)
-                                        <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <input type="hidden" name="status" value="1">
-                                            <button class="btn btn-success btn-sm" onclick="return confirm('Xác nhận đơn này?')">Xác nhận đơn</button>
-                                        </form>
-                                        @elseif($stt === 1)
-                                        <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <input type="hidden" name="status" value="2">
-                                            <button class="btn btn-info btn-sm" onclick="return confirm('Chuyển sang đóng gói?')">Đóng gói</button>
-                                        </form>
-                                        @if (strtolower((string)$order->payment_method) === 'vnpay')
+                                        @if (strtolower((string)$order->payment_method) === 'vnpay' && (int)($order->status_method ?? 0) === 0)
+                                            <span class="text-muted">-</span>
+                                        @else
+                                            @php $stt = (int) $order->status; @endphp
+                                            @if($stt === 0)
+                                            <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="1">
+                                                <button class="btn btn-success btn-sm" onclick="return confirm('Xác nhận đơn này?')">Xác nhận đơn</button>
+                                            </form>
+                                            @elseif($stt === 1)
+                                            <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="2">
+                                                <button class="btn btn-info btn-sm me-1" onclick="return confirm('Chuyển sang đóng gói?')">Đóng gói</button>
+                                            </form>
+                                            @if (strtolower((string)$order->payment_method) === 'vnpay')
                                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#initiateRefundModal-{{ $order->id }}">Hủy đơn</button>
                                         @endif
-                                        @elseif($stt === 2)
-                                        <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <input type="hidden" name="status" value="4">
-                                            <button class="btn btn-dark btn-sm" onclick="return confirm('Chuyển sang đang giao hàng?')">Đang giao hàng</button>
-                                        </form>
-                                        @elseif($stt === 4)
-                                        <form action="{{ route('admin.orders.deliverySuccess', $order->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <button class="btn btn-success btn-sm me-1" onclick="return confirm('Xác nhận giao hàng thành công?')">Giao thành công</button>
-                                        </form>
-                                        <form action="{{ route('admin.orders.deliveryFailed', $order->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <button class="btn btn-danger btn-sm me-1" onclick="return confirm('Xác nhận giao hàng thất bại?')">Giao thất bại</button>
-                                        </form>
-                                        @if (strtolower((string)$order->payment_method) === 'cod')
-                                        <form action="{{ route('admin.orders.codNotReceived', $order->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <button class="btn btn-warning btn-sm" onclick="return confirm('Xác nhận COD không nhận hàng?')">COD không nhận</button>
-                                        </form>
-                                        @endif
-                                        @elseif($stt === 5)
-                                        -
-                                        @elseif($stt === 13)
-                                        <form action="{{ route('admin.orders.redeliver', $order->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <button class="btn btn-primary btn-sm me-1" onclick="return confirm('Xác nhận giao hàng lại?')">Giao hàng lại</button>
-                                        </form>
-                                        @if (strtolower((string)$order->payment_method) === 'vnpay')
-                                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#initiateRefundModal-{{ $order->id }}">Hoàn tiền</button>
-                                        @endif
-                                        @elseif($stt === 14)
-                                        <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <input type="hidden" name="status" value="6">
-                                            <button class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận hủy đơn hàng COD không nhận?')">Đã nhận hàng hoàn</button>
-                                        </form>
+                                           
+                                            @elseif($stt === 2)
+                                            <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="4">
+                                                <button class="btn btn-dark btn-sm" onclick="return confirm('Chuyển sang đang giao hàng?')">Đang giao hàng</button>
+                                            </form>
+                                            @elseif($stt === 4)
+                                            <form action="{{ route('admin.orders.deliverySuccess', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <button class="btn btn-success btn-sm me-1" onclick="return confirm('Xác nhận giao hàng thành công?')">Giao thành công</button>
+                                            </form>
+                                            <form action="{{ route('admin.orders.deliveryFailed', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <button class="btn btn-danger btn-sm me-1" onclick="return confirm('Xác nhận giao hàng thất bại?')">Giao thất bại</button>
+                                            </form>
+                                            @if (strtolower((string)$order->payment_method) === 'cod')
+                                            <form action="{{ route('admin.orders.codNotReceived', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <button class="btn btn-warning btn-sm" onclick="return confirm('Xác nhận COD không nhận hàng?')">COD không nhận</button>
+                                            </form>
+                                            @endif
+                                            @elseif($stt === 5)
+                                            -
+                                            @elseif($stt === 13)
+                                            <form action="{{ route('admin.orders.redeliver', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <button class="btn btn-primary btn-sm me-1" onclick="return confirm('Xác nhận giao hàng lại?')">Giao hàng lại</button>
+                                            </form>
+                                            @if (strtolower((string)$order->payment_method) === 'vnpay')
+                                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#initiateRefundModal-{{ $order->id }}">Hoàn tiền</button>
+                                            @endif
+                                            @elseif($stt === 14)
+                                            <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="6">
+                                                <button class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận hủy đơn hàng COD không nhận?')">Đã nhận hàng hoàn</button>
+                                            </form>
+                                            @endif
                                         @endif
                                     </td>
                                     <td class="text-center">
@@ -219,14 +224,14 @@
 
                                         {{-- Nếu đang ở trạng thái yêu cầu hoàn (status = 6) --}}
                                         @if ($order->status == 5 && !$order->refundRequest->is_verified)
-                                        <form action="{{ route('admin.admin.refunds.verify', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
+                                        <form action="{{ route('admin.refunds.verify', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
                                             @csrf
                                             <button class="btn btn-primary btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Xác nhận yêu cầu hoàn?')">
                                                 Xác thực yêu cầu
                                             </button>
                                         </form>
 
-                                        <form action="{{ route('admin.admin.refunds.reject', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
+                                        <form action="{{ route('admin.refunds.reject', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
                                             @csrf
                                             <button class="btn btn-danger btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Hủy yêu cầu hoàn?')">
                                                 Hủy yêu cầu
@@ -241,7 +246,7 @@
                                                 Duyệt hoàn hàng
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.admin.refunds.reject', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
+                                        <form action="{{ route('admin.refunds.reject', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
                                             @csrf
                                             <button class="btn btn-danger btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Từ chối yêu cầu hoàn hàng?')">
                                                 Không hoàn hàng
@@ -250,11 +255,13 @@
                                         @endif
                                         @endif
 
-                                        {{-- Duyệt hoàn tiền: cho phép từ trạng thái 7 (admin khởi tạo) hoặc 8 (đã nhận tiền hoàn) --}}
+                                        {{-- Duyệt hoàn tiền: cho phép từ trạng thái 7 (đã duyệt hoàn hàng) hoặc 8 (đã nhận hàng hoàn) --}}
                                         @if (in_array($order->status, [7,8]) && !$order->refundRequest->refund_completed_at)
                                         <form action="{{ route('admin.refunds.approve', ['id' => $order->refundRequest->id]) }}" method="POST" style="display:inline-block;">
                                             @csrf
-                                      
+                                            <button class="btn btn-success btn-xs px-2 py-1 mb-1" style="font-size: 12px;" onclick="return confirm('Xác nhận đã hoàn tiền cho khách?')">
+                                                Duyệt hoàn
+                                            </button>
                                         </form>
                                         @endif
                                         @else

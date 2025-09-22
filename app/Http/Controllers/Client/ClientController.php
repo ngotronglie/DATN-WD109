@@ -24,6 +24,7 @@ use App\Http\Requests\ContactRequest;
 use App\Models\Contact;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
+use App\Models\Order;
 
 class ClientController extends Controller
 {
@@ -446,6 +447,7 @@ class ClientController extends Controller
         // Lấy danh sách bình luận của sản phẩm
         $comments = \App\Models\ProductComment::with(['user', 'replies.user'])
             ->where('product_id', $product->id)
+            ->where('is_hidden', false)
             ->whereNull('parent_id')
             ->latest()
             ->get();
@@ -496,6 +498,7 @@ class ClientController extends Controller
         $comments = \App\Models\ProductComment::with(['user', 'replies.user'])
             ->where('product_id', $product->id)
             ->where('flash_sale_id', $flashSale->id)
+            ->where('is_hidden', false)
             ->whereNull('parent_id')
             ->latest()
             ->get();
@@ -640,6 +643,26 @@ class ClientController extends Controller
             ->where('quantity', '>', 0)
             ->first();
         if ($voucher) {
+            // Yêu cầu đăng nhập để áp dụng voucher và đảm bảo 1 lần/khách hàng
+            if (!Auth::check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vui lòng đăng nhập để sử dụng mã giảm giá.',
+                ], 401);
+            }
+
+            // Kiểm tra đã dùng voucher này trước đó chưa
+            $alreadyUsed = Order::where('user_id', Auth::id())
+                ->where('voucher_id', $voucher->id)
+                ->exists();
+            if ($alreadyUsed) {
+                // Trả về gợi ý để frontend xóa/mất mã giảm giá khỏi ô nhập, nhưng không dùng mã này nữa
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Voucher chỉ dùng được 1 lần cho mỗi khách hàng.',
+                    'should_remove_voucher' => true,
+                ]);
+            }
             return response()->json([
                 'success' => true,
                 'discount' => $voucher->discount,
@@ -1231,6 +1254,24 @@ class ClientController extends Controller
             $userId = auth()->check() ? auth()->id() : 0;
             $orderCode = strtoupper(bin2hex(random_bytes(6)));
 
+            // Nếu truyền voucher_id thì bắt buộc đăng nhập và chỉ cho dùng mỗi voucher 1 lần/khách
+            if (!empty($data['voucher_id'])) {
+                if (!$userId) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Vui lòng đăng nhập để sử dụng mã giảm giá.',
+                        'code' => 401,
+                    ], 401);
+                }
+                $alreadyUsed = Order::where('user_id', $userId)
+                    ->where('voucher_id', (int)$data['voucher_id'])
+                    ->exists();
+                if ($alreadyUsed) {
+                    // Nếu đã dùng voucher này trước đó, bỏ voucher để cho phép đặt đơn bình thường
+                    $data['voucher_id'] = null;
+                }
+            }
+
             // Validate stock for each item before creating order
             if (!empty($data['items']) && is_array($data['items'])) {
                 foreach ($data['items'] as $item) {
@@ -1396,8 +1437,8 @@ class ClientController extends Controller
         }
 
         // Cấu hình VNPAY sandbox
-        $vnp_TmnCode = "HRDYTL3E"; // Mã website tại VNPAY
-        $vnp_HashSecret = "MXSQ5VQKM5S176MJD4LHHU0B03Q9MCA8"; // Chuỗi bí mật
+        $vnp_TmnCode = "M1NSFU0N"; // Mã website tại VNPAY
+        $vnp_HashSecret = "WX2DAEEQH8V9PGTXRZB6DY8KRCJPQDBC"; // Chuỗi bí mật
         $vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
         $vnp_Returnurl = route('vnpay.return');
         $vnp_TxnRef = $order->order_code;

@@ -44,6 +44,13 @@ class OrderController extends Controller
             $newStatus = (int)$request->input('status');
             $oldStatus = $order->status;
 
+            // Chặn cập nhật trạng thái nếu là đơn VNPAY chưa thanh toán
+            $isVnpUnpaid = strtolower((string)$order->payment_method) === 'vnpay' && (int)($order->status_method ?? 0) === 0;
+            if ($isVnpUnpaid) {
+                \DB::rollBack();
+                return redirect()->back()->with('error', 'Đơn VNPAY chưa thanh toán, không thể thao tác cập nhật trạng thái.');
+            }
+
             // Nếu hủy đơn hàng (status = 6) và trước đó chưa bị hủy
             if ($newStatus === 6 && $oldStatus !== 6) {
                 foreach ($order->orderDetails as $detail) {
@@ -132,6 +139,10 @@ class OrderController extends Controller
                 if (!$order->payment_method) {
                     $order->payment_method = 'cod';
                 }
+                // Ghi nhận thời điểm giao hàng
+                if (empty($order->delivered_at)) {
+                    $order->delivered_at = now();
+                }
             }
 
             $order->save();
@@ -165,8 +176,8 @@ class OrderController extends Controller
             return back()->with('error', 'Hoàn tiền chỉ áp dụng cho đơn thanh toán online. Đơn COD không hỗ trợ hoàn tiền.');
         }
 
-        if (!in_array((int)$order->status, [1, 2, 13])) {
-            return back()->with('error', 'Chỉ có thể khởi tạo hoàn tiền khi đơn đang ở bước Đã xác nhận/Đang xử lý/Giao hàng thất bại.');
+        if (!in_array((int)$order->status, [1, 2, 6, 13])) {
+            return back()->with('error', 'Chỉ có thể khởi tạo hoàn tiền khi đơn ở trạng thái Đã xác nhận/Đang xử lý/Đã hủy/Giao hàng thất bại.');
         }
 
         $request->validate([
@@ -180,6 +191,7 @@ class OrderController extends Controller
         $refund = RefundRequest::create([
             'order_id' => $order->id,
             'user_id' => $order->user_id,
+            'type' => 'admin_refund',
             'reason' => $request->input('reason'),
             'refund_requested_at' => now(),
         ]);
@@ -207,7 +219,13 @@ class OrderController extends Controller
 
     public function show($id)
     {
-        $order = \App\Models\Order::with(['voucher', 'orderDetails.productVariant.color', 'orderDetails.productVariant.capacity', 'orderDetails.productVariant.product'])
+        $order = \App\Models\Order::with([
+                'voucher',
+                'orderDetails.productVariant.color',
+                'orderDetails.productVariant.capacity',
+                'orderDetails.productVariant.product',
+                'refundRequest'
+            ])
             ->findOrFail($id);
         return view('layouts.admin.order.detail', compact('order'));
     }
@@ -220,6 +238,24 @@ class OrderController extends Controller
     {
         $refund = RefundRequest::findOrFail($id); // tạo biến $refund từ DB
         return view('layouts.admin.refunds.detail', compact('refund'));
+    }
+
+    // Bước 2: Admin duyệt yêu cầu hoàn hàng (chỉ đổi trạng thái sang 7)
+    public function approveReturn($id)
+    {
+        $refund = RefundRequest::findOrFail($id);
+        $order = Order::findOrFail($refund->order_id);
+
+        // Chỉ duyệt khi đang ở trạng thái 11 (Đang yêu cầu hoàn hàng)
+        if ((int)$order->status !== 11) {
+            return back()->with('error', 'Chỉ có thể duyệt khi đơn đang ở trạng thái yêu cầu hoàn hàng.');
+        }
+
+        $order->status = 7; // Hoàn hàng đã được duyệt
+        $order->save();
+
+        // TODO: gửi thông báo/email cho khách nếu cần
+        return back()->with('success', 'Đã duyệt yêu cầu hoàn hàng. Đang chờ khách xác nhận đã trả hàng.');
     }
 
     public function approveRefund($id)
@@ -351,6 +387,7 @@ class OrderController extends Controller
 
         // Cập nhật trạng thái đơn hàng sang "Đã hoàn hàng"
         $order->status = 8;
+        $order->delivered_at = now(); // Stamp delivered_at
         $order->save();
 
         return back()->with('success', 'Xác nhận duyệt hoàn hàng thành công.');
@@ -378,6 +415,10 @@ class OrderController extends Controller
             }
             if (!$order->payment_method) {
                 $order->payment_method = 'cod';
+            }
+            // Ghi nhận thời điểm giao hàng
+            if (empty($order->delivered_at)) {
+                $order->delivered_at = now();
             }
             
             $order->save();

@@ -39,7 +39,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <!-- <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -51,7 +51,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
         <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
@@ -80,29 +80,16 @@
         </div>
     </div>
 
-    <!-- Order Status Cards -->
+    <!-- Delivered Orders Card (only delivered orders are counted across the dashboard) -->
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
-                        <iconify-icon icon="solar:clock-circle-bold-duotone" class="fs-32 text-warning avatar-title me-3"></iconify-icon>
+                        <iconify-icon icon="solar:shipping-fast-bold-duotone" class="fs-32 text-success avatar-title me-3"></iconify-icon>
                         <div>
-                            <p class="text-muted mb-0">Chưa xử lý</p>
-                            <h3 class="text-dark mb-0">{{ $pendingOrders ?? 0 }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <iconify-icon icon="solar:check-circle-bold-duotone" class="fs-32 text-success avatar-title me-3"></iconify-icon>
-                        <div>
-                            <p class="text-muted mb-0">Đã xử lý</p>
-                            <h3 class="text-dark mb-0">{{ $processedOrders ?? 0 }}</h3>
+                            <p class="text-muted mb-0">Đơn đã giao thành công</p>
+                            <h3 class="text-dark mb-0">{{ $deliveredCount ?? 0 }}</h3>
                         </div>
                     </div>
                 </div>
@@ -121,7 +108,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <!-- <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -133,7 +120,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <!-- Charts Row -->

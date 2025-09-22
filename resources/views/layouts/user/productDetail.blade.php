@@ -108,8 +108,11 @@
                                 <button type="button" class="qty-btn" onclick="decreaseQuantity()">-</button>
                                 <input type="number" id="quantity" name="quantity" value="1" min="1" max="999" class="qty-input">
                                 <button type="button" class="qty-btn" onclick="increaseQuantity()">+</button>
-                                            </div>
-                                        </div>
+                            </div>
+                            <div id="stock-info" class="mt-2" style="font-size: 14px; color:#555;">
+                                <!-- Số lượng tồn kho sẽ được cập nhật ở đây -->
+                            </div>
+                        </div>
                         <!-- Action Buttons -->
                         <div class="action-buttons">
                             <button type="button" class="btn-buy-now" onclick="buyNow()">
@@ -168,6 +171,9 @@
                         
                         @if($comments->count() > 0)
                             @foreach($comments as $comment)
+                                @if(isset($comment->is_hidden) && $comment->is_hidden)
+                                    @continue
+                                @endif
                                 <div class="comment-item mb-3 p-3 border rounded">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <strong>{{ $comment->user->name ?? 'Khách' }}</strong>
@@ -192,6 +198,20 @@
                                             @endforeach
                                 </div>
                                     @endif
+                                    @auth
+                                        @if(auth()->user()->role_id == 2)
+                                        <div class="admin-reply-form mt-3 ms-4">
+                                            <form method="POST" action="{{ route('product.comments.store', $product->id) }}">
+                                                @csrf
+                                                <input type="hidden" name="parent_id" value="{{ $comment->id }}">
+                                                <div class="mb-2">
+                                                    <textarea name="content" class="form-control form-control-sm" rows="2" placeholder="Phản hồi của Admin..."></textarea>
+                                                </div>
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">Gửi phản hồi</button>
+                                            </form>
+                                        </div>
+                                        @endif
+                                    @endauth
                             </div>
                                                     @endforeach
                         @else
@@ -638,6 +658,21 @@ async function updateProductVariant() {
                 quantityInput.value = Math.min(1, stock);
             }
         }
+        // Update stock display and action buttons
+        const stockInfo = document.getElementById('stock-info');
+        if (stockInfo) {
+            if (stock > 0) {
+                stockInfo.textContent = `Còn ${stock} sản phẩm trong kho`;
+                stockInfo.style.color = '#198754';
+            } else {
+                stockInfo.textContent = 'Hết hàng';
+                stockInfo.style.color = '#dc3545';
+            }
+        }
+        const btnBuy = document.querySelector('.btn-buy-now');
+        const btnAdd = document.querySelector('.btn-add-cart');
+        if (btnBuy) btnBuy.disabled = stock <= 0;
+        if (btnAdd) btnAdd.disabled = stock <= 0;
         
         // Update variant ID in form
         const variantIdInput = document.getElementById('variant-id');

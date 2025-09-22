@@ -116,58 +116,83 @@ class StatisticController extends Controller
     {
         $filter = $request->get('filter', 'all'); // all, today, week, month, year
         
-        // Basic order statistics
-        $totalOrders = Order::count();
-        $pendingOrders = Order::where('status', 0)->count();
-        $processedOrders = Order::where('status', 1)->count();
-        $totalProductsSold = OrderDetail::sum('quantity');
+        // Base filtered orders query for all metrics
+        $filteredOrders = Order::query();
         
-        // Revenue statistics
+        // Query tổng quan theo thời điểm tạo đơn (cho các chỉ số không doanh thu)
         $query = Order::query();
+        // Chỉ tính doanh thu cho đơn hàng đã giao hàng (status = 5)
+        $deliveredBase = Order::where('status', 5);
+        $deliveredOrdersFiltered = clone $deliveredBase;
         
         // Apply time filter
         switch($filter) {
             case 'today':
                 $query->whereDate('created_at', today());
+                $filteredOrders->whereDate('created_at', today());
+                $start = now()->startOfDay()->toDateTimeString();
+                $end = now()->endOfDay()->toDateTimeString();
+                $deliveredOrdersFiltered->whereBetween(\DB::raw('COALESCE(delivered_at, updated_at)'), [$start, $end]);
                 break;
             case 'week':
                 $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                $filteredOrders->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                $start = now()->startOfWeek()->startOfDay()->toDateTimeString();
+                $end = now()->endOfWeek()->endOfDay()->toDateTimeString();
+                $deliveredOrdersFiltered->whereBetween(\DB::raw('COALESCE(delivered_at, updated_at)'), [$start, $end]);
                 break;
             case 'month':
                 $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+                $filteredOrders->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+                $start = now()->startOfMonth()->startOfDay()->toDateTimeString();
+                $end = now()->endOfMonth()->endOfDay()->toDateTimeString();
+                $deliveredOrdersFiltered->whereBetween(\DB::raw('COALESCE(delivered_at, updated_at)'), [$start, $end]);
                 break;
             case 'year':
                 $query->whereYear('created_at', now()->year);
+                $filteredOrders->whereYear('created_at', now()->year);
+                $start = now()->startOfYear()->startOfDay()->toDateTimeString();
+                $end = now()->endOfYear()->endOfDay()->toDateTimeString();
+                $deliveredOrdersFiltered->whereBetween(\DB::raw('COALESCE(delivered_at, updated_at)'), [$start, $end]);
                 break;
         }
+
+        // Define delivered status (only one case: 5 = Đã giao hàng)
+        $deliveredStatuses = [5];
+
+        // Basic order statistics (respect filter)
+        $totalOrders = (clone $filteredOrders)->count();
+        $pendingOrders = (clone $filteredOrders)->where('status', 0)->count();
+        $processedOrders = (clone $filteredOrders)->where('status', 1)->count();
+        // Only delivered orders count for display purpose
+        $deliveredCount = (clone $deliveredOrdersFiltered)->count();
+
+        // Total products sold (đơn đã giao theo bộ lọc thời gian)
+        $totalProductsSold = OrderDetail::whereIn('order_id', (clone $deliveredOrdersFiltered)->select('id'))
+            ->sum('quantity');
         
-        // Total revenue: only orders delivered successfully
-        $totalRevenue = $query->clone()
-            ->where('status', 5)
+        // Total revenue: chỉ tính đơn đã giao theo bộ lọc thời gian (theo updated_at)
+        $totalRevenue = (clone $deliveredOrdersFiltered)
             ->sum('total_amount');
             
-        // Revenue by payment method
-        $revenueByPayment = $query->clone()
-            ->where('status', 5)
+        // Revenue by payment method (đơn đã giao theo bộ lọc)
+        $revenueByPayment = (clone $deliveredOrdersFiltered)
             ->select('payment_method', DB::raw('SUM(total_amount) as revenue'))
             ->groupBy('payment_method')
             ->get();
             
-        // Revenue by order status
-        $revenueByStatus = $query->clone()
-            ->where('status', 5)
+        // Revenue by order status (đơn đã giao theo bộ lọc)
+        $revenueByStatus = (clone $deliveredOrdersFiltered)
             ->select('status', DB::raw('SUM(total_amount) as revenue'), DB::raw('COUNT(*) as order_count'))
             ->groupBy('status')
             ->get();
             
-        // Average order value
-        $avgOrderValue = $query->clone()
-            ->where('status', 5)
+        // Average order value (đơn đã giao theo bộ lọc)
+        $avgOrderValue = (clone $deliveredOrdersFiltered)
             ->avg('total_amount');
             
-        // Top customers by revenue
-        $topCustomers = $query->clone()
-            ->where('status', 5)
+        // Top customers by revenue (đơn đã giao theo bộ lọc)
+        $topCustomers = (clone $deliveredOrdersFiltered)
             ->where('user_id', '>', 0)
             ->select('user_id', DB::raw('SUM(total_amount) as total_spent'), DB::raw('COUNT(*) as order_count'))
             ->groupBy('user_id')
@@ -176,20 +201,50 @@ class StatisticController extends Controller
             ->with('user')
             ->get();
             
-        // Refund statistics
-        $totalRefunds = \App\Models\RefundRequest::count();
-        $refundAmount = \App\Models\RefundRequest::whereHas('order', function($q) {
+        // Refund statistics (respect filter by order's created_at)
+        $totalRefunds = \App\Models\RefundRequest::whereHas('order', function($q) use ($filter) {
+            switch($filter) {
+                case 'today':
+                    $q->whereDate('created_at', today());
+                    break;
+                case 'week':
+                    $q->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $q->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+                    break;
+                case 'year':
+                    $q->whereYear('created_at', now()->year);
+                    break;
+            }
+        })->count();
+
+        $refundAmount = \App\Models\RefundRequest::whereHas('order', function($q) use ($filter) {
             $q->where('status', 9); // Completed refunds
+            switch($filter) {
+                case 'today':
+                    $q->whereDate('created_at', today());
+                    break;
+                case 'week':
+                    $q->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $q->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+                    break;
+                case 'year':
+                    $q->whereYear('created_at', now()->year);
+                    break;
+            }
         })->with('order')->get()->sum('order.total_amount');
         
-        // Monthly revenue chart data
+        // Monthly revenue chart data (tính theo tháng giao hàng - ưu tiên delivered_at, fallback updated_at)
         $monthlyRevenue = Order::select(
-                DB::raw('YEAR(created_at) as year'),
-                DB::raw('MONTH(created_at) as month'),
+                DB::raw('YEAR(COALESCE(delivered_at, updated_at)) as year'),
+                DB::raw('MONTH(COALESCE(delivered_at, updated_at)) as month'),
                 DB::raw('SUM(total_amount) as revenue')
             )
             ->where('status', 5)
-            ->whereYear('created_at', now()->year)
+            ->whereRaw('YEAR(COALESCE(delivered_at, updated_at)) = ?', [now()->year])
             ->groupBy('year', 'month')
             ->orderBy('month')
             ->get();
@@ -199,8 +254,9 @@ class StatisticController extends Controller
         });
         $monthlyData = $monthlyRevenue->pluck('revenue');
         
-        // Order status distribution
-        $statusDistribution = Order::select('status', DB::raw('COUNT(*) as count'))
+        // Order status distribution - consistent: only delivered orders
+        $statusDistribution = (clone $deliveredOrdersFiltered)
+            ->select('status', DB::raw('COUNT(*) as count'))
             ->groupBy('status')
             ->get();
             
@@ -226,7 +282,7 @@ class StatisticController extends Controller
             'totalOrders', 'pendingOrders', 'processedOrders', 'totalProductsSold',
             'totalRevenue', 'revenueByPayment', 'revenueByStatus', 'avgOrderValue',
             'topCustomers', 'totalRefunds', 'refundAmount', 'filter',
-            'monthlyLabels', 'monthlyData', 'statusLabels', 'statusData'
+            'monthlyLabels', 'monthlyData', 'statusLabels', 'statusData', 'deliveredCount'
         ));
     }
 

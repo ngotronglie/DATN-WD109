@@ -44,16 +44,29 @@
                 @endif
             </td>
             <td>
-                @if(!$refund->refund_completed_at)
-                <a href="{{ route('admin.refunds.detail', $refund->id) }}" class="btn btn-info btn-sm">Xem chi tiết</a>
-                @csrf
-                <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Xác nhận đã hoàn tiền?')">
-                    Duyệt hoàn
-                </button>
-                </form>
+                @php $order = $refund->order; @endphp
+                {{-- Luôn có nút Xem --}}
+                <a href="{{ route('admin.refunds.detail', $refund->id) }}" class="btn btn-info btn-sm">Xem</a>
 
+                @if(!$refund->refund_completed_at && $order)
+                    @if((int)$order->status === 11)
+                        {{-- Đang yêu cầu hoàn hàng: duyệt hoàn hàng hoặc từ chối --}}
+                        <form action="{{ route('admin.refunds.approveReturn', $refund->id) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Duyệt yêu cầu hoàn hàng?')">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-success">Duyệt đơn hàng</button>
+                        </form>
+                        <form action="{{ route('admin.refunds.reject', ['id' => $refund->id]) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Từ chối yêu cầu này?')">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-danger">Từ chối</button>
+                        </form>
+                    @elseif(in_array((int)$order->status, [7,8]))
+                        {{-- Đã duyệt hoàn hàng (7) hoặc đã nhận hàng hoàn (8): cho phép duyệt hoàn tiền --}}
+                        <form action="{{ route('admin.refunds.approve', $refund->id) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Xác nhận đã hoàn tiền cho khách?')">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-success">Duyệt hoàn</button>
+                        </form>
+                    @endif
                 @endif
-
             </td>
         </tr>
         @endforeach
