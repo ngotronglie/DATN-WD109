@@ -20,7 +20,6 @@
                   <img src="https://via.placeholder.com/80x80?text=No+Img" alt="No Image">
                 @endif
               </div>
-              <div class="category-title">{{ $category->Name }}</div>
             </a>
           </div>
         @endforeach
@@ -39,25 +38,16 @@
 }
 .category-scroll-container {
   width: 100%;
-  overflow-x: auto;
   padding: 15px 0 30px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  margin: 0 -15px;
-  padding: 15px;
   position: relative;
 }
 
-.category-scroll-container::-webkit-scrollbar {
-  display: none; /* Ẩn thanh cuộn trên Chrome/Safari */
-}
-
 .category-scroll {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   gap: 15px;
   padding: 0;
-  min-width: 100%;
-  width: max-content;
+  justify-content: center;
 }
 
 /* Điều chỉnh cho container lớn */
@@ -84,10 +74,10 @@
 }
 
 .category-item {
-  flex: 0 0 auto;
-  width: 150px;
+  flex: 0 0 calc(16.666% - 15px);
+  max-width: 150px;
   text-align: center;
-  margin: 0 5px;
+  margin-bottom: 20px;
 }
 
 .category-icon {
@@ -135,47 +125,35 @@
   }
 }
 
-.category-title {
-  font-size: 14px;
-  color: #333;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 8px;
-  transition: color 0.3s ease;
-}
-
-.category-item:hover .category-title {
-  color: #ff6b00;
-}
 
 /* Mobile */
 @media (max-width: 768px) {
   .category-scroll {
-    gap: 12px;
+    gap: 10px;
     padding: 0 10px;
   }
   
   .category-item {
-    width: 110px;
+    flex: 0 0 calc(33.333% - 10px);
+    max-width: 110px;
   }
   
   .category-icon {
     width: 100px;
     height: 100px;
   }
-  
-  .category-title {
-    font-size: 0.8rem;
-    max-width: 100%;
-    margin-top: 4px;
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .category-item {
+    flex: 0 0 calc(20% - 15px);
+    max-width: 140px;
   }
   
   .section-title {
     margin-bottom: 15px;
   }
-}
 
 
 </style>

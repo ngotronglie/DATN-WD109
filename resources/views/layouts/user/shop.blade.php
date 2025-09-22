@@ -24,30 +24,26 @@
                             <div class="shop-content">
                             <!-- Shop Options -->
                             <div class="shop-options mb-4">
-                                <div class="row align-items-center">
-                                    <div class="col-md-6">
-                                        <div class="view-tabs">
-                                            <button class="view-tab active" data-view="grid">
-                                                <i class="zmdi zmdi-view-module"></i>
-                                            </button>
-                                            <button class="view-tab" data-view="list">
-                                                <i class="zmdi zmdi-view-list-alt"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
+                                <div class="row align-items-center justify-content-end">
+                                    <div class="col-md-4">
                                         <div class="shop-controls">
-                                            <form method="GET" action="{{ route('shop.index') }}" id="sortForm" class="d-inline-block">
-                                                <select name="sort" onchange="document.getElementById('sortForm').submit()" class="form-select">
-                                                <option value="">Sắp xếp</option>
-                                                <option value="az" {{ request('sort') == 'az' ? 'selected' : '' }}>Tên A-Z</option>
-                                                <option value="za" {{ request('sort') == 'za' ? 'selected' : '' }}>Tên Z-A</option>
-                                            </select>
-                                            @foreach(request()->except('sort', 'page') as $key => $value)
-                                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                                            @endforeach
-                                        </form>
-                                    </div>
+                                            <form method="GET" action="{{ route('shop.index') }}" id="sortForm" class="sort-form">
+                                                <div class="sort-wrapper">
+                                                    <label for="sort-select" class="sort-label">
+                                                        <i class="zmdi zmdi-sort"></i>
+                                                        Sắp xếp:
+                                                    </label>
+                                                    <select name="sort" id="sort-select" onchange="document.getElementById('sortForm').submit()" class="form-select sort-select">
+                                                        <option value="">Mặc định</option>
+                                                        <option value="az" {{ request('sort') == 'az' ? 'selected' : '' }}>Tên A-Z</option>
+                                                        <option value="za" {{ request('sort') == 'za' ? 'selected' : '' }}>Tên Z-A</option>
+                                                    </select>
+                                                </div>
+                                                @foreach(request()->except('sort', 'page') as $key => $value)
+                                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                                @endforeach
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -63,15 +59,52 @@
                                                 <div class="product-image-container">
                                                             <a href="{{ route('shop.show', $product->id) }}">
                                                                 @if($variant && $variant->image)
-                                                            <img src="{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}" 
-                                                                 alt="{{ $product->name }}" 
+                                                            <img src="{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}"
+                                                                 alt="{{ $product->name }}"
                                                                  class="product-image"
                                                                  onerror="this.src='{{ asset('images/no-image.png') }}'">
                                                                 @else
                                                             <img src="{{ asset('images/no-image.png') }}" alt="{{ $product->name }}" class="product-image">
                                                                 @endif
                                                             </a>
-                                                    
+
+                                                            {{-- Flash Sale Badge --}}
+                                                            @if($variant && $variant->price_sale && $variant->price_sale < $variant->price)
+                                                                <div class="flash-sale-badge">
+                                                                    <i class="zmdi zmdi-flash"></i>
+                                                                    FLASH SALE
+                                                                </div>
+                                                            @endif
+
+                                                            {{-- Discount Badge --}}
+                                                            @if($variant && $variant->price_sale && $variant->price_sale < $variant->price)
+                                                                <div class="discount-tag">
+                                                                    -{{ round((($variant->price - $variant->price_sale) / $variant->price) * 100) }}%
+                                                                </div>
+                                                            @endif
+                                                        </div>
+
+                                                <div class="product-content">
+                                                    <h5 class="product-title text-center">
+                                                                <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
+                                                    </h5>
+
+                                                    <!-- Price -->
+                                                    <div class="price-info text-center">
+                                                                @if($variant)
+                                                            @if($variant->price_sale && $variant->price_sale < $variant->price)
+                                                                <!-- Có giá khuyến mãi -->
+                                                                <div class="current-price">₫{{ number_format($variant->price_sale, 0, ',', '.') }}</div>
+                                                                <div class="original-price">₫{{ number_format($variant->price, 0, ',', '.') }}</div>
+                                                                @else
+                                                                <!-- Giá thường -->
+                                                                <div class="current-price">₫{{ number_format($variant->price, 0, ',', '.') }}</div>
+                                                            @endif
+                                                        @else
+                                                            <div class="current-price">Chưa có giá</div>
+                                                        @endif
+                                                    </div>
+
                                                     <!-- Action Buttons -->
                                                     <div class="product-actions">
                                                         <button class="action-btn wishlist-btn" onclick="addToWishlist({{ $product->id }})" title="Yêu thích">
@@ -83,29 +116,6 @@
                                                         <button class="action-btn add-cart-btn" onclick="addToCart({{ $product->id }})" title="Thêm vào giỏ">
                                                             <i class="zmdi zmdi-shopping-cart-plus"></i>
                                                         </button>
-                                                    </div>
-                                                        </div>
-                                                
-                                                <div class="product-content">
-                                                    <h5 class="product-title text-center">
-                                                                <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
-                                                    </h5>
-                                                    
-                                                    <!-- Price -->
-                                                    <div class="price-info text-center">
-                                                                @if($variant)
-                                                            @if($variant->price_sale && $variant->price_sale < $variant->price)
-                                                                <!-- Có giá khuyến mãi -->
-                                                                <div class="current-price">₫{{ number_format($variant->price_sale, 0, ',', '.') }}</div>
-                                                                <div class="original-price">₫{{ number_format($variant->price, 0, ',', '.') }}</div>
-                                                                <div class="savings-badge">Tiết kiệm {{ round((($variant->price - $variant->price_sale) / $variant->price) * 100) }}%</div>
-                                                                @else
-                                                                <!-- Giá thường -->
-                                                                <div class="current-price">₫{{ number_format($variant->price, 0, ',', '.') }}</div>
-                                                            @endif
-                                                        @else
-                                                            <div class="current-price">Chưa có giá</div>
-                                                        @endif
                                                     </div>
                                                 </div>
                                             </div>
@@ -129,7 +139,7 @@
                                         <ul class="category-list">
                                             @foreach($allCategories as $cat)
                                                 <li class="category-item">
-                                                    <a href="{{ url('shop') . '?category=' . $cat->ID }}" 
+                                                    <a href="{{ url('shop') . '?category=' . $cat->ID }}"
                                                        class="category-link {{ request('category') == $cat->ID ? 'active' : '' }}">
                                                         {{ $cat->Name }}
                                                     </a>
@@ -145,10 +155,10 @@
                                     <div class="filter-content">
                                         <form method="GET" action="{{ route('shop.index') }}" class="price-filter-form">
                                             <div class="price-inputs">
-                                                <input type="number" name="min_price" class="form-control" 
+                                                <input type="number" name="min_price" class="form-control"
                                                        placeholder="Từ" value="{{ request('min_price') }}" min="0">
                                                 <span class="price-separator">-</span>
-                                                <input type="number" name="max_price" class="form-control" 
+                                                <input type="number" name="max_price" class="form-control"
                                                        placeholder="Đến" value="{{ request('max_price') }}" min="0">
                                         </div>
                                             @foreach(request()->except('min_price', 'max_price', 'page') as $key => $value)
@@ -172,13 +182,20 @@
                                                     <div class="recent-product-image">
                                                             <a href="{{ route('shop.show', $product->id) }}">
                                                                 @if($variant && $variant->image)
-                                                                <img src="{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}" 
+                                                                <img src="{{ str_starts_with($variant->image, 'http') ? $variant->image : asset('storage/' . $variant->image) }}"
                                                                      alt="{{ $product->name }}"
                                                                      onerror="this.src='{{ asset('images/no-image.png') }}'">
                                                                 @else
                                                                 <img src="{{ asset('images/no-image.png') }}" alt="{{ $product->name }}">
                                                                 @endif
                                                             </a>
+
+                                                            {{-- Flash Sale Badge cho sidebar --}}
+                                                            @if($variant && $variant->price_sale && $variant->price_sale < $variant->price)
+                                                                <div class="flash-sale-badge-small">
+                                                                    <i class="zmdi zmdi-flash"></i>
+                                                                </div>
+                                                            @endif
                                                         </div>
                                                     <div class="recent-product-info">
                                                         <h6 class="recent-product-title">
@@ -269,7 +286,7 @@ async function addToCart(productId) {
                 quantity: 1
             })
         });
-        
+
         const data = await res.json();
         if (data && data.success) {
             showCenterNotice('Đã thêm vào giỏ hàng!', 'success');
@@ -305,7 +322,7 @@ async function addToWishlist(productId) {
             },
             body: JSON.stringify({ product_id: productId })
         });
-        
+
         const data = await res.json();
         if (data && data.success) {
             showCenterNotice('Đã thêm vào danh sách yêu thích!', 'success');
@@ -324,27 +341,6 @@ function quickView(productId) {
     showCenterNotice('Tính năng xem nhanh đang được phát triển', 'info');
 }
 
-// View tabs functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const viewTabs = document.querySelectorAll('.view-tab');
-    const productsGrid = document.getElementById('products-grid');
-    
-    viewTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            // Remove active class from all tabs
-            viewTabs.forEach(t => t.classList.remove('active'));
-            // Add active class to clicked tab
-            this.classList.add('active');
-            
-            const view = this.dataset.view;
-            if (view === 'list') {
-                productsGrid.classList.add('list-view');
-            } else {
-                productsGrid.classList.remove('list-view');
-            }
-        });
-    });
-});
 </script>
 
 <style>
@@ -410,32 +406,75 @@ document.addEventListener('DOMContentLoaded', function() {
     margin-bottom: 20px;
 }
 
-.view-tabs {
+
+
+/* Shop Controls */
+.shop-controls {
     display: flex;
-    gap: 5px;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
 }
 
-.view-tab {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
+.sort-form {
+    width: 100%;
+}
+
+.sort-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
     padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: #6c757d;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
 }
 
-.view-tab.active,
-.view-tab:hover {
-    background: #ee4d2d;
+.sort-wrapper:hover {
     border-color: #ee4d2d;
-    color: #fff;
+    box-shadow: 0 2px 8px rgba(238, 77, 45, 0.15);
 }
 
-.shop-controls .form-select {
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
+.sort-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.sort-label i {
+    color: #ee4d2d;
+    font-size: 16px;
+}
+
+.sort-select {
+    border: none;
+    background: transparent;
+    padding: 4px 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    outline: none;
+    min-width: 140px;
+}
+
+.sort-select:focus {
+    box-shadow: none;
+    border: none;
+    outline: none;
+}
+
+.sort-select option {
     padding: 8px 12px;
+    background: #fff;
+    color: #333;
 }
 
 /* Product Cards */
@@ -588,6 +627,97 @@ document.addEventListener('DOMContentLoaded', function() {
     margin-top: 2px;
 }
 
+/* Flash Sale Badge */
+.flash-sale-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: linear-gradient(135deg, #ff1744, #ff5722);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 12px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    box-shadow: 0 2px 8px rgba(255, 23, 68, 0.4);
+    animation: flashSalePulse 2s infinite ease-in-out;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    max-width: 80px;
+    white-space: nowrap;
+}
+
+.flash-sale-badge i {
+    font-size: 12px;
+    animation: flashSaleFlash 1.5s infinite ease-in-out;
+}
+
+/* Flash Sale Badge Animations */
+@keyframes flashSalePulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 23, 68, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(255, 23, 68, 0.6);
+    }
+}
+
+@keyframes flashSaleFlash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Discount Tag */
+.discount-tag {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #ff6b00;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 6px;
+    border-radius: 8px;
+    z-index: 2;
+    box-shadow: 0 2px 6px rgba(255, 107, 0, 0.3);
+}
+
+/* Adjust discount tag position when flash sale badge is present */
+.product-image-container:has(.flash-sale-badge) .discount-tag {
+    top: 40px;
+}
+
+/* Flash Sale Badge cho sidebar - phiên bản nhỏ */
+.flash-sale-badge-small {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    background: linear-gradient(135deg, #ff1744, #ff5722);
+    color: white;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 6px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(255, 23, 68, 0.4);
+    animation: flashSalePulse 2s infinite ease-in-out;
+    width: 16px;
+    height: 16px;
+}
+
+.flash-sale-badge-small i {
+    font-size: 10px;
+    animation: flashSaleFlash 1.5s infinite ease-in-out;
+}
+
 /* Sidebar */
 .shop-sidebar {
     background: #fff;
@@ -732,58 +862,27 @@ document.addEventListener('DOMContentLoaded', function() {
     text-align: center;
 }
 
-/* List View */
-.products-container.list-view .product-card {
-    display: flex;
-    flex-direction: row;
-    height: auto;
-}
-
-.products-container.list-view .product-image-container {
-    width: 200px;
-    height: 150px;
-    flex-shrink: 0;
-}
-
-.products-container.list-view .product-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
 
 /* Responsive */
 @media (max-width: 768px) {
     .shop-options {
         padding: 15px;
     }
-    
-    .view-tabs {
-        justify-content: center;
-        margin-bottom: 15px;
-    }
-    
+
+
     .shop-controls {
         text-align: center;
     }
-    
+
     .product-image-container {
         height: 180px;
     }
-    
+
     .shop-sidebar {
         margin-top: 20px;
         padding: 15px;
     }
-    
-    .products-container.list-view .product-card {
-        flex-direction: column;
-    }
-    
-    .products-container.list-view .product-image-container {
-        width: 100%;
-        height: 200px;
-    }
+
 }
 </style>
 @endsection

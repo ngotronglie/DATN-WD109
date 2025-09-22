@@ -26,22 +26,36 @@ class LoginController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        try {
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
+            ]);
 
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $request->session()->regenerate();
-            // Redirect to provided path if present (only allow relative paths)
-            $redirect = $request->input('redirect');
-            if ($redirect && is_string($redirect) && str_starts_with($redirect, '/')) {
-                return redirect($redirect)->with('success', 'Đăng nhập thành công!');
+            if (Auth::attempt($request->only('email', 'password'))) {
+                $request->session()->regenerate();
+                
+                // Redirect to provided path if present (only allow relative paths)
+                $redirect = $request->input('redirect');
+                if ($redirect && is_string($redirect) && str_starts_with($redirect, '/')) {
+                    // Sanitize the redirect URL to prevent issues
+                    $redirect = filter_var($redirect, FILTER_SANITIZE_URL);
+                    if ($redirect) {
+                        return redirect($redirect)->with('success', 'Đăng nhập thành công!');
+                    }
+                }
+                return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
             }
-            return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
-        }
 
-        return back()->with('error', 'Thông tin đăng nhập không đúng.');
+            return back()->with('error', 'Thông tin đăng nhập không đúng.');
+            
+        } catch (\Illuminate\Session\TokenMismatchException $e) {
+            // Xử lý lỗi CSRF token hết hạn
+            return redirect()->route('auth.login')->with('error', 'Phiên đăng nhập đã hết hạn. Vui lòng thử lại.');
+        } catch (\Exception $e) {
+            // Xử lý các lỗi khác
+            return back()->with('error', 'Có lỗi xảy ra. Vui lòng thử lại.');
+        }
     }
 
     /**
