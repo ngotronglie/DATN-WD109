@@ -2,64 +2,44 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\ProductVariant;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class ProductVariantController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): RedirectResponse
     {
-        //
+        return redirect()->route('admin.products.index')->with('info', 'Product variants are managed within the product editor.');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): RedirectResponse
     {
-        //
+        return redirect()->route('admin.products.index')->with('info', 'Create variants inside a product.');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        //
+        return redirect()->route('admin.products.index')->with('info', 'Use the product page to add variants.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ProductVariant $productVariant)
+    public function show($id): RedirectResponse
     {
-        //
+        return redirect()->route('admin.products.index');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ProductVariant $productVariant)
+    public function edit($id): RedirectResponse
     {
-        //
+        return redirect()->route('admin.products.index');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, ProductVariant $productVariant)
+    public function update(Request $request, $id): RedirectResponse
     {
-        //
+        return redirect()->route('admin.products.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ProductVariant $productVariant)
+    public function destroy($id): RedirectResponse
     {
-        //
+        return redirect()->route('admin.products.index');
     }
 }

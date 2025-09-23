@@ -53,7 +53,7 @@ class BannerController extends Controller
         ]);
 
         return redirect()->route('admin.banners.index')
-            ->with('success', 'Banner created successfully.');
+            ->with('success', 'Tạo banner thành công.');
     }
 
     /**
@@ -105,7 +105,7 @@ class BannerController extends Controller
         $banner->update($data);
 
         return redirect()->route('admin.banners.index')
-            ->with('success', 'Banner updated successfully.');
+            ->with('success', 'Cập nhật banner thành công.');
     }
 
     /**
@@ -120,7 +120,7 @@ class BannerController extends Controller
         $banner->delete();
 
         return redirect()->route('admin.banners.index')
-            ->with('success', 'Banner deleted successfully.');
+            ->with('success', 'Xóa banner thành công.');
     }
 
     public function updateStatus(Request $request, Banner $banner)
@@ -132,12 +132,12 @@ class BannerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Status updated successfully'
+                'message' => 'Cập nhật trạng thái thành công'
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update status'
+                'message' => 'Cập nhật trạng thái thất bại'
             ], 500);
         }
     }

@@ -2,14 +2,8 @@
           <div class="main-nav">
                <!-- Sidebar Logo -->
                <div class="logo-box">
-                    <a href="index.html" class="logo-dark">
-                         <img src="{{ asset('dashboard/assets/images/logo-sm.png') }}" class="logo-sm" alt="logo sm">
-                         <img src="{{ asset('dashboard/assets/images/logo-dark.png') }}" class="logo-lg" alt="logo dark">
-                    </a>
-
-                    <a href="index.html" class="logo-light">
-                         <img src="{{ asset('dashboard/assets/images/logo-sm.png') }}" class="logo-sm" alt="logo sm">
-                         <img src="{{ asset('dashboard/assets/images/logo-light.png') }}" class="logo-lg" alt="logo light">
+                    <a href="{{ route('admin.dashboard') }}" class="logo-dark d-flex align-items-center text-decoration-none">
+                         <span class="brand-text fw-bold fs-5">TechZone</span>
                     </a>
                </div>
 
@@ -21,536 +15,147 @@
                <div class="scrollbar" data-simplebar>
 
                     <ul class="navbar-nav" id="navbar-nav">
-
-                         <li class="menu-title">Menu</li>
-
+                         <li class="menu-title">Tổng quan</li>
                          <li class="nav-item">
-                              <a class="nav-link" href="index.html">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:home-2-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Dashboard </span>
-                                   <span class="badge bg-success badge-pill text-end">9+</span>
+                              <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:home-2-broken"></iconify-icon></span>
+                                   <span class="nav-text">Trang chủ</span>
                               </a>
                          </li>
 
+                         <li class="menu-title">Quản lý bán hàng</li>
                          <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarLayouts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarLayouts">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:siderbar-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Layouts </span>
+                              <a class="nav-link" href="{{ route('admin.orders.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:cart-large-minimalistic-broken"></iconify-icon></span>
+                                   <span class="nav-text">Đơn hàng</span>
                               </a>
-                              <div class="collapse" id="sidebarLayouts">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="layouts-light-sidenav.html" target="_blank">Light Sidenav</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="layouts-dark-topnav.html" target="_blank">Dark Topnav</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="layouts-simple-sidenav.html" target="_blank">Simple Sidenav</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="layouts-small-sidenav.html" target="_blank">Small Sidenav</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="layouts-small-hover.html" target="_blank">Small Hover</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link disabled" href="javascript:void(0);">Small Hover Active</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="layouts-hidden-sidenav.html" target="_blank">Hidden Sidenav</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" target="_blank" href="layouts-dark.html">
-                                                  <span class="nav-text">Dark Mode</span>
-                                                  <span class="badge badge-soft-danger badge-pill text-end">Hot</span>
-                                             </a>
-                                        </li>
-                                   </ul>
-                              </div>
                          </li>
-
-                         <li class="menu-title">Apps</li>
-
                          <li class="nav-item">
-                              <a class="nav-link" href="apps-chat.html">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:chat-round-call-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Chat </span>
+                              <a class="nav-link" href="{{ route('admin.vouchers.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:ticket-broken"></iconify-icon></span>
+                                   <span class="nav-text">Mã giảm giá</span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.flash-sales.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:fire-minimalistic-broken"></iconify-icon></span>
+                                   <span class="nav-text">Flash Sale</span>
                               </a>
                          </li>
 
+                         <li class="menu-title">Quản lý sản phẩm</li>
                          <li class="nav-item">
-                              <a class="nav-link" href="apps-email.html">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:letter-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Email </span>
+                              <a class="nav-link" href="{{ route('admin.products.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:box-minimalistic-broken"></iconify-icon></span>
+                                   <span class="nav-text">Sản phẩm</span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.categories.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:category-broken"></iconify-icon></span>
+                                   <span class="nav-text">Danh mục</span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.product_variants.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:layers-minimalistic-broken"></iconify-icon></span>
+                                   <span class="nav-text">Biến thể sản phẩm</span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.colors.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:palette-round-broken"></iconify-icon></span>
+                                   <span class="nav-text">Màu sắc</span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.capacities.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:battery-minimalistic-broken"></iconify-icon></span>
+                                   <span class="nav-text">Dung lượng</span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.comments.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:chat-round-dots-broken"></iconify-icon></span>
+                                   <span class="nav-text">Bình luận</span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.favorites.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:heart-broken"></iconify-icon></span>
+                                   <span class="nav-text">Yêu thích</span>
                               </a>
                          </li>
 
+                         <li class="menu-title">Thống kê</li>
                          <li class="nav-item">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:list-heart-minimalistic-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Todo </span>
+                             <a class="nav-link menu-arrow" href="#sidebarThongKe" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarThongKe">
+                                 <span class="nav-icon"><iconify-icon icon="solar:chart-square-broken"></iconify-icon></span>
+                                 <span class="nav-text">Thống kê</span>
+                             </a>
+                             <div class="collapse" id="sidebarThongKe">
+                                 <ul class="nav sub-navbar-nav">
+                                     <li class="sub-nav-item">
+                                         <a class="sub-nav-link" href="{{ route('admin.thongke.sanpham') }}">Sản phẩm</a>
+                                     </li>
+                                     <li class="sub-nav-item">
+                                         <a class="sub-nav-link" href="{{ route('admin.thongke.donhang') }}">Đơn hàng</a>
+                                     </li>
+                                     <li class="sub-nav-item">
+                                         <a class="sub-nav-link" href="{{ route('admin.thongke.nguoidung') }}">Người dùng</a>
+                                     </li>
+                                    
+                                     
+                                 </ul>
+                             </div>
+                         </li>
+
+                         <li class="menu-title">Quản lý blog</li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.blogs.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:document-text-broken"></iconify-icon></span>
+                                   <span class="nav-text">Bài viết</span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.tag_blogs.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:tag-broken"></iconify-icon></span>
+                                   <span class="nav-text">Thẻ blog</span>
                               </a>
                          </li>
 
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarCalendar" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCalendar">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:calendar-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Calendar </span>
-                              </a>
-                              <div class="collapse" id="sidebarCalendar">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="apps-calendar-schedule.html">Schedule</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="apps-calendar-integration.html">Integration</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li>
-
-                         <li class="nav-item">
-                              <a class="nav-link" href="{{ route('categories.index') }}">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:category-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Categories </span>
-                              </a>
-                         </li>
-
+                         <li class="menu-title">Quản lý hệ thống</li>
                          <li class="nav-item">
                               <a class="nav-link" href="{{ route('admin.users.index') }}">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:users-group-rounded-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Quản lý người dùng </span>
+                                   <span class="nav-icon"><iconify-icon icon="solar:users-group-rounded-broken"></iconify-icon></span>
+                                   <span class="nav-text">Người dùng</span>
                               </a>
                          </li>
-
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.roles.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:shield-user-broken"></iconify-icon></span>
+                                   <span class="nav-text">Vai trò</span>
+                              </a>
+                         </li>
                          <li class="nav-item">
                               <a class="nav-link" href="{{ route('admin.banners.index') }}">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:gallery-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Banners </span>
+                                   <span class="nav-icon"><iconify-icon icon="solar:gallery-broken"></iconify-icon></span>
+                                   <span class="nav-text">Banner</span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('admin.contacts.index') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:mailbox-broken"></iconify-icon></span>
+                                   <span class="nav-text">Liên hệ</span>
+                              </a>
+                         </li>
+                         <li class="nav-item">
+                              <a class="nav-link" href="{{ route('home') }}">
+                                   <span class="nav-icon"><iconify-icon icon="solar:home-2-bold"></iconify-icon></span>
+                                   <span class="nav-text">Trang chủ</span>
                               </a>
                          </li>
 
-                         <li class="nav-item">
-                              <a class="nav-link" href="{{ route('categories.create') }}">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:add-circle-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Thêm danh mục </span>
-                              </a>
-                         </li>
-
-                         <li class="nav-item">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="apps-invoices.html">Invoices</a>
-                                        </li>
-                         <li class="menu-title">Custom</li>
-
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarPages" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPages">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:folder-with-files-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Pages </span>
-                              </a>
-                              <div class="collapse" id="sidebarPages">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="pages-starter.html">Welcome</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="pages-faqs.html">FAQs</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="pages-comingsoon.html">Coming Soon</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="pages-timeline.html">Timeline</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="pages-pricing.html">Pricing</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="pages-maintenance.html">Maintenance</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="pages-404.html">404 Error</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="pages-404-alt.html">404 Error (alt)</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li> <!-- end Pages Menu -->
-
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarAuthentication" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarAuthentication">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:lock-password-unlocked-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Authentication </span>
-                              </a>
-                              <div class="collapse" id="sidebarAuthentication">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="auth-signin.html">Sign In</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="auth-signup.html">Sign Up</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="auth-password.html">Reset Password</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="auth-lock-screen.html">Lock Screen</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li>
-
-                         <li class="nav-item">
-                              <a class="nav-link" href="widgets.html">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:gift-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text">Widgets</span>
-                                   <span class="badge bg-danger badge-pill text-end">Hot</span>
-                              </a>
-                         </li>
-
-                         <li class="menu-title">Components</li>
-
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarBaseUI" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarBaseUI">
-                                   <span class="nav-icon"><iconify-icon icon="solar:fire-broken"></iconify-icon></span>
-                                   <span class="nav-text"> Base UI </span>
-                              </a>
-                              <div class="collapse" id="sidebarBaseUI">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-accordion.html">Accordion</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-alerts.html">Alerts</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-avatar.html">Avatar</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-badge.html">Badge</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-breadcrumb.html">Breadcrumb</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-buttons.html">Buttons</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-card.html">Card</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-carousel.html">Carousel</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-collapse.html">Collapse</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-dropdown.html">Dropdown</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-list-group.html">List Group</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-modal.html">Modal</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-tabs.html">Tabs</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-offcanvas.html">Offcanvas</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-pagination.html">Pagination</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-placeholders.html">Placeholders</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-popovers.html">Popovers</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-progress.html">Progress</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-scrollspy.html">Scrollspy</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-spinners.html">Spinners</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-toasts.html">Toasts</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="ui-tooltips.html">Tooltips</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li> <!-- end Base UI Menu -->
-
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarExtendedUI" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarExtendedUI">
-                                   <span class="nav-icon"><iconify-icon icon="solar:magic-stick-3-broken"></iconify-icon></span>
-                                   <span class="nav-text"> Advanced UI </span>
-                              </a>
-                              <div class="collapse" id="sidebarExtendedUI">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="extended-ratings.html">Ratings</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="extended-sweetalert.html">Sweet Alert</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="extended-swiper-silder.html">Swiper Slider</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="extended-scrollbar.html">Scrollbar</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="extended-toastify.html">Toastify</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li> <!-- end Extended UI Menu -->
-
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarCharts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCharts">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:chart-square-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Charts </span>
-                              </a>
-                              <div class="collapse" id="sidebarCharts">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-area.html">Area</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-bar.html">Bar</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-bubble.html">Bubble</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-candlestick.html">Candlestick</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-column.html">Column</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-heatmap.html">Heatmap</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-line.html">Line</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-mixed.html">Mixed</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-timeline.html">Timeline</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-boxplot.html">Boxplot</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-treemap.html">Treemap</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-pie.html">Pie</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-radar.html">Radar</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-radialbar.html">RadialBar</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-scatter.html">Scatter</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="charts-apex-polar-area.html">Polar Area</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li> <!-- end Chart library Menu -->
-
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarForms" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarForms">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:checklist-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Forms </span>
-                              </a>
-                              <div class="collapse" id="sidebarForms">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="forms-basic.html">Basic Elements</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="forms-checkbox-radio.html">Checkbox &amp; Radio</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="forms-choices.html">Choice Select</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="forms-clipboard.html">Clipboard</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="forms-flatepicker.html">Flatepicker</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="forms-validation.html">Validation</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="forms-wizard.html">Wizard</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="forms-fileuploads.html">File Upload</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="forms-editors.html">Editors</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="forms-input-mask.html">Input Mask</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="forms-range-slider.html">Slider</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li> <!-- end Form Menu -->
-
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarTables" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarTables">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:bedside-table-4-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Tables </span>
-                              </a>
-                              <div class="collapse" id="sidebarTables">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="tables-basic.html">Basic Tables</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="tables-gridjs.html">Grid Js</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li> <!-- end Table Menu -->
-
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarIcons" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarIcons">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:bicycling-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Icons </span>
-                              </a>
-                              <div class="collapse" id="sidebarIcons">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="icons-boxicons.html">Boxicons</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="icons-solar.html">Solar Icons</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li> <!-- end Icons library Menu -->
-
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarMaps" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarMaps">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:streets-map-point-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Maps </span>
-                              </a>
-                              <div class="collapse" id="sidebarMaps">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="maps-google.html">Google Maps</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="maps-vector.html">Vector Maps</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li> <!-- end Map Menu -->
-
-                         <li class="nav-item">
-                              <a class="nav-link" href="javascript:void(0);">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:football-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text">Badge Menu</span>
-                                   <span class="badge bg-primary badge-pill text-end">1</span>
-                              </a>
-                         </li>
-
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarMultiLevelDemo" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarMultiLevelDemo">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:share-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Menu Item </span>
-                              </a>
-                              <div class="collapse" id="sidebarMultiLevelDemo">
-                                   <ul class="nav sub-navbar-nav">
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="javascript:void(0);">Menu Item 1</a>
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link  menu-arrow" href="#sidebarItemDemoSubItem" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarItemDemoSubItem">
-                                                  <span> Menu Item 2 </span>
-                                             </a>
-                                             <div class="collapse" id="sidebarItemDemoSubItem">
-                                                  <ul class="nav sub-navbar-nav">
-                                                       <li class="sub-nav-item">
-                                                            <a class="sub-nav-link" href="javascript:void(0);">Menu Sub item</a>
-                                                       </li>
-                                                  </ul>
-                                             </div>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li> <!-- end Demo Menu Item -->
-
-                         <li class="nav-item">
-                              <a class="nav-link disabled" href="javascript:void(0);">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:dislike-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Disable Item </span>
-                              </a>
-                         </li> <!-- end Demo Menu Item -->
                     </ul>
                </div>
           </div>

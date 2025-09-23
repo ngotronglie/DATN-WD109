@@ -1,4 +1,4 @@
-@extends('index.admindashboard')
+    @extends('index.admindashboard')
 
 @section('content')
 <div class="container-fluid">
@@ -33,52 +33,53 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover table-striped table-bordered text-center">
+                        <table class="table table-hover table-striped table-bordered">
                             <thead>
                                 <tr>
                                     <th class="text-center">ID</th>
                                     <th class="text-center">Tên sản phẩm</th>
                                     <th class="text-center">Danh mục</th>
-                                    <th class="text-center">Màu sắc</th>
-                                    <th class="text-center">Dung lượng</th>
-                                    <th class="text-center">Giá</th>
-                                    <th class="text-center">Giá KM</th>
-                                    <th class="text-center">Số lượng</th>
                                     <th class="text-center">Trạng thái</th>
                                     <th class="text-center">Lượt xem</th>
+                                    <th class="text-center">Ngày tạo</th>
+                                    <th class="text-center">Ngày cập nhật</th>
                                     <th class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                             @foreach($products as $product)
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $product->product_name }}</td>
+                                    <td class="text-center">{{ $product->id }}</td>
+                                    <td>{{ $product->name }}</td>
                                     <td>{{ $product->category_name }}</td>
-                                    <td>{{ $product->color_name }}</td>
-                                    <td>{{ $product->capacity_name }}</td>
-                                    <td>{{ number_format($product->price, 0, ',', '.') }} VNĐ</td>
-                                    <td>{{ number_format($product->price_sale, 0, ',', '.') }} VNĐ</td>
-                                    <td>{{ $product->quantity }}</td>
-                                    <td>
+                                    <td class="text-center">
                                         @if($product->is_active)
                                             <span class="badge bg-success">Active</span>
                                         @else
                                             <span class="badge bg-danger">Inactive</span>
                                         @endif
                                     </td>
-                                    <td>{{ $product->view_count }}</td>
-                                    <td>
-                                        <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-warning btn-sm">
-                                             Sửa
-                                        </a>
-                                        <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                 Xóa
-                                            </button>
-                                        </form>
+                                    <td class="text-center">{{ $product->view_count }}</td>
+                                    <td class="text-center">{{ $product->created_at ? \Carbon\Carbon::parse($product->created_at)->format('d/m/Y H:i') : '-' }}</td>
+                                    <td class="text-center">{{ $product->updated_at ? \Carbon\Carbon::parse($product->updated_at)->format('d/m/Y H:i') : '-' }}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <a href="{{ route('admin.products.edit', $product->slug) }}"
+                                               class="btn btn-warning btn-sm">
+                                                <i class="fas fa-edit"></i> Sửa
+                                            </a>
+
+                                            <form action="{{ route('admin.products.destroy', $product->slug) }}"
+                                                  method="POST"
+                                                  style="display:inline;"
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-trash"></i> Xóa
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -94,4 +95,11 @@
         </div>
     </div>
 </div>
+
+<style>
+.btn-group {
+    display: flex;
+    gap: 5px;
+}
+</style>
 @endsection

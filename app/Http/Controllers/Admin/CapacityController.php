@@ -31,14 +31,30 @@ class CapacityController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:capacities',
-            'value' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'min:1',
+                'max:20',
+                'unique:capacities',
+                'regex:/^[0-9]+[A-Za-z]*$/', // Phải bắt đầu bằng số, có thể có đơn vị
+            ],
+        ], [
+            'name.required' => 'Dung lượng là bắt buộc.',
+            'name.string' => 'Dung lượng phải là chuỗi ký tự.',
+            'name.min' => 'Dung lượng không được để trống.',
+            'name.max' => 'Dung lượng không được vượt quá 20 ký tự.',
+            'name.unique' => 'Dung lượng này đã tồn tại.',
+            'name.regex' => 'Dung lượng phải có định dạng: số + đơn vị (ví dụ: 64GB, 128GB, 1TB). Không được chứa ký tự đặc biệt.',
         ]);
+
+        // Sanitize và format dung lượng
+        $capacityName = trim($request->name);
+        $capacityName = strtoupper($capacityName); // Viết hoa đơn vị (GB, TB)
 
         // Create new capacity with sanitized data
         $capacity = new Capacity();
-        $capacity->name = $request->name;
-        $capacity->value = $request->value;
+        $capacity->name = $capacityName;
         $capacity->save();
 
         return redirect()->route('admin.capacities.index')
@@ -68,18 +84,16 @@ class CapacityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:capacities,name,' . $capacity->id,
-            'value' => 'required|string|max:255',
         ]);
 
         // Kiểm tra xem dữ liệu có thay đổi không
-        if ($capacity->name === $request->name && $capacity->value === $request->value) {
+        if ($capacity->name === $request->name) {
             return redirect()->route('admin.capacities.index')
                 ->with('info', 'Không có dữ liệu nào được thay đổi!');
         }
 
         // Nếu có thay đổi thì mới cập nhật
         $capacity->name = $request->name;
-        $capacity->value = $request->value;
         $capacity->save();
 
         return redirect()->route('admin.capacities.index')
