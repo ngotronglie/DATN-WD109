@@ -14,6 +14,12 @@
                     <div class="alert alert-danger">{{ session('error') }}</div>
                     @endif
 
+                    @if($errors->has('TokenMismatchException') || session('error') == 'Page Expired')
+                    <div class="alert alert-warning">
+                        <strong>Phiên đăng nhập đã hết hạn.</strong> Vui lòng thử lại.
+                    </div>
+                    @endif
+
                     <form action="{{ route('login.store') }}" method="POST">
                         @csrf
                         <input type="hidden" name="redirect" value="{{ request('redirect', '') }}">
@@ -47,5 +53,47 @@
             </div>
         </div>
     </main>
+
+    <script>
+    // Refresh CSRF token khi trang load để tránh lỗi Page Expired
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lấy token mới từ meta tag
+        const token = document.querySelector('meta[name="csrf-token"]');
+        if (token) {
+            // Cập nhật tất cả input CSRF token
+            document.querySelectorAll('input[name="_token"]').forEach(input => {
+                input.value = token.getAttribute('content');
+            });
+        }
+        
+        // Refresh token mỗi 30 phút để tránh hết hạn
+        setInterval(function() {
+            fetch('/csrf-token', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.token) {
+                    // Cập nhật meta tag
+                    const metaToken = document.querySelector('meta[name="csrf-token"]');
+                    if (metaToken) {
+                        metaToken.setAttribute('content', data.token);
+                    }
+                    
+                    // Cập nhật form token
+                    document.querySelectorAll('input[name="_token"]').forEach(input => {
+                        input.value = data.token;
+                    });
+                }
+            })
+            .catch(error => {
+                console.log('CSRF token refresh failed:', error);
+            });
+        }, 30 * 60 * 1000); // 30 phút
+    });
+    </script>
 
 @endsection

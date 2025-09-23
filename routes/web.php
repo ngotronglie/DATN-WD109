@@ -39,6 +39,11 @@ use App\Http\Controllers\Client\ShopController;
 
 // Client Routes
 Route::get('/', [ClientController::class, 'index'])->name('home');
+
+// Route để refresh CSRF token
+Route::get('/csrf-token', function() {
+    return response()->json(['token' => csrf_token()]);
+});
 Route::get('/products', [ClientController::class, 'products'])->name('products');
 Route::get('/flash-sales', [ClientController::class, 'flashSales'])->name('flash-sales');
 Route::get('/about', [ClientController::class, 'about'])->name('about');
@@ -263,8 +268,12 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('/orders/{id}/cancel', [OrderController::class, 'cancelOrder'])->name('orders.cancel');
     Route::post('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::get('orders/{order}/detail', [OrderController::class, 'show'])->name('orders.detail');
+
+    Route::post('/admin/orders/{refund}/confirm-receive-back', [OrderController::class, 'confirmReceiveBack'])->name('orders.confirmReceiveBack');
+
+
     Route::post('orders/{refund}/confirm-receive-back', [OrderController::class, 'confirmReceiveBack'])->name('orders.confirmReceiveBack');
-    
+
     // Delivery actions
     Route::post('/orders/{id}/delivery-success', [OrderController::class, 'deliverySuccess'])->name('orders.deliverySuccess');
     Route::post('/orders/{id}/delivery-failed', [OrderController::class, 'deliveryFailed'])->name('orders.deliveryFailed');
@@ -324,9 +333,9 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::get('/donhang', [\App\Http\Controllers\Admin\StatisticController::class, 'donhang'])->name('donhang');
         Route::get('/donhang/revenue-orders', [\App\Http\Controllers\Admin\StatisticController::class, 'revenueOrders'])->name('donhang.revenue-orders');
         Route::get('/nguoidung', [\App\Http\Controllers\Admin\StatisticController::class, 'nguoidung'])->name('nguoidung');
-      
+
         Route::get('/', function() { return view('layouts.admin.thongke.index'); })->name('index');
-    
+
     });
 });
 
