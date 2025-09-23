@@ -43,17 +43,20 @@
                                     <label for="name" class="form-label">Tên màu <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('name') is-invalid @enderror" 
                                            id="name" name="name" value="{{ old('name') }}" 
-                                           required placeholder="Nhập tên màu">
-                                    <div class="invalid-feedback">
+                                           required placeholder="Nhập tên màu (ví dụ: Đỏ, Xanh, Vàng)"
+                                           pattern="^[a-zA-ZÀ-ỹ\s]+$"
+                                           minlength="2" maxlength="50">
+                                    <div class="invalid-feedback" id="name-error">
                                         @error('name')
                                             {{ $message }}
                                         @else
-                                            Vui lòng nhập tên màu.
+                                            Vui lòng nhập tên màu hợp lệ (chỉ chữ cái, 2-50 ký tự).
                                         @enderror
                                     </div>
                                     <div class="valid-feedback">
-                                        Looks good!
+                                        Tên màu hợp lệ!
                                     </div>
+                                    <small class="text-muted">Chỉ được nhập chữ cái và khoảng trắng, từ 2-50 ký tự.</small>
                                 </div>
                             </div>
                             

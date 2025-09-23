@@ -18,6 +18,7 @@ class RefundRequest extends Model
     protected $fillable = [
         'user_id',
         'order_id',
+        'type',
         'bank_name',
         'account_name',
         'bank_number',

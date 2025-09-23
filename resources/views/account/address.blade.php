@@ -7,46 +7,54 @@
         <div class="col-md-4">
             <div class="card mb-4 text-center shadow-sm border-0 rounded-4">
                 <div class="card-body">
-                    <h5 class="mb-3 fw-bold">Tài khoản của tôi</h5>
+                    <h5 class="mb-3 fw-bold">👤 Tài khoản của tôi</h5>
                     <div class="mb-3">
                         @if(Auth::user()->avatar)
-                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="rounded-circle img-thumbnail" width="150" height="150" alt="Avatar">
+                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}"
+                            class="rounded-circle img-thumbnail shadow-sm"
+                            width="120" height="120" alt="Avatar">
                         @else
-                        <img src="{{ asset('img/default-avatar.png') }}" class="rounded-circle img-thumbnail" width="150" height="150" alt="Avatar">
+                        <img src="{{ asset('img/default-avatar.png') }}"
+                            class="rounded-circle img-thumbnail shadow-sm"
+                            width="120" height="120" alt="Avatar">
                         @endif
                     </div>
                     <p class="fw-semibold">{{ Auth::user()->name }}</p>
                     <hr>
                     <ul class="list-unstyled text-start">
                         <li class="mb-2">
-                            <a href="{{ route('account.edit') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.edit')) bg-light fw-bold @endif">
+                            <a href="{{ route('account.edit') }}"
+                                class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.edit')) bg-primary text-white fw-bold @endif">
                                 ⚙️ Thông tin cá nhân
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="{{ route('account.address_list') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.address_list')) bg-light fw-bold text-primary @endif">
-                                <i class="fa-solid fa-location-dot me-2"></i> Địa chỉ
+                            <a href="{{ route('account.address_list') }}"
+                                class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.address_list')) bg-primary text-white fw-bold @endif">
+                                📍 Địa chỉ
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="{{ route('account.order') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.order')) bg-light fw-bold text-primary @endif">
+                            <a href="{{ route('account.order') }}"
+                                class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('account.order')) bg-primary text-white fw-bold @endif">
                                 🛒 Đơn hàng
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="{{ route('password.change') }}" class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('password.change')) bg-light fw-bold @endif">
+                            <a href="{{ route('password.change') }}"
+                                class="d-block px-3 py-2 rounded text-decoration-none @if(request()->routeIs('password.change')) bg-primary text-white fw-bold @endif">
                                 🔑 Đổi mật khẩu
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="d-block px-3 py-2 rounded text-decoration-none text-danger">
+                            <a href="{{ route('logout') }}"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                                class="d-block px-3 py-2 rounded text-decoration-none text-danger fw-bold">
                                 🔒 Đăng xuất
                             </a>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
                         </li>
                     </ul>
-
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
                 </div>
             </div>
         </div>

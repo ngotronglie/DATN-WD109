@@ -1,134 +1,110 @@
-<!doctype html>
-<html class="no-js" lang="en">
+@extends('index.clientdashboard')
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{{ $title ?? 'E-commerce' }}</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+@section('content')
+<main>
+    <div class="container py-5 d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+        <div class="card border-0 shadow-lg text-center p-5 rounded-4" style="max-width: 680px; width: 100%;">
+            <style>
+                /* Icon */
+                .status-icon {
+                    font-size: 4.5rem;
+                }
 
-    <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('subas/img/icon/favicon.png') }}">
+                /* Badge */
+                .payment-badge {
+                    font-size: 1rem;
+                    font-weight: 600;
+                    padding: 0.5rem 1rem;
+                }
 
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="{{ asset('subas/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/lib/css/nivo-slider.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/css/core.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/css/shortcode/shortcodes.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/css/responsive.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/css/custom.css') }}">
-    <link rel="stylesheet" href="{{ asset('subas/css/style-customizer.css') }}">
+                /* Box chứa mã đơn hàng */
+                .order-code-box {
+                    background-color: #f8f9fa;
+                    border-radius: 12px;
+                    padding: 1rem;
+                    margin-bottom: 1.5rem;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                }
+                .order-code-box p {
+                    margin-bottom: 0.25rem;
+                    color: #6c757d;
+                    font-size: 0.95rem;
+                }
+                .order-code-box h4 {
+                    margin: 0;
+                    line-height: 1.3;
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    font-variant-numeric: tabular-nums;
+                    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+                    letter-spacing: 1px;
+                    color: #212529;
+                }
 
-    <!-- Modernizr -->
-    <script src="{{ asset('subas/js/vendor/modernizr-3.11.2.min.js') }}"></script>
+                /* Button nhóm */
+                .btn-fx {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: .5rem;
+                    line-height: 1;
+                    min-width: 160px;
+                    text-align: center;
+                    font-weight: 600;
+                }
+                .btn-fx span:first-child {
+                    font-size: 1.1rem;
+                }
 
-    <!-- Optional: custom styles -->
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+                /* Đảm bảo nút căn giữa khi wrap */
+                .button-group {
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 1rem;
+                }
 
-        main {
-            flex: 1;
-        }
-    </style>
-</head>
+                /* Responsive */
+                @media (max-width: 576px) {
+                    .btn-fx {
+                        width: 100%;
+                    }
+                }
+            </style>
 
-<body>
-    <!-- Header -->
-    <header class="bg-white shadow py-3">
-        <div class="container-fluid d-flex align-items-center justify-content-between px-4">
-            <!-- Logo -->
-            <div class="logo">
-                <a href="{{ route('home') }}">
-                    <img src="{{ asset('frontend/img/logo/logo.png') }}" alt="Logo" height="40">
+            <!-- Icon Status -->
+            <div class="mb-3">
+                <i class="zmdi zmdi-check-circle text-success status-icon"></i>
+            </div>
+
+            <!-- Title -->
+            <h2 class="fw-bold text-success mb-2">Thanh toán thành công</h2>
+            <p class="text-muted mb-3">Cảm ơn bạn đã mua hàng tại <strong class="text-dark">Shop TechZone</strong>.</p>
+
+            <!-- Info Chip -->
+            <div class="mb-3">
+                <span class="badge rounded-pill text-bg-success payment-badge">Phương thức: VNPAY</span>
+            </div>
+
+            <!-- Order Code -->
+            <div class="order-code-box">
+                <p>Mã đơn hàng của bạn</p>
+                <h4>{{ $order->order_code }}</h4>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <a href="{{ route('account.order') }}" class="btn btn-success px-4 py-2 rounded-3 btn-fx">
+                    <span>📦</span><span>Xem đơn hàng</span>
+                </a>
+                <a href="{{ route('home') }}" class="btn btn-outline-dark px-4 py-2 rounded-3 btn-fx">
+                    <span>🏠</span><span>Về trang chủ</span>
                 </a>
             </div>
-
-            <!-- Menu -->
-            <nav class="d-none d-lg-block">
-                <ul class="nav justify-content-center">
-                    <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Products</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Blog</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Pages</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
-                    @auth
-                        @if (Auth::user()->role_id == 2)
-                            <li class="nav-item"><a class="nav-link" href="{{ route('admin.categories.index') }}">Quản
-                                    trị</a></li>
-                        @endif
-                    @endauth
-                </ul>
-            </nav>
-
-            <!-- Auth Links -->
-            <div class="d-flex align-items-center gap-3">
-                @auth
-                    <span>👤 {{ Auth::user()->name }}</span>
-                    <a href="{{ route('account.edit') }}">⚙️ Tài khoản</a>
-                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🔒
-                        Đăng xuất</a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-                @else
-                    <a href="{{ route('auth.login') }}">🔐 Đăng nhập</a>
-                    <a href="{{ route('auth.register') }}">➕ Đăng ký</a>
-                @endauth
-                <a href="{{ route('wishlist') }}">❤️ Wishlist</a>
-                <a href="{{ route('cart') }}"><i class="zmdi zmdi-shopping-cart-plus"></i></a>
-            </div>
         </div>
-    </header>
-    <main>
-        <div class="container py-5 d-flex justify-content-center align-items-center" style="min-height: 60vh;">
-            <div class="alert alert-success text-center shadow-lg p-5 rounded" style="max-width: 600px; width: 100%;">
-                <h2 class="mb-3"><i class="zmdi zmdi-check-circle"></i> Thanh toán thành công!</h2>
-                <p class="fs-5">Cảm ơn bạn đã mua hàng tại <strong>Shop TechZone</strong>.</p>
-                <p>Mã đơn hàng của bạn là:</p>
-                <h4 class="text-primary mb-4"><strong>{{ $order->order_code }}</strong></h4>
-                <a href="{{ route('home') }}" class="btn btn-primary px-4">Về trang chủ</a>
-            </div>
-        </div>
-        <footer id="footer" class="footer-area footer-2 section bg-light mt-auto">
-            <div class="footer-top footer-top-2 text-center ptb-60"></div>
-            <div class="footer-bottom footer-bottom-2 text-center gray-bg py-3">
-                <div class="container">
-                    <div class="row align-items-center">
-                        <div class="col-lg-4 col-md-5 mb-2 mb-md-0">
-                            <p class="mb-0">WD_109 <strong>Web điện thoại</strong></p>
-                        </div>
-                        <div class="col-lg-4 col-md-4 mb-2 mb-md-0">
-                            <ul class="footer-social list-inline mb-0">
-                                <li class="list-inline-item"><a class="text-dark" href="#"><i
-                                            class="zmdi zmdi-facebook"></i></a></li>
-                                <li class="list-inline-item"><a class="text-dark" href="#"><i
-                                            class="zmdi zmdi-google-plus"></i></a></li>
-                                <li class="list-inline-item"><a class="text-dark" href="#"><i
-                                            class="zmdi zmdi-twitter"></i></a></li>
-                                <li class="list-inline-item"><a class="text-dark" href="#"><i
-                                            class="zmdi zmdi-rss"></i></a></li>
-                            </ul>
-                        </div>
-                        <div class="col-lg-4 col-md-3">
-                            <ul class="list-inline mb-0">
-                                <li class="list-inline-item"><img src="{{ asset('img/payment/1.jpg') }}"
-                                        alt="" height="30"></li>
-                                <li class="list-inline-item"><img src="{{ asset('img/payment/2.jpg') }}"
-                                        alt="" height="30"></li>
-                                <li class="list-inline-item"><img src="{{ asset('img/payment/3.jpg') }}"
-                                        alt="" height="30"></li>
-                                <li class="list-inline-item"><img src="{{ asset('img/payment/4.jpg') }}"
-                                        alt="" height="30"></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </footer>
-</body>
+    </div>
+</main>
 
-</html>
+
+@endsection
+

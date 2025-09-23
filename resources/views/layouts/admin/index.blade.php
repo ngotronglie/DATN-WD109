@@ -342,31 +342,31 @@
                                              </thead>
                                              <tbody>
                                                   <tr>
-                                                       <td><a href="#" class="text-muted">rasket/dashboard.html</a></td>
+                                                       <td><a href="#" class="text-muted">dashboard.html</a></td>
                                                        <td> 4265</td>
                                                        <td>09m:45s</td>
                                                        <td><span class="badge badge-soft-danger">20.4%</span></td>
                                                   </tr>
                                                   <tr>
-                                                       <td><a href="#" class="text-muted">rasket/chat.html</a></td>
+                                                       <td><a href="#" class="text-muted">chat.html</a></td>
                                                        <td>2584 </td>
                                                        <td>05m:02s</td>
                                                        <td><span class="badge badge-soft-warning">12.25%</span></td>
                                                   </tr>
                                                   <tr>
-                                                       <td><a href="#" class="text-muted">rasket/auth-login.html</a></td>
+                                                       <td><a href="#" class="text-muted">auth-login.html</a></td>
                                                        <td> 3369</td>
                                                        <td>04m:25s</td>
                                                        <td><span class="badge badge-soft-success">5.2%</span></td>
                                                   </tr>
                                                   <tr>
-                                                       <td><a href="#" class="text-muted">rasket/email.html</a></td>
+                                                       <td><a href="#" class="text-muted">email.html</a></td>
                                                        <td>985 </td>
                                                        <td>02m:03s</td>
                                                        <td><span class="badge badge-soft-danger">64.2%</span></td>
                                                   </tr>
                                                   <tr>
-                                                       <td><a href="#" class="text-muted">rasket/social.html</a></td>
+                                                       <td><a href="#" class="text-muted">social.html</a></td>
                                                        <td>653 </td>
                                                        <td>15m:56s</td>
                                                        <td><span class="badge badge-soft-success">2.4%</span></td>

@@ -31,7 +31,7 @@ return [
     |
     */
 
-    'lifetime' => env('SESSION_LIFETIME', 120),
+    'lifetime' => env('SESSION_LIFETIME', 240), // Tăng từ 120 phút lên 240 phút (4 giờ)
 
     'expire_on_close' => false,
 

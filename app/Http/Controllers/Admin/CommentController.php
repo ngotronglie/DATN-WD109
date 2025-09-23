@@ -15,7 +15,7 @@ class CommentController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return view('admin.comments.index', compact('comments'));
+        return view('layouts.admin.comments.index', compact('comments'));
     }
 
     // Xóa bình luận
@@ -23,5 +23,13 @@ class CommentController extends Controller
     {
         $comment->delete();
         return back()->with('success', 'Đã xóa bình luận thành công!');
+    }
+
+    // Ẩn/Hiện bình luận
+    public function toggleVisibility(Comment $comment)
+    {
+        $comment->is_hidden = !$comment->is_hidden;
+        $comment->save();
+        return back()->with('success', $comment->is_hidden ? 'Đã ẩn bình luận.' : 'Đã hiện bình luận.');
     }
 }

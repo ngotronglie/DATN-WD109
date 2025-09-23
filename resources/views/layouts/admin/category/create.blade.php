@@ -56,7 +56,7 @@
                             <div class="form-group mt-3">
                                 <label for="Image">Hình ảnh <span class="text-danger">*</span></label>
                                 <input type="file" class="form-control @error('Image') is-invalid @enderror"
-                                    id="Image" name="Image">
+                                    id="Image" name="Image" accept="image/*">
                                 @error('Image')
                                     <div class="text-danger mt-1">{{ $message }}</div>
                                 @enderror
