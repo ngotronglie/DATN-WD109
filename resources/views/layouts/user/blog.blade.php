@@ -40,26 +40,21 @@
                         <div class="blog-content">
                             <!-- Blog Options -->
                             <div class="blog-options mb-4">
-                                <div class="row align-items-center">
-                                    <div class="col-md-6">
-                                        <div class="view-tabs">
-                                            <button class="view-tab active" data-view="grid">
-                                                <i class="zmdi zmdi-view-module"></i>
-                                            </button>
-                                            <button class="view-tab" data-view="list">
-                                                <i class="zmdi zmdi-view-list-alt"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
+                                <div class="row align-items-center justify-content-end">
+                                    <div class="col-md-4">
                                         <div class="blog-controls">
-                                            <form method="GET" action="{{ route('client.blog.index') }}" id="sortForm" class="d-inline-block">
-                                                <select name="sort" onchange="document.getElementById('sortForm').submit()" class="form-select">
-                                                    <option value="">Sắp xếp</option>
-                                                    <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Mới nhất</option>
-                                                    <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Cũ nhất</option>
-                                                    <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Phổ biến</option>
-                                                </select>
+                                            <form method="GET" action="{{ route('client.blog.index') }}" id="sortForm" class="sort-form">
+                                                <div class="sort-wrapper">
+                                                    <label for="sort-select" class="sort-label">
+                                                        <i class="zmdi zmdi-sort"></i>
+                                                        Sắp xếp:
+                                                    </label>
+                                                    <select name="sort" id="sort-select" onchange="document.getElementById('sortForm').submit()" class="form-select sort-select">
+                                                        <option value="">Mặc định</option>
+                                                        <option value="az" {{ request('sort') == 'az' ? 'selected' : '' }}>Tên A-Z</option>
+                                                        <option value="za" {{ request('sort') == 'za' ? 'selected' : '' }}>Tên Z-A</option>
+                                                    </select>
+                                                </div>
                                                 @foreach(request()->except('sort', 'page') as $key => $value)
                                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                                 @endforeach
@@ -183,19 +178,6 @@
                                 </div>
                             </div>
 
-                            <!-- Tags -->
-                            <div class="filter-widget">
-                                <h6 class="filter-title">Tags</h6>
-                                <div class="filter-content">
-                                    <div class="tags-list">
-                                        @foreach($tags ?? [] as $tag)
-                                            <a href="{{ route('client.blog.index', ['tag' => $tag->slug]) }}" class="tag-link">
-                                                {{ $tag->name }}
-                                            </a>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -206,27 +188,6 @@
 
 @section('script-client')
 <script>
-// View tabs functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const viewTabs = document.querySelectorAll('.view-tab');
-    const blogPostsGrid = document.getElementById('blog-posts-grid');
-    
-    viewTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            // Remove active class from all tabs
-            viewTabs.forEach(t => t.classList.remove('active'));
-            // Add active class to clicked tab
-            this.classList.add('active');
-            
-            const view = this.dataset.view;
-            if (view === 'list') {
-                blogPostsGrid.classList.add('list-view');
-            } else {
-                blogPostsGrid.classList.remove('list-view');
-            }
-        });
-    });
-});
 </script>
 
 <style>
@@ -292,32 +253,73 @@ document.addEventListener('DOMContentLoaded', function() {
     margin-bottom: 20px;
 }
 
-.view-tabs {
+/* Blog Controls */
+.blog-controls {
     display: flex;
-    gap: 5px;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
 }
 
-.view-tab {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
+.sort-form {
+    width: 100%;
+}
+
+.sort-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
     padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: #6c757d;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
 }
 
-.view-tab.active,
-.view-tab:hover {
-    background: #ee4d2d;
+.sort-wrapper:hover {
     border-color: #ee4d2d;
-    color: #fff;
+    box-shadow: 0 2px 8px rgba(238, 77, 45, 0.15);
 }
 
-.blog-controls .form-select {
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
+.sort-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.sort-label i {
+    color: #ee4d2d;
+    font-size: 16px;
+}
+
+.sort-select {
+    border: none;
+    background: transparent;
+    padding: 4px 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    outline: none;
+    min-width: 140px;
+}
+
+.sort-select:focus {
+    box-shadow: none;
+    border: none;
+    outline: none;
+}
+
+.sort-select option {
     padding: 8px 12px;
+    background: #fff;
+    color: #333;
 }
 
 /* Blog Cards */
@@ -578,25 +580,6 @@ document.addEventListener('DOMContentLoaded', function() {
     text-align: center;
 }
 
-/* List View */
-.blog-posts-container.list-view .blog-card {
-    display: flex;
-    flex-direction: row;
-    height: auto;
-}
-
-.blog-posts-container.list-view .blog-image-container {
-    width: 200px;
-    height: 150px;
-    flex-shrink: 0;
-}
-
-.blog-posts-container.list-view .blog-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
 
 /* No Blogs State */
 .no-blogs {
@@ -612,11 +595,6 @@ document.addEventListener('DOMContentLoaded', function() {
         padding: 15px;
     }
     
-    .view-tabs {
-        justify-content: center;
-        margin-bottom: 15px;
-    }
-    
     .blog-controls {
         text-align: center;
     }
@@ -628,15 +606,6 @@ document.addEventListener('DOMContentLoaded', function() {
     .blog-sidebar {
         margin-top: 20px;
         padding: 15px;
-    }
-    
-    .blog-posts-container.list-view .blog-card {
-        flex-direction: column;
-    }
-    
-    .blog-posts-container.list-view .blog-image-container {
-        width: 100%;
-        height: 200px;
     }
 }
 </style>

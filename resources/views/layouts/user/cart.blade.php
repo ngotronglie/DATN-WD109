@@ -445,18 +445,18 @@
             const tr = document.createElement('tr');
             const isFlash = !!item.is_flash_sale;
             const priceHtml = isFlash
-                ? `<div><span class="text-danger fw-bold">${formatCurrency(item.price)}</span> <small class="text-muted text-decoration-line-through ms-1">${formatCurrency(item.original_price || item.price)}</small></div><span class="badge bg-warning text-dark">Flash Sale</span>`
+                ? `<div><span class="text-danger fw-bold">${formatCurrency(item.price)}</span> <small class="text-muted text-decoration-line-through ms-1">${formatCurrency(item.original_price || item.price)}</small></div><span class="badge bg-danger text-white flash-sale-badge"><i class="bi bi-lightning-fill me-1"></i>Flash Sale</span>`
                 : `<span class="fw-semibold">${formatCurrency(item.price)}</span>`;
             tr.innerHTML = `
             <td>
-    <div style="display: flex; align-items: center;">
+    <div style="display: flex; align-items: center;" class="${isFlash ? 'flash-sale-item' : ''}">
         <!-- Ảnh sản phẩm -->
         <img src="${item.image}" alt="${item.name}" 
-             style="width:40px; height:40px; object-fit:cover; margin-right:8px;">
+             style="width:40px; height:40px; object-fit:cover; margin-right:8px; ${isFlash ? 'border: 2px solid #dc3545; border-radius: 4px;' : ''}">
 
         <!-- Thông tin sản phẩm -->
         <div>
-            <div style="font-weight: 500;">${item.name}</div>
+            <div style="font-weight: 500;">${item.name} ${isFlash ? '<i class="bi bi-lightning-fill text-danger ms-1" title="Sản phẩm Flash Sale"></i>' : ''}</div>
             <div style="font-size: 12px; color: #555;">
                 <span>${item.color}</span> | <span>${item.capacity}</span>
             </div>
@@ -594,7 +594,7 @@
             }
         } catch (e) {}
 
-        select.addEventListener('change', function() {
+        select.addEventListener('change', async function() {
             const option = this.options[this.selectedIndex];
             if (!this.value) {
                 msg.innerText = 'Không áp dụng voucher';
@@ -604,19 +604,43 @@
                 updateCartSummary();
                 return;
             }
-            const applied = {
-                success: true,
-                id: this.value,
-                code: option.getAttribute('data-code'),
-                discount: Number(option.getAttribute('data-discount')),
-                min_money: Number(option.getAttribute('data-min')),
-                max_money: Number(option.getAttribute('data-max'))
-            };
-            window.currentVoucher = applied;
-            localStorage.setItem('checkout_voucher', JSON.stringify(applied));
-            msg.innerText = `Áp dụng: ${applied.code} - Giảm ${applied.discount}% (tối thiểu ${formatCurrency(applied.min_money)}, tối đa ${formatCurrency(applied.max_money)})`;
-            box.style.border = '2px solid #28a745';
-            updateCartSummary();
+            const code = option.getAttribute('data-code');
+            try {
+                const res = await fetch(`/api/voucher?code=${encodeURIComponent(code)}`);
+                const data = await res.json();
+                if (data && data.success) {
+                    const applied = {
+                        success: true,
+                        id: this.value,
+                        code: code,
+                        discount: Number(data.discount ?? option.getAttribute('data-discount')),
+                        min_money: Number(data.min_money ?? option.getAttribute('data-min')),
+                        max_money: Number(data.max_money ?? option.getAttribute('data-max'))
+                    };
+                    window.currentVoucher = applied;
+                    localStorage.setItem('checkout_voucher', JSON.stringify(applied));
+                    msg.innerText = `Áp dụng: ${applied.code} - Giảm ${applied.discount}% (tối thiểu ${formatCurrency(applied.min_money)}, tối đa ${formatCurrency(applied.max_money)})`;
+                    box.style.border = '2px solid #28a745';
+                    updateCartSummary();
+                } else {
+                    // Nếu BE thông báo đã dùng hoặc không hợp lệ: xóa chọn và thông báo
+                    window.currentVoucher = null;
+                    localStorage.removeItem('checkout_voucher');
+                    this.value = '';
+                    box.style.border = '';
+                    const message = data?.message || 'Mã giảm giá không hợp lệ hoặc đã hết hạn';
+                    msg.innerText = message;
+                    updateCartSummary();
+                }
+            } catch (e) {
+                // Lỗi mạng: không áp dụng voucher
+                window.currentVoucher = null;
+                localStorage.removeItem('checkout_voucher');
+                this.value = '';
+                box.style.border = '';
+                msg.innerText = 'Không thể xác thực mã giảm giá. Vui lòng thử lại.';
+                updateCartSummary();
+            }
         });
     }
 
@@ -979,6 +1003,47 @@
         background-repeat: no-repeat;
         background-position: right 0.75rem center;
         background-size: 16px 12px;
+    }
+
+    /* Flash Sale Styles */
+    .flash-sale-item {
+        background: linear-gradient(90deg, rgba(220, 53, 69, 0.05), rgba(255, 255, 255, 0.05));
+        border-radius: 8px;
+        padding: 8px;
+        margin: -4px;
+        border-left: 4px solid #dc3545;
+    }
+
+    .flash-sale-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        animation: flashPulse 2s infinite;
+        box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+    }
+
+    @keyframes flashPulse {
+        0%, 100% { 
+            transform: scale(1);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+        50% { 
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.5);
+        }
+    }
+
+    /* Flash sale row highlight */
+    tr:has(.flash-sale-item) {
+        background: rgba(220, 53, 69, 0.02);
+        border-left: 3px solid #dc3545;
+    }
+
+    tr:has(.flash-sale-item):hover {
+        background: rgba(220, 53, 69, 0.05);
     }
 </style>
 

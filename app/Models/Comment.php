@@ -5,12 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
-{
-    protected $fillable = ['blog_id', 'user_id', 'content', 'parent_id'];
+
+    protected $fillable = ['post_id', 'user_id', 'content', 'parent_id'];
+
+    protected $fillable = ['blog_id', 'user_id', 'content', 'parent_id', 'is_hidden'];
+
+    protected $casts = [
+        'is_hidden' => 'boolean',
+    ];
+
 
     public function blog()
     {
-        return $this->belongsTo(Blog::class);
+        return $this->belongsTo(Blog::class, 'post_id');
     }
 
     public function user()

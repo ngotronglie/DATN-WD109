@@ -12,15 +12,10 @@ class TagBlog extends Model
 
     protected $fillable = [
         'name_tag',
-        'content'
+        'content',
     ];
 
     protected $table = 'tag_blog';
-
-    protected $fillable = [
-        'name_tag',
-        'content',
-    ];
 
     public function blogs()
     {

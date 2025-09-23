@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductComment extends Model
 {
-    protected $fillable = ['product_id', 'user_id', 'content', 'parent_id'];
+    protected $fillable = ['product_id', 'user_id', 'content', 'parent_id', 'is_hidden', 'flash_sale_id'];
+
+    protected $casts = [
+        'is_hidden' => 'boolean',
+    ];
 
     public function product()
     {

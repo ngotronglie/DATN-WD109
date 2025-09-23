@@ -14,6 +14,7 @@
                 <th>Người bình luận</th>
                 <th>Nội dung</th>
                 <th>Ngày</th>
+                <th>Trạng thái</th>
                 <th>Hành động</th>
             </tr>
         </thead>
@@ -30,7 +31,18 @@
                     <td>{{ $comment->content }}</td>
                     <td>{{ $comment->created_at->format('d/m/Y H:i') }}</td>
                     <td>
-                        <form action="{{ route('admin.comments.destroy', $comment->id) }}" method="POST" onsubmit="return confirm('Xóa bình luận này?')">
+                        @if($comment->is_hidden)
+                            <span class="badge bg-secondary">Đang ẩn</span>
+                        @else
+                            <span class="badge bg-success">Đang hiện</span>
+                        @endif
+                    </td>
+                    <td>
+                        <form action="{{ route('admin.comments.toggle', $comment) }}" method="POST" style="display:inline" onsubmit="return confirm('Xác nhận {{ $comment->is_hidden ? 'hiện' : 'ẩn' }} bình luận này?')">
+                            @csrf
+                            <button class="btn btn-{{ $comment->is_hidden ? 'primary' : 'warning' }} btn-sm">{{ $comment->is_hidden ? 'Hiện' : 'Ẩn' }}</button>
+                        </form>
+                        <form action="{{ route('admin.comments.destroy', $comment->id) }}" method="POST" onsubmit="return confirm('Xóa bình luận này?')" style="display:inline">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-danger btn-sm">Xóa</button>

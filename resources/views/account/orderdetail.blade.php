@@ -18,10 +18,10 @@
         4 => 'Đang giao hàng',
         5 => 'Đã giao',
         6 => 'Đã hủy',
-        7 => 'xác nhận yêu cầu Hoàn tiền',
+        7 => 'Đã duyệt yêu cầu hoàn hàng',
         8 => 'Hoàn hàng',
         9 => 'Hoàn tiền thành công',
-        10 => 'không xác nhận yêu cầu hoàn tiền',
+        10 => 'Không xác nhận yêu cầu hoàn hàng',
         11 => 'Đang yêu cầu hoàn hàng',
         12 => 'Không hoàn hàng',
         13 => 'Giao hàng thất bại',
@@ -48,6 +48,17 @@
         $statusText = $statusLabels[$status] ?? 'Không xác định';
         $badgeClass = $statusColors[$status] ?? 'bg-light text-dark';
 
+        // Tùy biến nhãn trạng thái 7 theo loại yêu cầu hoàn
+        if ((int)$status === 7 && $order->refundRequest) {
+            if (($order->refundRequest->type ?? null) === 'admin_refund') {
+                $statusText = 'Đã xác nhận hoàn lại tiền';
+            } else {
+                $statusText = 'Đã duyệt yêu cầu hoàn hàng';
+            }
+        }
+
+        // Không còn điều chỉnh nhãn theo phương thức thanh toán cho các trạng thái hoàn hàng/hoàn tiền trung gian.
+
         // Nếu VNPAY chưa thanh toán và đơn còn ở trạng thái chờ (0), hiển thị 'Chờ thanh toán'
         if ((int)$order->status === 0 && strtolower((string)$order->payment_method) === 'vnpay' && (int)$order->status_method === 0) {
             $statusText = 'Chờ thanh toán';
@@ -59,6 +70,22 @@
             <p class="mb-1"><strong>Ngày đặt:</strong> {{ $order->created_at->format('d/m/Y') }}</p>
             <p class="mb-0"><strong>Trạng thái:</strong> <span class="badge {{ $badgeClass }} px-3 py-1 rounded-pill">{{ $statusText }}</span></p>
         </div>
+        @if (session('success'))
+        <div class="alert alert-success rounded-4">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+        <div class="alert alert-danger rounded-4">{{ session('error') }}</div>
+        @endif
+        @if ($errors->any())
+        <div class="alert alert-danger rounded-4">
+            <div class="fw-bold mb-1">Có lỗi xảy ra:</div>
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
         @if (in_array($order->status, [0,1]))
         <form action="{{ route('order.cancel', $order->id) }}" method="POST" class="mb-4">
             @csrf
@@ -165,7 +192,19 @@
         </form>
         @endif
 
-        @if ($order->status == 5 && $order->refundRequest == null)
+        {{-- Bước 3: Khi admin đã duyệt hoàn hàng (status = 7) và KHÁCH là người yêu cầu (type != admin_refund) --}}
+        @php $isVnp = strtolower((string)$order->payment_method) === 'vnpay'; @endphp
+        @if ($order->status == 7 && $order->refundRequest && ($order->refundRequest->type !== 'admin_refund'))
+        <div class="alert alert-info mt-2 rounded-4 d-flex justify-content-between align-items-center">
+            <span>Yêu cầu hoàn hàng của bạn đã được duyệt. Vui lòng gửi/trả hàng lại cho shop. Sau khi đã gửi, hãy nhấn nút "Đã trả hàng" để chúng tôi bắt đầu quy trình hoàn tiền.</span>
+        </div>
+        <form action="{{ route('user.orders.markReturned', $order->id) }}" method="POST" class="text-end mt-2">
+            @csrf
+            <button type="submit" class="btn btn-outline-primary rounded-pill">Đã trả hàng</button>
+        </form>
+        @endif
+
+        @if (in_array($order->status, [5,15]) && $order->refundRequest == null)
         <div class="text-end mt-2">
             <button class="btn btn-outline-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#returnModal">
                 Yêu cầu hoàn hàng
@@ -298,8 +337,8 @@
 </div>
 @endif
 
-{{-- Modal hoàn hàng (áp dụng cho đơn đang giao đến hoặc đã giao) --}}
-@if (in_array($order->status, [4,5,15]))
+{{-- Modal hoàn hàng (chỉ hiển thị khi đã giao hoặc đã giao thành công) --}}
+@if (in_array($order->status, [5,15]))
 <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <form action="{{ route('order.return', $order->id) }}" method="POST" enctype="multipart/form-data" class="modal-content shadow rounded-4 fs-5">

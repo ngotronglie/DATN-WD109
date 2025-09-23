@@ -185,6 +185,15 @@
                         </button>
                         @endif
                     </div>
+                    @elseif($stt === 6)
+                    <div class="mt-3">
+                        <h6>Hành động:</h6>
+                        @if (strtolower((string)$order->payment_method) === 'vnpay')
+                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#initiateRefundModal-{{ $order->id }}">
+                            <i class="fas fa-money-bill-wave"></i> Hoàn tiền
+                        </button>
+                        @endif
+                    </div>
                     @elseif($stt === 14)
                     <div class="mt-3">
                         <h6>Hành động:</h6>
@@ -203,7 +212,72 @@
     </div>
 </div>
 
-@if (strtolower((string)$order->payment_method) === 'vnpay' && $stt === 13)
+@if($order->refundRequest)
+<div class="container pb-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mt-3">
+                <div class="card-header bg-warning text-dark">Thông tin hoàn tiền</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngân hàng</label>
+                            <div class="form-control">{{ $order->refundRequest->bank_name ?? '-' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Số tài khoản</label>
+                            <div class="form-control">{{ $order->refundRequest->bank_number ?? '-' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Chủ tài khoản</label>
+                            <div class="form-control">{{ $order->refundRequest->account_name ?? '-' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Lý do</label>
+                            <div class="form-control">{{ $order->refundRequest->reason ?? '-' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Thời gian yêu cầu</label>
+                            <div class="form-control">{{ optional($order->refundRequest->refund_requested_at)->format('d/m/Y H:i') ?? '-' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Thời gian hoàn tiền</label>
+                            <div class="form-control">{{ optional($order->refundRequest->refund_completed_at)->format('d/m/Y H:i') ?? '-' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Người hoàn</label>
+                            <div class="form-control">{{ $order->refundRequest->refunded_by ?? '-' }}</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Ảnh minh chứng hoàn tiền (Admin)</label>
+                            @php
+                                $proofUrl = $order->refundRequest->proof_image ? asset('storage/' . $order->refundRequest->proof_image) : null;
+                            @endphp
+                            @if($proofUrl)
+                                <div>
+                                    <a href="{{ $proofUrl }}" target="_blank">
+                                        <img src="{{ $proofUrl }}" alt="Proof" style="max-width:260px; height:auto; border:1px solid #ddd; border-radius:6px;">
+                                    </a>
+                                </div>
+                            @else
+                                <div class="text-muted mb-2">Chưa có minh chứng</div>
+                                @if($order->refundRequest)
+                                <form action="{{ route('admin.refunds.uploadProof', $order->refundRequest->id) }}" method="POST" enctype="multipart/form-data" class="d-flex gap-2 align-items-center flex-wrap">
+                                    @csrf
+                                    <input type="file" name="proof_image" class="form-control" accept="image/*" required style="max-width:300px;">
+                                    <button type="submit" class="btn btn-primary">Tải ảnh minh chứng</button>
+                                </form>
+                                @endif
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+@if (strtolower((string)$order->payment_method) === 'vnpay' && in_array($stt, [6,13]))
 <div class="modal fade" id="initiateRefundModal-{{ $order->id }}" tabindex="-1" aria-labelledby="initiateRefundLabel-{{ $order->id }}" aria-hidden="true">
     <div class="modal-dialog">
         <form class="modal-content" method="POST" action="{{ route('admin.orders.refund.initiate', $order->id) }}">
@@ -218,13 +292,14 @@
                     <select class="form-select" id="refund-reason-select-{{ $order->id }}" name="reason" required>
                         <option value="">-- Chọn lý do --</option>
                         <option value="Giao hàng thất bại">Giao hàng thất bại</option>
+                        <option value="Khách hủy đơn">Khách hủy đơn</option>
                         <option value="Khác">Khác</option>
                     </select>
                     <input type="text" class="form-control mt-2" id="refund-reason-input-{{ $order->id }}" name="reason_other" placeholder="Nhập lý do khác" style="display:none;">
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-warning">Tạo yêu cầu hoàn</button>
+                <button type="submit" class="btn btn-warning">Tạo yêu cầu hoàn tiền</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
             </div>
         </form>

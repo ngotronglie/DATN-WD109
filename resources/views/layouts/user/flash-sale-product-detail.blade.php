@@ -186,6 +186,9 @@
                         
                         @if($comments->count() > 0)
                             @foreach($comments as $comment)
+                                @if(isset($comment->is_hidden) && $comment->is_hidden)
+                                    @continue
+                                @endif
                                 <div class="comment-item mb-3 p-3 border rounded">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <strong>{{ $comment->user->name ?? 'Khách' }}</strong>
@@ -232,7 +235,7 @@
                             </div>
                         @else
                             <div class="alert alert-info mt-3">
-                                Vui lòng <a href="{{ route('login') }}">đăng nhập</a> để bình luận.
+                                Vui lòng <a href="{{ route('auth.login') }}">đăng nhập</a> để bình luận.
                             </div>
                         @endauth
                     </div>

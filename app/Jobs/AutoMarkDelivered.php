@@ -42,6 +42,11 @@ class AutoMarkDelivered implements ShouldQueue
             $order->payment_method = 'cod';
         }
 
+        // Stamp delivered_at when marking delivered
+        if (empty($order->delivered_at)) {
+            $order->delivered_at = now();
+        }
+
         $order->save();
     }
 }

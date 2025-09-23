@@ -124,6 +124,42 @@
 
     </div>
 </div>
+<!-- Modal: Loading khi đặt hàng COD -->
+<div class="modal fade" id="placingOrderModal" tabindex="-1" aria-labelledby="placingOrderModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-body p-4 text-center">
+        <div class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <h5 class="mb-1" id="placingOrderModalLabel">Đang xử lý đơn hàng</h5>
+        <p class="text-muted mb-0">Vui lòng đợi trong giây lát...</p>
+      </div>
+    </div>
+  </div>
+  </div>
+<!-- Modal: Thông báo đặt hàng thành công -->
+<div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-labelledby="orderSuccessModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="orderSuccessModalLabel">Đặt hàng thành công</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="text-success mb-2" style="font-size:48px; line-height:1;">
+          <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <p class="mb-1">Cảm ơn bạn đã đặt hàng!</p>
+        <p class="mb-0">Mã đơn hàng của bạn: <strong id="orderSuccessCode">#000000</strong></p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center gap-2">
+        <button type="button" class="btn btn-outline-primary" id="orderSuccessViewBtn">Xem đơn hàng</button>
+        <button type="button" class="btn btn-primary" id="orderSuccessConfirmBtn">Về trang chủ</button>
+      </div>
+    </div>
+  </div>
+</div>
 @endsection
 
 <style>
@@ -205,6 +241,25 @@
 </style>
 @section('script-client')
 <script>
+    // Modal hiển thị loading khi đặt hàng (COD)
+    let placingOrderModalInstance = null;
+    let orderSuccessModalInstance = null;
+    let lastCreatedOrderId = null;
+    document.addEventListener('DOMContentLoaded', function() {
+        const modalEl = document.getElementById('placingOrderModal');
+        if (modalEl && window.bootstrap && bootstrap.Modal) {
+            placingOrderModalInstance = new bootstrap.Modal(modalEl, {backdrop: 'static', keyboard: false});
+        }
+        const successEl = document.getElementById('orderSuccessModal');
+        if (successEl && window.bootstrap && bootstrap.Modal) {
+            orderSuccessModalInstance = new bootstrap.Modal(successEl, {backdrop: 'static', keyboard: false});
+        }
+        const successBtn = document.getElementById('orderSuccessConfirmBtn');
+        successBtn?.addEventListener('click', function(){ window.location.href = '/'; });
+        const viewBtn = document.getElementById('orderSuccessViewBtn');
+        viewBtn?.addEventListener('click', function(){ if (lastCreatedOrderId) { window.location.href = '/account/order/' + lastCreatedOrderId; } else { window.location.href = '/account/order'; } });
+    });
+
     function formatCurrency(num) {
         const number = Math.floor(Number(num)) || 0;
         return number.toLocaleString('vi-VN') + 'đ';
@@ -297,6 +352,10 @@
     document.addEventListener('DOMContentLoaded', renderCheckoutPage);
 
     document.getElementById('confirm-order-btn').onclick = async function() {
+        // Chỉ dùng cho COD (nút này ẩn khi chọn VNPAY)
+        const confirmBtn = document.getElementById('confirm-order-btn');
+        try { confirmBtn.disabled = true; } catch (e) {}
+        try { placingOrderModalInstance && placingOrderModalInstance.show(); } catch (e) {}
         const cart = JSON.parse(localStorage.getItem('checkout_cart') || '[]');
         const user = JSON.parse(localStorage.getItem('checkout_user') || 'null');
         const voucher = JSON.parse(localStorage.getItem('checkout_voucher') || 'null');
@@ -398,7 +457,6 @@
         });
         const data = await res.json();
         if (data.success) {
-            alert('Đặt hàng thành công! Mã đơn: ' + data.order_code);
             // Đặt badge giỏ hàng về 0
             try {
                 document.getElementById('cart-count-badge').innerText = '0';
@@ -410,10 +468,18 @@
                 localStorage.removeItem('checkout_voucher');
                 localStorage.removeItem('checkout_voucher_code');
             } catch (e) {}
-            window.location.href = '/';
+            // Ẩn loading và hiển thị modal thành công với mã đơn
+            try { placingOrderModalInstance && placingOrderModalInstance.hide(); } catch (e) {}
+            try { document.getElementById('orderSuccessCode').innerText = '#' + String(data.order_code || '').toUpperCase(); } catch (e) {}
+            try { lastCreatedOrderId = data.order_id || null; } catch (e) {}
+            try { orderSuccessModalInstance && orderSuccessModalInstance.show(); } catch (e) { window.location.href = '/'; }
         } else {
             alert('Có lỗi khi đặt hàng, vui lòng thử lại!');
+            try { placingOrderModalInstance && placingOrderModalInstance.hide(); } catch (e) {}
+            try { confirmBtn.disabled = false; } catch (e) {}
+            return;
         }
+        try { confirmBtn.disabled = false; } catch (e) {}
     };
 
     // Hiển thị nút VNPAY nếu chọn phương thức thanh toán online

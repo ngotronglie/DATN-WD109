@@ -87,10 +87,10 @@
                                 4 => 'Đang giao hàng',
                                 5 => 'Đã giao',
                                 6 => 'Đã hủy',
-                                7 => 'xác nhận yêu cầu Hoàn hàng',
+                                7 => 'Đã duyệt yêu cầu hoàn hàng',
                                 8 => 'Hoàn hàng',
                                 9 => 'Hoàn tiền thành công',
-                                10 => 'không xác nhận yêu cầu hoàn hàng',
+                                10 => 'Không xác nhận yêu cầu hoàn hàng',
                                 11 => 'Đang yêu cầu hoàn hàng',
                                 12 => 'Không hoàn hàng',
                                 13 => 'Giao hàng thất bại',
@@ -118,6 +118,15 @@
                                 $status = $order->status;
                                 $statusText = $statusLabels[$status] ?? 'Không xác định';
                                 $badgeClass = $statusColors[$status] ?? 'bg-light text-dark';
+
+                                // Tùy biến nhãn trạng thái 7 tương tự trang chi tiết
+                                if ((int)$status === 7 && $order->refundRequest) {
+                                    if (($order->refundRequest->type ?? null) === 'admin_refund') {
+                                        $statusText = 'Đã xác nhận hoàn lại tiền';
+                                    } else {
+                                        $statusText = 'Đã duyệt yêu cầu hoàn hàng';
+                                    }
+                                }
 
                                 // Nếu là VNPAY và chưa thanh toán, hiển thị 'Chờ thanh toán' (chỉ khi status == 0)
                                 if ((int)$order->status === 0 && strtolower((string)$order->payment_method) === 'vnpay' && (int)$order->status_method === 0) {
