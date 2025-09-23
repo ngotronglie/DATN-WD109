@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\RefundRequest;
 use App\Jobs\AutoCancelFailedDeliveryOrder;
 use App\Jobs\AutoMarkDelivered;
+use App\Jobs\AutoMarkReceivedSuccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
@@ -147,6 +148,11 @@ class OrderController extends Controller
 
             $order->save();
 
+            // If marked as Delivered (5), schedule auto mark as 'Đã giao thành công' (15) after 3 days
+            if ($newStatus === 5) {
+                AutoMarkReceivedSuccess::dispatch($order->id)->delay(now()->addDays(3));
+            }
+
             // Nếu chuyển sang Đang giao hàng (4), lên lịch tự động đánh dấu đã giao (5)
             // Chỉ áp dụng cho đơn COD và sau 30 phút nếu khách chưa xác nhận
             if ($wasStatus !== 4 && $newStatus === 4) {
@@ -231,8 +237,18 @@ class OrderController extends Controller
     }
     public function refundRequests()
     {
-        $refunds = RefundRequest::with('order')->orderByDesc('created_at')->paginate(10);
-        return view('layouts.admin.refunds.list', compact('refunds'));
+        $type = request('type');
+        $query = RefundRequest::with('order')->orderByDesc('created_at');
+        if ($type === 'admin_refund') {
+            $query->where('type', 'admin_refund');
+        } elseif ($type === 'return') {
+            $query->where('type', 'return');
+        }
+        $refunds = $query->paginate(10);
+        if ($type) {
+            $refunds->appends(['type' => $type]);
+        }
+        return view('layouts.admin.refunds.list', compact('refunds', 'type'));
     }
     public function showRefundDetail($id)
     {
@@ -422,6 +438,9 @@ class OrderController extends Controller
             }
             
             $order->save();
+            
+            // Schedule auto mark as 'Đã giao thành công' (15) after 3 days
+            AutoMarkReceivedSuccess::dispatch($order->id)->delay(now()->addDays(3));
             \DB::commit();
             
             return back()->with('success', 'Đã đánh dấu giao hàng thành công.');

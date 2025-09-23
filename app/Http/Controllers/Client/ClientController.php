@@ -147,6 +147,22 @@ class ClientController extends Controller
     public function index()
 
     {
+        // Gracefully handle database unavailability to avoid crashing the homepage
+        try {
+            // Simple connectivity check - will throw if DB is down/misconfigured
+            DB::connection()->getPdo();
+        } catch (\Throwable $e) {
+            \Log::error('[ClientController@index] Database unavailable: ' . $e->getMessage());
+            return view('layouts.user.main', [
+                'categories' => [],
+                'banners' => [],
+                'products' => [],
+                'flashSales' => [],
+                'discountedProducts' => [],
+                'popularProducts' => []
+            ]);
+        }
+
         // Get products split into discounted and popular (non-discounted)
         $baseQuery = Product::where('is_active', 1)
             ->with(['variants' => function($query) {
