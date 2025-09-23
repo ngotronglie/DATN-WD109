@@ -19,7 +19,7 @@
         5 => 'Đã giao',
         6 => 'Đã hủy',
         7 => 'Đã duyệt yêu cầu hoàn hàng',
-        8 => 'Hoàn hàng',
+        8 => 'Đã trả hàng',
         9 => 'Hoàn tiền thành công',
         10 => 'Không xác nhận yêu cầu hoàn hàng',
         11 => 'Đang yêu cầu hoàn hàng',
@@ -48,13 +48,9 @@
         $statusText = $statusLabels[$status] ?? 'Không xác định';
         $badgeClass = $statusColors[$status] ?? 'bg-light text-dark';
 
-        // Tùy biến nhãn trạng thái 7 theo loại yêu cầu hoàn
-        if ((int)$status === 7 && $order->refundRequest) {
-            if (($order->refundRequest->type ?? null) === 'admin_refund') {
-                $statusText = 'Đã xác nhận hoàn lại tiền';
-            } else {
-                $statusText = 'Đã duyệt yêu cầu hoàn hàng';
-            }
+        // Tùy biến nhãn trạng thái 7: nếu là hoàn tiền do admin (admin_refund) thì hiển thị 'Đang hoàn tiền'
+        if ((int)$status === 7 && ($order->refundRequest?->type ?? null) === 'admin_refund') {
+            $statusText = 'Đang hoàn tiền';
         }
 
         // Không còn điều chỉnh nhãn theo phương thức thanh toán cho các trạng thái hoàn hàng/hoàn tiền trung gian.
@@ -204,7 +200,7 @@
         </form>
         @endif
 
-        @if (in_array($order->status, [5,15]) && $order->refundRequest == null)
+        @if (in_array($order->status, [5,15]) && $order->refundRequest == null && empty($order->received_confirmed_at))
         <div class="text-end mt-2">
             <button class="btn btn-outline-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#returnModal">
                 Yêu cầu hoàn hàng
@@ -338,7 +334,7 @@
 @endif
 
 {{-- Modal hoàn hàng (chỉ hiển thị khi đã giao hoặc đã giao thành công) --}}
-@if (in_array($order->status, [5,15]))
+@if (in_array($order->status, [5,15]) && empty($order->received_confirmed_at))
 <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <form action="{{ route('order.return', $order->id) }}" method="POST" enctype="multipart/form-data" class="modal-content shadow rounded-4 fs-5">

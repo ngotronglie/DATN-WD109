@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Order;
+use App\Jobs\AutoMarkReceivedSuccess;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -48,5 +49,8 @@ class AutoMarkDelivered implements ShouldQueue
         }
 
         $order->save();
+
+        // Schedule auto mark as 'Đã giao thành công' (15) after 3 days if not confirmed by user
+        AutoMarkReceivedSuccess::dispatch($order->id)->delay(now()->addDays(3));
     }
 }

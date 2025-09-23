@@ -1,10 +1,21 @@
 @extends('index.admindashboard')
 
 @section('content')
-<h2>Yêu cầu hoàn tiền (thanh toán online)</h2>
+<h2>Yêu cầu hoàn (tách riêng hoàn tiền / hoàn hàng)</h2>
+
+<div class="mb-3">
+    @php $activeType = $type ?? null; @endphp
+    <a href="{{ route('admin.refunds.list') }}" class="btn btn-outline-primary btn-sm me-2 {{ empty($activeType) ? 'active' : '' }}">Tất cả</a>
+    <a href="{{ route('admin.refunds.list', ['type' => 'admin_refund']) }}" class="btn btn-outline-success btn-sm me-2 {{ $activeType === 'admin_refund' ? 'active' : '' }}">Hoàn tiền (Admin)</a>
+    <a href="{{ route('admin.refunds.list', ['type' => 'return']) }}" class="btn btn-outline-warning btn-sm {{ $activeType === 'return' ? 'active' : '' }}">Hoàn hàng (Khách)</a>
+    @if(!empty($activeType))
+        <a href="{{ route('admin.refunds.list') }}" class="btn btn-link btn-sm">Xóa lọc</a>
+    @endif
+  </div>
 <table class="table table-bordered">
     <thead>
         <tr>
+            <th>Loại</th>
             <th>Đơn hàng</th>
             <th>Ngân hàng</th>
             <th>Số tài khoản</th>
@@ -19,6 +30,15 @@
     <tbody>
         @foreach($refunds as $refund)
         <tr>
+            <td>
+                @if(($refund->type ?? '') === 'admin_refund')
+                    <span class="badge bg-success">Hoàn tiền</span>
+                @elseif(($refund->type ?? '') === 'return')
+                    <span class="badge bg-warning text-dark">Hoàn hàng</span>
+                @else
+                    <span class="badge bg-secondary">Khác</span>
+                @endif
+            </td>
             <td>#{{ $refund->order_id }}</td>
             <td>{{ $refund->bank_name }}</td>
             <td>{{ $refund->bank_number }}</td>

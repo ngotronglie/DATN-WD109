@@ -119,10 +119,10 @@
                                 $statusText = $statusLabels[$status] ?? 'Không xác định';
                                 $badgeClass = $statusColors[$status] ?? 'bg-light text-dark';
 
-                                // Tùy biến nhãn trạng thái 7 tương tự trang chi tiết
+                                // Tùy biến nhãn trạng thái 7: nếu là hoàn tiền do admin thì hiển thị 'Đang hoàn tiền'
                                 if ((int)$status === 7 && $order->refundRequest) {
                                     if (($order->refundRequest->type ?? null) === 'admin_refund') {
-                                        $statusText = 'Đã xác nhận hoàn lại tiền';
+                                        $statusText = 'Đang hoàn tiền';
                                     } else {
                                         $statusText = 'Đã duyệt yêu cầu hoàn hàng';
                                     }

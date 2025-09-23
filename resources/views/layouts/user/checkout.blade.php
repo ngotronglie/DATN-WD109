@@ -133,7 +133,10 @@
           <span class="visually-hidden">Loading...</span>
         </div>
         <h5 class="mb-1" id="placingOrderModalLabel">Đang xử lý đơn hàng</h5>
-        <p class="text-muted mb-0">Vui lòng đợi trong giây lát...</p>
+        <p class="modal-subtitle mb-3">Vui lòng đợi trong giây lát...</p>
+        <div class="progress progress-soft mx-auto" style="max-width: 260px;">
+          <div class="progress-bar progress-bar-animated progress-bar-indeterminate" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -238,6 +241,63 @@
     .checkout-steps .step-item.active::after {
         background: #28a745;
     }
+
+    /* Modal polish */
+    #placingOrderModal .modal-content,
+    #orderSuccessModal .modal-content {
+        border-radius: 1rem;
+    }
+    #orderSuccessModal .modal-header {
+        background: linear-gradient(90deg, #22c55e, #16a34a);
+        color: #fff;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+    }
+    #orderSuccessModal .modal-title {
+        font-weight: 700;
+    }
+    #orderSuccessModal .modal-body .bi-check-circle-fill {
+        filter: drop-shadow(0 4px 10px rgba(34,197,94,.35));
+    }
+    .modal-subtitle {
+        color: #6b7280;
+        font-size: .95rem;
+    }
+
+    /* Soft progress (indeterminate) */
+    .progress.progress-soft {
+        height: 8px;
+        background: #eef2ff;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .progress-bar-indeterminate {
+        position: relative;
+        width: 30%;
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        border-radius: 999px;
+        animation: indeterminate 1.2s infinite ease-in-out;
+    }
+    @keyframes indeterminate {
+        0% { left: -30%; }
+        50% { left: 50%; }
+        100% { left: 110%; }
+    }
+
+    /* Success modal buttons */
+    #orderSuccessModal .btn-primary {
+        background: linear-gradient(90deg, #2563eb, #1d4ed8);
+        border: none;
+        box-shadow: 0 6px 18px rgba(29,78,216,.25);
+    }
+    #orderSuccessModal .btn-outline-primary {
+        border-color: #2563eb;
+        color: #2563eb;
+    }
+    #orderSuccessModal .btn-outline-primary:hover {
+        background: #2563eb;
+        color: #fff;
+    }
 </style>
 @section('script-client')
 <script>
@@ -257,7 +317,7 @@
         const successBtn = document.getElementById('orderSuccessConfirmBtn');
         successBtn?.addEventListener('click', function(){ window.location.href = '/'; });
         const viewBtn = document.getElementById('orderSuccessViewBtn');
-        viewBtn?.addEventListener('click', function(){ if (lastCreatedOrderId) { window.location.href = '/account/order/' + lastCreatedOrderId; } else { window.location.href = '/account/order'; } });
+        viewBtn?.addEventListener('click', function(){ window.location.href = '/account/order'; });
     });
 
     function formatCurrency(num) {

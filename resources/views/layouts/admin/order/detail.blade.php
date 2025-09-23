@@ -125,9 +125,14 @@
                         @elseif($stt === 6)
                         <span class="badge bg-danger">Đã hủy</span>
                         @elseif($stt === 7)
-                        <span class="badge bg-warning text-dark">Đã xác nhận yêu cầu hoàn hàng</span>
+                        @php $isAdminRefund = optional($order->refundRequest)->type === 'admin_refund'; @endphp
+                        @if($isAdminRefund)
+                        <span class="badge bg-warning text-dark">Đã khởi tạo hoàn tiền cho khách</span>
+                        @else
+                        <span class="badge bg-warning text-dark">Đã duyệt đơn hàng hoàn</span>
+                        @endif
                         @elseif($stt === 8)
-                        <span class="badge bg-success text-dark">Đã nhận hàng hoàn</span>
+                        <span class="badge bg-success text-dark">Đã nhận được hàng hoàn</span>
                         @elseif($stt === 9)
                         <span class="badge bg-success text-dark">Hoàn tiền thành công</span>
                         @elseif($stt === 10)
@@ -179,7 +184,7 @@
                                 <i class="fas fa-redo"></i> Giao hàng lại
                             </button>
                         </form>
-                        @if (strtolower((string)$order->payment_method) === 'vnpay')
+                        @if (strtolower((string)$order->payment_method) === 'vnpay' && (int)($order->status_method ?? 0) !== 0)
                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#initiateRefundModal-{{ $order->id }}">
                             <i class="fas fa-money-bill-wave"></i> Hoàn tiền
                         </button>
@@ -188,7 +193,7 @@
                     @elseif($stt === 6)
                     <div class="mt-3">
                         <h6>Hành động:</h6>
-                        @if (strtolower((string)$order->payment_method) === 'vnpay')
+                        @if (strtolower((string)$order->payment_method) === 'vnpay' && (int)($order->status_method ?? 0) !== 0)
                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#initiateRefundModal-{{ $order->id }}">
                             <i class="fas fa-money-bill-wave"></i> Hoàn tiền
                         </button>
@@ -277,7 +282,7 @@
     </div>
 @endif
 
-@if (strtolower((string)$order->payment_method) === 'vnpay' && in_array($stt, [6,13]))
+@if (strtolower((string)$order->payment_method) === 'vnpay' && (int)($order->status_method ?? 0) !== 0 && in_array($stt, [6,13]))
 <div class="modal fade" id="initiateRefundModal-{{ $order->id }}" tabindex="-1" aria-labelledby="initiateRefundLabel-{{ $order->id }}" aria-hidden="true">
     <div class="modal-dialog">
         <form class="modal-content" method="POST" action="{{ route('admin.orders.refund.initiate', $order->id) }}">
