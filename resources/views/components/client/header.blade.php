@@ -5,7 +5,7 @@
               <!-- Logo -->
               <div class="logo me-auto">
                   <a href="{{ route('home') }}" class="text-decoration-none">
-                      <span class="logo-text">DATN Shop</span>
+                     <img src="{{ asset('frontend/img/logo/Techzone.png') }}" alt="Logo" class="img-fluid">
                   </a>
               </div>
               <!-- Menu -->

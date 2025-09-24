@@ -13,3 +13,43 @@ Note: This is the file where you can add your custom styles to change the look o
 /* ----------------------------------------------------
 	You can put your custom css code here: 
 -------------------------------------------------------*/
+
+/* Fix: Vietnamese-friendly font for product names and remove forced uppercase */
+/* Product listing titles (shop page) */
+.products-container .product-title,
+.products-container .product-title a,
+.product-card .product-title,
+.product-card .product-title a {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, Arial, "Helvetica Neue", Helvetica, sans-serif !important;
+  font-weight: 600;
+  text-transform: none !important;
+  letter-spacing: 0;
+}
+
+/* Sidebar recent product titles */
+.recent-product-title,
+.recent-product-title a {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, Arial, "Helvetica Neue", Helvetica, sans-serif !important;
+  text-transform: none !important;
+}
+
+/* Component-based product grid titles */
+.featured-products-section .product-name {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, Arial, "Helvetica Neue", Helvetica, sans-serif !important;
+  text-transform: none !important;
+}
+
+/* Product detail main title */
+.product-detail-section .product-title {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, Arial, "Helvetica Neue", Helvetica, sans-serif !important;
+  text-transform: none !important;
+}
+
+/* Favorites page product names */
+.favorites-grid .product-name,
+.favorites-grid .product-name a {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, Arial, "Helvetica Neue", Helvetica, sans-serif !important;
+  font-weight: 600;
+  text-transform: none !important;
+  letter-spacing: 0;
+}

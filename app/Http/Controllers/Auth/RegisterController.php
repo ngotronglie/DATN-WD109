@@ -62,19 +62,21 @@ class RegisterController extends Controller
         Cache::put('verify_' . $user->email, $token, now()->addMinutes(60)); // Lưu token trong cache 60 phút
 
         try {
-            if (app()->environment('local')) {
+            // Gửi bằng mailer cấu hình mặc định (SMTP, etc.). Nếu lỗi sẽ fallback sang log mailer
+            Mail::send('emails.verify-email', ['user' => $user, 'token' => $token], function ($message) use ($user) {
+                $message->to($user->email);
+                $message->subject('Xác minh địa chỉ email');
+            });
+        } catch (\Throwable $e) {
+            \Log::warning('Gửi mail xác minh thất bại, fallback sang log mailer: ' . $e->getMessage());
+            try {
                 Mail::mailer('log')->send('emails.verify-email', ['user' => $user, 'token' => $token], function ($message) use ($user) {
                     $message->to($user->email);
                     $message->subject('Xác minh địa chỉ email');
                 });
-            } else {
-                Mail::send('emails.verify-email', ['user' => $user, 'token' => $token], function ($message) use ($user) {
-                    $message->to($user->email);
-                    $message->subject('Xác minh địa chỉ email');
-                });
+            } catch (\Throwable $e2) {
+                \Log::error('Fallback log mailer cũng thất bại: ' . $e2->getMessage());
             }
-        } catch (\Throwable $e) {
-            \Log::warning('Không thể gửi email xác minh trong môi trường hiện tại: ' . $e->getMessage());
         }
 
         Auth::login($user);

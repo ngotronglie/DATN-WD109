@@ -125,10 +125,7 @@
 
                                                         {{-- Product Actions --}}
                                                         <div class="product-actions">
-                                                            <button class="action-btn add-to-cart" title="Thêm vào giỏ hàng"
-                                                                    onclick="showVariantPopup(event, {{ $favorite->product->id }}, '{{ $favorite->product->name }}', '{{ $favorite->product->variants && $favorite->product->variants->first() && $favorite->product->variants->first()->image ? asset($favorite->product->variants->first()->image) : asset('frontend/img/product/1.jpg') }}')">
-                                                                <i class="zmdi zmdi-shopping-cart"></i>
-                                                            </button>
+                                                           
                                                             <button class="action-btn remove-favorite-btn" data-favorite-id="{{ $favorite->id }}" title="Xóa khỏi yêu thích">
                                                                 <i class="zmdi zmdi-delete"></i>
                                                             </button>
