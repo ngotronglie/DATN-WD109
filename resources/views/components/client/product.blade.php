@@ -6,7 +6,7 @@
     <div class="container-fluid px-0">
         {{-- Section Title --}}
         <div class="section-title text-center mb-5">
-            <h2 class="mb-3">SẢN PHẨM NỔI BẬT</h2>
+            <h2 class="mb-3">SẢN PHẨM Mới Thêm Gần Đây</h2>
             <div class="title-divider">
                 <span class="divider-line"></span>
                 <i class="zmdi zmdi-star"></i>
@@ -47,6 +47,7 @@
                                     @if ($product->product_price_discount > 0)
                                         <div class="sale-price">₫{{ number_format($product->product_price_discount, 0, ',', '.') }}</div>
                                         <div class="original-price">
+                                     
                                             <span>₫{{ number_format($product->product_price, 0, ',', '.') }}</span>
                                         </div>
                                     @else
@@ -60,10 +61,7 @@
                                 <button class="action-btn add-to-favorite" data-product-id="{{ $product->product_id }}" title="Thêm vào yêu thích" onclick="addToFavorite(event, {{ $product->product_id }}); return false;">
                                     <i class="zmdi zmdi-favorite"></i>
                                 </button>
-                                <button class="action-btn add-to-cart" title="Thêm vào giỏ hàng"
-                                        onclick="showVariantPopup(event, {{ $product->product_id }}, '{{ $product->product_name }}', '{{ \Illuminate\Support\Str::startsWith($product->product_image, ['http://','https://','/']) ? $product->product_image : asset($product->product_image) }}')">
-                                    <i class="zmdi zmdi-shopping-cart"></i>
-                                </button>
+                               
                             </div>
                         </a>
                     </div>

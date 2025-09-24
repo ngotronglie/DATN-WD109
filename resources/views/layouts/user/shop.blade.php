@@ -110,12 +110,7 @@
                                                         <button class="action-btn wishlist-btn" onclick="addToWishlist({{ $product->id }})" title="Yêu thích">
                                                             <i class="zmdi zmdi-favorite"></i>
                                                         </button>
-                                                        <button class="action-btn quickview-btn" onclick="quickView({{ $product->id }})" title="Xem nhanh">
-                                                            <i class="zmdi zmdi-zoom-in"></i>
-                                                        </button>
-                                                        <button class="action-btn add-cart-btn" onclick="addToCart({{ $product->id }})" title="Thêm vào giỏ">
-                                                            <i class="zmdi zmdi-shopping-cart-plus"></i>
-                                                        </button>
+                                                        
                                                     </div>
                                                 </div>
                                             </div>

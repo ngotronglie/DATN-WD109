@@ -66,10 +66,15 @@
 
                         <!-- Price Section -->
                         <div class="price-section">
-                            <div id="current-price" class="current-price">₫{{ isset($variants[0]) ? number_format($variants[0]->price, 0, ',', '.') : '0' }}</div>
-                            @if(isset($variants[0]) && $variants[0]->price_sale)
-                            <div id="original-price" class="original-price">₫{{ number_format($variants[0]->price_sale, 0, ',', '.') }}</div>
-                            <div id="savings-badge" class="savings-badge">Tiết kiệm ₫{{ number_format($variants[0]->price - $variants[0]->price_sale, 0, ',', '.') }}</div>
+                            @php
+                                $hasSale = isset($variants[0]) && $variants[0]->price_sale && $variants[0]->price_sale < $variants[0]->price;
+                            @endphp
+                            <div id="current-price" class="current-price">
+                                ₫{{ isset($variants[0]) ? number_format($hasSale ? $variants[0]->price_sale : $variants[0]->price, 0, ',', '.') : '0' }}
+                            </div>
+                            @if($hasSale)
+                                <div id="original-price" class="original-price">₫{{ number_format($variants[0]->price, 0, ',', '.') }}</div>
+                                <div id="savings-badge" class="savings-badge">Tiết kiệm ₫{{ number_format($variants[0]->price - $variants[0]->price_sale, 0, ',', '.') }}</div>
                             @endif
                         </div>
                         <!-- Variant Selection -->

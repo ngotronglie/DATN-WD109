@@ -25,6 +25,7 @@ use App\Models\Contact;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use App\Models\Order;
+use Illuminate\Support\Str;
 
 class ClientController extends Controller
 {
@@ -1456,8 +1457,10 @@ class ClientController extends Controller
         $vnp_TmnCode = "M1NSFU0N"; // Mã website tại VNPAY
         $vnp_HashSecret = "WX2DAEEQH8V9PGTXRZB6DY8KRCJPQDBC"; // Chuỗi bí mật
         $vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-        $vnp_Returnurl = route('vnpay.return');
-        $vnp_TxnRef = $order->order_code;
+        // Đưa order_id vào ReturnUrl để ánh xạ an toàn đơn hàng khi callback
+        $vnp_Returnurl = route('vnpay.return') . '?order_id=' . $order->id;
+        // Tạo mã giao dịch duy nhất cho mỗi lần khởi tạo thanh toán để tránh lỗi "giao dịch đã tồn tại"
+        $vnp_TxnRef = $order->order_code . '-' . Str::upper(Str::random(8));
         $vnp_OrderInfo = 'Thanh toan don hang ' . $order->order_code;
         $vnp_OrderType = 'billpayment';
         $vnp_Amount = ((int) $order->total_amount) * 100; // VNPAY yêu cầu x100
@@ -1509,7 +1512,17 @@ class ClientController extends Controller
     {
         $vnp_ResponseCode = $request->input('vnp_ResponseCode');
         $vnp_TxnRef = $request->input('vnp_TxnRef');
-        $order = \App\Models\Order::where('order_code', $vnp_TxnRef)->first();
+        $order = null;
+        // Ưu tiên lấy order qua order_id được đính kèm trong ReturnUrl
+        $orderId = $request->input('order_id');
+        if (!empty($orderId)) {
+            $order = \App\Models\Order::find($orderId);
+        }
+        // Fallback: nếu không có order_id thì tách lấy order_code gốc từ vnp_TxnRef (phần trước dấu '-')
+        if (!$order && !empty($vnp_TxnRef)) {
+            $baseOrderCode = explode('-', $vnp_TxnRef)[0] ?? $vnp_TxnRef;
+            $order = \App\Models\Order::where('order_code', $baseOrderCode)->first();
+        }
 
         if ($order && $vnp_ResponseCode == '00') {
             // Đánh dấu đã thanh toán online (2 = chuyển khoản)
