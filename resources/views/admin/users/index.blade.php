@@ -80,14 +80,14 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex gap-2 justify-content-center">
-                                                    <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-info" title="Sửa">
+                                                    <!-- <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-info" title="Sửa">
                                                         <i class="fas fa-edit"></i>
-                                                    </a>
+                                                    </a> -->
                                                     <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này?')" title="Xóa">
-                                                            <i class="fas fa-trash"></i>
+                                                            <i class="fas fa-trash">Khoá</i>
                                                         </button>
                                                     </form>
                                                 </div>

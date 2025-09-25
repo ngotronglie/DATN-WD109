@@ -120,10 +120,10 @@
                         </div>
                         <!-- Action Buttons -->
                         <div class="action-buttons">
-                            <button type="button" class="btn-buy-now" onclick="buyNow()">
+                            <!-- <button type="button" class="btn-buy-now" onclick="buyNow()">
                                 <i class="zmdi zmdi-shopping-cart"></i>
                                 Mua ngay
-                            </button>
+                            </button> -->
                             <button type="button" class="btn-add-cart" onclick="addToCart()">
                                 <i class="zmdi zmdi-shopping-cart"></i>
                                 Thêm vào giỏ

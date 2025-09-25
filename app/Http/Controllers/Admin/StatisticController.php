@@ -297,24 +297,33 @@ class StatisticController extends Controller
         // Apply time filter
         switch($filter) {
             case 'today':
-                $query->whereDate('created_at', today());
+                $start = now()->startOfDay()->toDateTimeString();
+                $end = now()->endOfDay()->toDateTimeString();
+                $query->whereBetween(DB::raw('COALESCE(delivered_at, updated_at)'), [$start, $end]);
                 break;
             case 'week':
-                $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                $start = now()->startOfWeek()->startOfDay()->toDateTimeString();
+                $end = now()->endOfWeek()->endOfDay()->toDateTimeString();
+                $query->whereBetween(DB::raw('COALESCE(delivered_at, updated_at)'), [$start, $end]);
                 break;
             case 'month':
-                $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+                $start = now()->startOfMonth()->startOfDay()->toDateTimeString();
+                $end = now()->endOfMonth()->endOfDay()->toDateTimeString();
+                $query->whereBetween(DB::raw('COALESCE(delivered_at, updated_at)'), [$start, $end]);
                 break;
             case 'year':
-                $query->whereYear('created_at', now()->year);
+                $start = now()->startOfYear()->startOfDay()->toDateTimeString();
+                $end = now()->endOfYear()->endOfDay()->toDateTimeString();
+                $query->whereBetween(DB::raw('COALESCE(delivered_at, updated_at)'), [$start, $end]);
                 break;
         }
         
         // Get orders with pagination
-        $orders = $query->orderBy('created_at', 'desc')->paginate(20);
+        $orders = $query->orderByRaw('COALESCE(delivered_at, updated_at) DESC')
+            ->paginate(20);
         
         // Calculate total revenue for this filter
-        $totalRevenue = $query->clone()->sum('total_amount');
+        $totalRevenue = (clone $query)->sum('total_amount');
         
         // Get filter options for display
         $filterOptions = [

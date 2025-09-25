@@ -38,7 +38,7 @@
         <th>Lý do</th>
         <td>{{ $refund->reason }}</td>
     </tr>
-    <!-- <tr>
+ <tr>
         <th>Ảnh minh chứng khách gửi</th>
         <td>
             @if($refund->image)
@@ -47,7 +47,7 @@
             Không có
             @endif
         </td>
-    </tr> -->
+   
     <tr>
         <th>Ảnh minh chứng admin</th>
         <td>
