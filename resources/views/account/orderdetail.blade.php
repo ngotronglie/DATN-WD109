@@ -108,9 +108,9 @@
         @if ($order->voucher)
         <div class="mb-4">
             <p class="mb-1"><strong>Voucher:</strong> {{ $order->voucher->code }}</p>
-            <p class="mb-0"><strong>Giảm giá:</strong>
+            <!-- <p class="mb-0">
                 {{ $order->voucher->discount_type == 'percent' ? $order->voucher->discount_value . '%' : number_format($order->voucher->discount_value) . '₫' }}
-            </p>
+            </p> -->
         </div>
         @endif
 
@@ -147,12 +147,12 @@
 
                 @if ($order->voucher)
                 <tr>
-                    <td colspan="3" class="text-end">Giảm giá:</td>
-                    <td class="text-end text-danger">
+                    <!-- <td colspan="3" class="text-end">Giảm giá:</td> -->
+                    <!-- <td class="text-end text-danger">
                         -{{ $order->voucher->discount_type == 'percent' 
                 ? $order->voucher->discount_value . '%' 
                 : number_format($order->voucher->discount_value) . '₫' }}
-                    </td>
+                    </td> -->
                 </tr>
                 @endif
 

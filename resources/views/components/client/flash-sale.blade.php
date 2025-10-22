@@ -77,7 +77,7 @@
                         ->take($limit);
                 @endphp
                 @foreach($itemsGroupedByProduct as $flashProduct)
-                    @if($flashProduct && $flashProduct->productVariant)
+                    @if($flashProduct && $flashProduct->productVariant && $flashProduct->productVariant->product)
                         <div class="col-lg-1 col-md-2 col-sm-2 col-2 mb-1">
                             <div class="flash-product-card">
                                 <a href="{{ route('flash-sale.product.detail', $flashProduct->productVariant->product->slug) }}" class="text-decoration-none">

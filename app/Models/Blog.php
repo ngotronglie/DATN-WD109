@@ -44,6 +44,7 @@ class Blog extends Model
 
     public function comments()
     {
-        return $this->hasMany(\App\Models\Comment::class, 'post_id');
+        return $this->hasMany(\App\Models\Comment::class, 'blog_id');
     }
-} 
+}
+ 
